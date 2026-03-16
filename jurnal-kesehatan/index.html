@@ -583,7 +583,7 @@ var selectedYear = new Date().getFullYear();
 async function loginGoogle() {
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://arsoagung.github.io/app/jurnal-kesehatan/' }
+    options: { redirectTo: window.location.href }
   });
   if (error) showToast('Login gagal: ' + error.message);
 }
@@ -837,24 +837,33 @@ function deleteAccount(idx) {
   document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('cf-ok').addEventListener('click', function(){ if(pendingCb){pendingCb();pendingCb=null;} });
 
+  /* Bersihkan hash OAuth dari URL supaya tidak loop */
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+  }
+
+  /* onAuthStateChange handle SEMUA kondisi:
+     - INITIAL_SESSION: sesi yang sudah ada (buka tab baru / refresh)
+     - SIGNED_IN: baru login
+     - SIGNED_OUT: logout                                              */
   sb.auth.onAuthStateChange(async function(event, session) {
-    if (session && session.user) {
-      currentUser = session.user;
-      document.getElementById('user-name').textContent = currentUser.user_metadata.full_name || 'Pengguna';
-      document.getElementById('user-email').textContent = currentUser.email || '';
-      var avatar = currentUser.user_metadata.avatar_url;
-      if (avatar) document.getElementById('user-avatar').src = avatar;
-      await loadProfile();
-      await loadData();
-      showApp();
-    } else {
+    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+      if (session && session.user) {
+        currentUser = session.user;
+        document.getElementById('user-name').textContent = currentUser.user_metadata.full_name || 'Pengguna';
+        document.getElementById('user-email').textContent = currentUser.email || '';
+        var avatar = currentUser.user_metadata.avatar_url;
+        if (avatar) document.getElementById('user-avatar').src = avatar;
+        await loadProfile();
+        await loadData();
+        showApp();
+      } else {
+        showLoginScreen();
+      }
+    } else if (event === 'SIGNED_OUT') {
       showLoginScreen();
     }
   });
-
-  // Cek session yang sudah ada
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) showLoginScreen();
 })();
 
 var TAB_IDS = ['home','riwayat','statistik','pengaturan'];
