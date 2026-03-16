@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Jurnal Kesehatan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── LIGHT MODE (default) ── */
+:root {
+  --cream: #F4EFE6;
+  --white: #FFFFFF;
+  --dark: #1A1A1A;
+  --gray: #888;
+  --gray-light: #E8E3DA;
+  --yellow: #EDE84A;
+  --pink: #F0A8C2;
+  --pink-soft: #FAD9EA;
+  --green: #AEDBA6;
+  --green-dark: #4A8E42;
+  --blue-soft: #C2DFF7;
+  --red: #E53935;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --nav-h: 72px;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --bg: var(--cream);
+  --card-bg: var(--white);
+  --input-bg: var(--cream);
+  --input-focus: #EDEAE0;
+}
+
+/* ── DARK MODE ── */
+body.dark {
+  --cream: #161819;
+  --white: #242529;
+  --dark: #F0EDE6;
+  --gray: #777;
+  --gray-light: #2E3033;
+  --yellow: #EDE84A;
+  --pink: #F0A8C2;
+  --pink-soft: #3D2535;
+  --green: #1A3318;
+  --green-dark: #6DB860;
+  --blue-soft: #1A2D3D;
+  --input-bg: #1E2022;
+  --input-focus: #252729;
+}
+body.dark .scard.yellow { background: #242529; }
+body.dark .scard.yellow .scard-label  { color: var(--yellow); opacity:0.7; }
+body.dark .scard.yellow .scard-unit   { color: var(--yellow); opacity:0.6; }
+body.dark .scard.yellow .streak-prog-label { color: var(--yellow); opacity:0.7; }
+body.dark .scard.yellow .scard-num    { color: var(--yellow); }
+body.dark .scard.yellow .scard-icon   { fill: var(--yellow); opacity:0.5; }
+body.dark .scard.pink   { background: #242529; }
+body.dark .scard.pink .scard-label    { color: var(--pink); opacity:0.7; }
+body.dark .scard.pink .scard-unit     { color: var(--pink); opacity:0.6; }
+body.dark .scard.pink .scard-num      { color: var(--pink); }
+body.dark .scard.pink .scard-icon     { fill: var(--pink); opacity:0.6; }
+body.dark .scard.dark   { background: #242529; }
+body.dark .tl-card      { background: #242529; }
+body.dark .tl-line      { background: #2E3033; }
+body.dark .stat-box     { background: #242529; }
+body.dark .top-item     { background: #242529; }
+body.dark .set-card     { background: #242529; }
+body.dark .modal        { background: #1E2022; }
+body.dark .confirm-box  { background: #1E2022; }
+body.dark .bottom-nav   { background: #242529; border-top-color: #2E3033; }
+body.dark .nav-btn svg  { fill: #555; }
+body.dark .nav-btn.active svg  { fill: #F0EDE6; }
+body.dark .nav-btn.active .nav-lbl { color: #F0EDE6; }
+body.dark .nav-btn.active { background: rgba(255,255,255,0.07); }
+body.dark .tag           { background: #2E3033; color: #bbb; }
+body.dark .tag.symp      { background: #1A2D3D; color: #7EC8F0; }
+body.dark .qchip         { background: #2E3033; color: #bbb; }
+body.dark .qchip.selected { background: #F0EDE6; color: #161819; }
+body.dark .dur-badge     { background: #1A3318; color: #6DB860; }
+body.dark .dur-badge.ill { background: #3D2535; color: #F0A8C2; }
+body.dark .btn-ic        { background: #1E5080; }
+body.dark .btn-ic svg    { fill: #7EC8F0; }
+body.dark .btn-ic:active { background: #174060; }
+/* tombol profil ikut style kartu penyakit (cream/merah), override dark mode */
+.btn-ic-edit            { background: var(--cream); }
+.btn-ic-edit svg        { fill: var(--dark); }
+.btn-ic-del             { background: var(--cream); }
+.btn-ic-del svg         { fill: var(--red); }
+body.dark .btn-ic.btn-ic-edit  { background: #2E3033; }
+body.dark .btn-ic.btn-ic-edit svg { fill: #bbb; }
+body.dark .btn-ic.btn-ic-del   { background: #2E3033; }
+body.dark .btn-ic.btn-ic-del svg  { fill: #FF6B6B; }
+body.dark .check-row     { background: var(--input-bg); }
+body.dark .btn-cancel-m  { background: #2E3033; color: #bbb; }
+body.dark .btn-save      { background: var(--yellow); color: #1A1A1A; }
+body.dark .btn-add-s     { background: var(--yellow); color: #1A1A1A; }
+body.dark .top-rank.gold { -webkit-text-stroke: 1px #555; }
+body.dark .streak-prog-bg  { background: rgba(255,255,255,0.1); }
+body.dark .streak-prog-fill { background: rgba(237,232,74,0.45); }
+body.dark .insight-card  { background: #1A2D3D; }
+body.dark .cf-btns .btn-neu { background: #2E3033; color: #ccc; }
+body.dark .code-block    { background: #1E2022; color: #bbb; }
+
+/* dark mode toggle button */
+.btn-darkmode {
+  width: 36px; height: 36px;
+  background: var(--gray-light);
+  border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.btn-darkmode svg { width:18px; height:18px; fill:var(--dark); }
+body.dark .btn-darkmode { background: #2E3033; }
+
+/* sync button */
+.btn-sync {
+  width: 36px; height: 36px;
+  background: var(--gray-light);
+  border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.btn-sync svg { width:18px; height:18px; fill:var(--dark); transition: fill 0.2s; }
+body.dark .btn-sync { background: #2E3033; }
+body.dark .btn-sync svg { fill: var(--dark); }
+
+/* header status dot */
+.hdr-status {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 2px;
+}
+.hdr-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gray-light); flex-shrink: 0;
+  transition: background 0.3s;
+}
+.hdr-dot.on { background: var(--green-dark); }
+.hdr-status-txt {
+  font-size: 11px; font-weight: 600; color: var(--gray);
+  white-space: nowrap;
+}
+.hdr-spinner {
+  display: none; width: 12px; height: 12px;
+  border: 2px solid rgba(0,0,0,0.12); border-top-color: var(--dark);
+  border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;
+}
+.hdr-spinner.show { display: inline-block; }
+body.dark .hdr-spinner { border-top-color: var(--dark); }
+
+/* bounce for header icon buttons */
+@keyframes hdrBounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.78); }
+  55%  { transform: scale(1.22); }
+  75%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.btn-darkmode.bounce, .btn-sync.bounce {
+  animation: hdrBounce 0.38s cubic-bezier(0.34,1.6,0.64,1) forwards;
+}
+
+/* account pill selector */
+.account-bar {
+  display: flex; gap: 6px;
+  padding: 0 16px 14px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.account-bar::-webkit-scrollbar { display: none; }
+.acc-pill {
+  background: var(--gray-light);
+  border: none; border-radius: 50px;
+  padding: 7px 16px;
+  font-family: var(--font); font-size: 13px; font-weight: 700;
+  color: var(--gray); cursor: pointer; white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.acc-pill.active { background: var(--yellow); color: #1A1A1A; }
+body.dark .acc-pill { background: #2E3033; color: #666; }
+body.dark .acc-pill.active { background: var(--yellow); color: #1A1A1A; }
+
+/* ── PIN SCREEN ── */
+.pin-screen {
+  position: fixed; inset: 0;
+  background: var(--cream);
+  z-index: 500;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px;
+  max-width: 430px; margin: 0 auto;
+  transition: opacity 0.3s;
+}
+.pin-screen.hidden { opacity: 0; pointer-events: none; }
+.pin-logo-svg { width:48px; height:48px; margin-bottom:14px; }
+.pin-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; margin-bottom: 6px; color:var(--dark); }
+.pin-sub { font-size: 13px; color: var(--gray); margin-bottom: 36px; }
+.pin-dots { display: flex; gap: 14px; margin-bottom: 32px; }
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--gray-light);
+  transition: background 0.15s, transform 0.15s;
+}
+.pin-dot.filled { background: var(--dark); transform: scale(1.2); }
+body.dark .pin-dot.filled { background: var(--yellow); }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 12px; justify-content:center; }
+.pin-key {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--white); border: none;
+  font-family: var(--font); font-size: 22px; font-weight: 700;
+  color: var(--dark); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, transform 0.1s;
+  -webkit-appearance: none;
+}
+.pin-key:active { background: var(--gray-light); transform: scale(0.93); }
+.pin-key.del { font-size: 20px; }
+.pin-key.empty { background: transparent !important; pointer-events: none; box-shadow: none; }
+.pin-error { font-size: 13px; color: #FF4C4C; font-weight: 600; margin-top: 18px; min-height: 20px; text-align:center; }
+@keyframes pinShake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(5px)}
+}
+.pin-dots.shake { animation: pinShake 0.4s ease; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: var(--font);
+  background: var(--cream);
+  color: var(--dark);
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── SVG ICON SPRITE (hidden) ── */
+.svg-sprite { display:none; position:absolute; }
+
+/* ── HEADER — tidak sticky, langsung di atas konten ── */
+.app-header {
+  padding: 52px 20px 0;
+}
+.app-header-inner { display:flex; align-items:center; gap:10px; }
+.logo-svg { width:26px; height:26px; flex-shrink:0; }
+.logo-text { font-size:19px; font-weight:800; letter-spacing:-0.4px; color:var(--dark); }
+.header-date { font-size:12px; color:var(--gray); margin-top:3px; padding-left:36px; margin-bottom:18px; }
+
+/* ── LAYOUT ── */
+.scroll-area { padding: 0 16px calc(var(--nav-h) + 32px); }
+.page { display:none; }
+.page.active { display:block; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+
+/* ── SUMMARY CARDS ── */
+.scard { border-radius:var(--radius); padding:16px; position:relative; overflow:hidden; }
+.scard.yellow { background:var(--yellow); }
+.scard.pink   { background:var(--pink-soft); }
+.scard.dark   { background:var(--dark); color:var(--white); margin-bottom:10px; }
+.scard-label  { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; opacity:0.6; margin-bottom:6px; }
+.scard-num    { font-size:42px; font-weight:800; line-height:1; letter-spacing:-1px; }
+.scard-unit   { font-size:12px; opacity:0.6; margin-top:3px; font-weight:500; }
+.scard-icon   { position:absolute; top:14px; right:14px; width:22px; height:22px; opacity:0.45; }
+/* light mode: api = hitam (di atas kuning), clipboard = pink */
+.scard.yellow .scard-icon { fill: #1A1A1A; }
+.scard.pink   .scard-icon { fill: var(--pink); opacity:0.65; }
+.scard.dark .scard-num  { color:var(--yellow); font-size:26px; letter-spacing:-0.5px; }
+.scard.dark .scard-icon { opacity:0.35; fill: var(--white); }
+
+/* dark mode: api = kuning, clipboard = pink */
+body.dark .scard.yellow .scard-icon { fill: var(--yellow); opacity:0.6; }
+body.dark .scard.pink   .scard-icon { fill: var(--pink); opacity:0.6; }
+.scard-row    { display:flex; justify-content:space-between; align-items:center; }
+.scard-right  { width:38px; height:38px; opacity:0.6; }
+
+/* streak progress */
+.streak-prog-wrap  { margin-top:10px; }
+.streak-prog-label { font-size:11px; opacity:0.65; margin-bottom:5px; font-weight:600; }
+.streak-prog-bg    { height:6px; background:rgba(0,0,0,0.15); border-radius:3px; overflow:hidden; }
+.streak-prog-fill  { height:100%; background:rgba(0,0,0,0.35); border-radius:3px; transition:width 0.6s; }
+
+/* ── SECTION TITLE ── */
+.sec-title { font-size:15px; font-weight:700; margin:22px 0 10px; display:flex; justify-content:space-between; align-items:center; }
+.sec-sub   { font-size:12px; font-weight:500; color:var(--gray); cursor:pointer; }
+
+/* ── TIMELINE ── */
+.timeline { display:flex; flex-direction:column; }
+.tl-item  { display:flex; gap:12px; }
+.tl-spine { display:flex; flex-direction:column; align-items:center; padding-top:20px; width:20px; flex-shrink:0; }
+.tl-dot   { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.tl-dot.ok  { background:var(--green-dark); }
+.tl-dot.ill { background:var(--pink); }
+.tl-line  { width:2px; background:var(--gray-light); flex:1; min-height:16px; margin-top:3px; }
+.tl-card  { flex:1; background:var(--white); border-radius:var(--radius); padding:14px; margin-bottom:10px; }
+.tl-head  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+.tl-name  { font-size:15px; font-weight:700; line-height:1.2; }
+.tl-date  { font-size:11px; color:var(--gray); margin-top:2px; }
+.tl-actions { display:flex; gap:5px; flex-shrink:0; }
+.btn-ic   {
+  background:var(--cream); border:none; border-radius:8px;
+  width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.btn-ic svg { width:15px; height:15px; }
+.btn-ic:active { background:var(--gray-light); }
+.tags-wrap { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+.tag      { background:var(--cream); border-radius:50px; padding:3px 9px; font-size:11px; font-weight:600; }
+.tag.symp { background:var(--blue-soft); color:#1A5A8A; }
+.tl-foot  { display:flex; justify-content:space-between; align-items:center; }
+.dur-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:50px; background:var(--green); color:var(--green-dark); }
+.dur-badge.ill { background:var(--pink-soft); color:#B03070; }
+.tl-ago   { font-size:11px; color:var(--gray); font-weight:500; }
+.tl-note  { font-size:12px; color:var(--gray); border-top:1px solid var(--gray-light); padding-top:8px; margin-top:8px; line-height:1.5; font-style:italic; }
+
+/* ── EMPTY STATE ── */
+.empty    { text-align:center; padding:48px 20px; color:var(--gray); }
+.empty-icon { width:52px; height:52px; margin:0 auto 14px; opacity:0.35; display:block; }
+.empty h3 { font-size:16px; color:var(--dark); margin-bottom:6px; font-weight:700; }
+.empty p  { font-size:13px; line-height:1.6; }
+
+/* ── INSIGHT CARD ── */
+.insight-card { background:var(--blue-soft); border-radius:var(--radius-sm); padding:13px 14px; margin-bottom:10px; display:flex; align-items:flex-start; gap:10px; }
+.insight-icon { width:20px; height:20px; flex-shrink:0; margin-top:1px; }
+.insight-text { font-size:13px; font-weight:600; line-height:1.5; color:var(--dark); }
+.insight-sub  { font-size:11px; font-weight:400; color:#555; margin-top:2px; }
+
+/* ── STATS ── */
+.stat3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px; }
+.stat2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+.stat-box { background:var(--white); border-radius:var(--radius-sm); padding:14px 10px; text-align:center; }
+.stat-num { font-size:28px; font-weight:800; line-height:1; letter-spacing:-0.5px; }
+.stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--gray); margin-top:5px; line-height:1.3; }
+.top-list { display:flex; flex-direction:column; gap:8px; }
+.top-item { background:var(--white); border-radius:var(--radius-sm); padding:13px 14px; display:flex; align-items:center; gap:12px; }
+.top-rank { font-size:20px; font-weight:800; color:var(--gray-light); width:24px; text-align:center; flex-shrink:0; }
+.top-rank.gold { color:var(--yellow); -webkit-text-stroke:1px #bbb; }
+.top-info { flex:1; }
+.top-name { font-size:14px; font-weight:700; }
+.top-cnt  { font-size:11px; color:var(--gray); margin-top:1px; font-weight:500; }
+.bar-bg   { height:5px; background:var(--gray-light); border-radius:3px; width:56px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:3px; }
+.bar-fill.ill  { background:var(--yellow); }
+.bar-fill.symp { background:var(--pink); }
+
+/* ── SETTINGS ── */
+.set-card { background:var(--white); border-radius:var(--radius); padding:18px; margin-bottom:12px; }
+.set-card h3 { font-size:15px; font-weight:700; margin-bottom:5px; }
+.set-card p  { font-size:13px; color:var(--gray); line-height:1.6; margin-bottom:12px; }
+.set-card ol { font-size:13px; color:var(--gray); line-height:1.9; padding-left:16px; margin-bottom:12px; }
+.set-card ol b { color:var(--dark); }
+.code-block { background:var(--cream); border-radius:10px; padding:12px; font-family:monospace; font-size:11px; line-height:1.7; color:var(--dark); overflow-x:auto; white-space:pre; margin-bottom:12px; }
+.status-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.dot  { width:8px; height:8px; border-radius:50%; background:var(--gray-light); flex-shrink:0; }
+.dot.on { background:var(--green-dark); }
+.status-txt { font-size:13px; color:var(--gray); font-weight:500; }
+.btn-row { display:flex; gap:8px; }
+.sync-spinner { display:none; width:14px; height:14px; border:2px solid rgba(0,0,0,0.15); border-top-color:var(--dark); border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
+.sync-spinner.show { display:inline-block; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ── BOTTOM NAV — floating pill ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 398px;
+  height: var(--nav-h);
+  background: var(--dark);
+  border-radius: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 100;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  background:none; border:none; cursor:pointer;
+  padding:8px 14px; border-radius:24px; flex:1;
+  transition: background 0.15s;
+}
+.nav-lbl { font-family:var(--font); font-size:9px; font-weight:700; color:var(--gray); letter-spacing:0.3px; transition:color 0.15s; }
+.nav-btn.active { background:rgba(255,255,255,0.1); }
+.nav-btn.active .nav-lbl { color:var(--white); }
+
+/* FAB — pink pill center */
+.nav-fab {
+  width: 52px; height: 52px;
+  background: var(--pink);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s, background 0.15s;
+}
+.nav-fab:active { transform:scale(0.93); background:#e891b3; }
+.nav-fab svg { width:26px; height:26px; fill:var(--white); }
+
+/* ── OVERLAY / MODAL ── */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(3px); z-index:200; display:none; align-items:flex-end; justify-content:center; }
+.overlay.open { display:flex; }
+.modal { background:var(--white); border-radius:26px 26px 0 0; width:100%; max-width:430px; padding:10px 22px 32px; max-height:92vh; overflow-y:auto; animation:slideUp 0.3s cubic-bezier(0.34,1.3,0.64,1); }
+@keyframes slideUp { from{transform:translateY(50px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-handle { width:38px; height:4px; background:var(--gray-light); border-radius:2px; margin:10px auto 18px; }
+.modal-title { font-size:22px; font-weight:800; margin-bottom:18px; letter-spacing:-0.3px; }
+.form-group  { margin-bottom:14px; }
+.form-label  { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:var(--gray); display:block; margin-bottom:6px; }
+.form-input,.form-textarea { width:100%; padding:13px 14px; border:none; border-radius:var(--radius-sm); font-family:var(--font); font-size:15px; font-weight:500; color:var(--dark); background:var(--input-bg); outline:none; -webkit-appearance:none; transition: background 0.2s; }
+.form-input:focus,.form-textarea:focus { background:var(--input-focus); }
+.form-textarea { min-height:72px; resize:vertical; }
+.form-row  { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.symp-row  { display:flex; gap:8px; margin-bottom:8px; }
+.symp-row .form-input { flex:1; }
+.btn-add-s { background:var(--dark); color:var(--yellow); border:none; border-radius:var(--radius-sm); width:46px; font-size:22px; cursor:pointer; flex-shrink:0; }
+.tags-edit { display:flex; flex-wrap:wrap; gap:5px; min-height:4px; }
+.tag-rm    { background:var(--yellow); border-radius:50px; padding:4px 8px 4px 11px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; }
+.tag-rm-x  { background:rgba(0,0,0,0.15); border-radius:50%; width:15px; height:15px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; }
+.check-row { display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:var(--radius-sm); cursor:pointer; background:var(--cream); }
+.check-row input { width:17px; height:17px; accent-color:var(--dark); cursor:pointer; }
+.check-row label { font-size:14px; font-weight:600; cursor:pointer; }
+.btn-save     { width:100%; background:var(--dark); color:var(--yellow); border:none; border-radius:var(--radius); padding:16px; font-family:var(--font); font-size:16px; font-weight:700; cursor:pointer; margin-top:6px; transition:transform 0.15s; }
+.btn-save:active { transform:scale(0.98); }
+.btn-cancel-m { width:100%; background:var(--cream); color:var(--gray); border:none; border-radius:var(--radius); padding:13px; font-family:var(--font); font-size:14px; font-weight:600; cursor:pointer; margin-top:8px; }
+
+/* quick symptom chips */
+.quick-symps { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.qchip {
+  background:var(--cream); border:none; border-radius:50px;
+  padding:6px 13px; font-family:var(--font); font-size:12px; font-weight:600;
+  color:var(--dark); cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.qchip.selected { background:var(--dark); color:var(--yellow); }
+
+/* ── CONFIRM ── */
+.overlay-center { align-items:center; }
+.confirm-box { background:var(--white); border-radius:24px; width:calc(100% - 48px); max-width:320px; padding:28px 22px; text-align:center; animation:popIn 0.25s cubic-bezier(0.34,1.5,0.64,1); }
+@keyframes popIn { from{transform:scale(0.88);opacity:0} to{transform:scale(1);opacity:1} }
+.cf-emoji { font-size:44px; margin-bottom:10px; }
+.cf-title { font-size:22px; font-weight:800; margin-bottom:7px; letter-spacing:-0.3px; }
+.cf-msg   { font-size:13px; color:var(--gray); line-height:1.6; margin-bottom:20px; }
+.cf-btns  { display:flex; gap:8px; }
+.btn-dng  { flex:1; background:#FF4C4C; color:#fff; border:none; border-radius:12px; padding:13px; font-family:var(--font); font-size:15px; font-weight:700; cursor:pointer; }
+.btn-neu  { flex:1; background:var(--cream); color:var(--dark); border:none; border-radius:12px; padding:13px; font-family:var(--font); font-size:14px; font-weight:600; cursor:pointer; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:calc(var(--nav-h) + 36px); left:50%; transform:translateX(-50%) translateY(30px); background:var(--dark); color:var(--white); padding:11px 20px; border-radius:50px; font-size:13px; font-weight:600; z-index:999; opacity:0; pointer-events:none; white-space:nowrap; transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1),opacity 0.25s; }
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+/* ── NAV BOUNCE ── */
+@keyframes navBounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.72); }
+  55%  { transform: scale(1.28); }
+  75%  { transform: scale(0.92); }
+  90%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+/* wrap svg in .nav-ic span so transform-origin is always dead-center */
+.nav-ic {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  transform-origin: center center;
+}
+.nav-ic svg { width:22px; height:22px; fill:var(--gray); transition:fill 0.15s; display:block; }
+.nav-btn.active .nav-ic svg  { fill:var(--white); }
+.nav-btn.bounce .nav-ic { animation: navBounce 0.46s cubic-bezier(0.34,1.6,0.64,1) forwards; }
+
+/* ── FAB rotate ── */
+.nav-fab svg {
+  transition: transform 0.42s cubic-bezier(0.34,1.4,0.64,1);
+  transform-origin: center center;
+  display: block;
+}
+.nav-fab.open svg { transform: rotate(135deg); }
+
+</style>
+</head>
+<body>
+
+<!-- SVG SPRITE -->
+<svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg">
+  <!-- home -->
+  <symbol id="ic-home" viewBox="0 0 256 256">
+    <path d="M240,208H224V136l2.34,2.34A8,8,0,0,0,237.66,127L139.31,28.68a16,16,0,0,0-22.62,0L18.34,127a8,8,0,0,0,11.32,11.31L32,136v72H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM48,120l80-80,80,80v88H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48Zm96,88H112V160h32Z"/>
+  </symbol>
+  <!-- riwayat/clipboard -->
+  <symbol id="ic-riwayat" viewBox="0 0 256 256">
+    <path d="M168,128a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,128Zm-8,24H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16ZM216,40V200a32,32,0,0,1-32,32H72a32,32,0,0,1-32-32V40a8,8,0,0,1,8-8H72V24a8,8,0,0,1,16,0v8h32V24a8,8,0,0,1,16,0v8h32V24a8,8,0,0,1,16,0v8h24A8,8,0,0,1,216,40Zm-16,8H184v8a8,8,0,0,1-16,0V48H136v8a8,8,0,0,1-16,0V48H88v8a8,8,0,0,1-16,0V48H56V200a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16Z"/>
+  </symbol>
+  <!-- statistik/chart -->
+  <symbol id="ic-stats" viewBox="0 0 256 256">
+    <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm71.87,53.27L136,114.14V40.37A88,88,0,0,1,199.87,77.27ZM120,40.37v83l-71.89,41.5A88,88,0,0,1,120,40.37ZM128,216a88,88,0,0,1-71.87-37.27L207.89,91.12A88,88,0,0,1,128,216Z"/>
+  </symbol>
+  <!-- setting/gear -->
+  <symbol id="ic-setting" viewBox="0 0 256 256">
+    <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z"/>
+  </symbol>
+  <!-- plus/tambah -->
+  <symbol id="ic-plus" viewBox="0 0 256 256">
+    <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/>
+  </symbol>
+  <!-- edit/pencil -->
+  <symbol id="ic-edit" viewBox="0 0 256 256">
+    <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM48,208V163.31l90.35-90.35,44.69,44.69L48,208Zm90.35-148.69,44.69,44.69L172.69,115,128,70.31ZM216,85.31,182.63,118.69,137.31,73.37,170.68,40,216,85.31Z"/>
+  </symbol>
+  <!-- trash/hapus -->
+  <symbol id="ic-trash" viewBox="0 0 256 256">
+    <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/>
+  </symbol>
+  <!-- lightbulb/insight -->
+  <symbol id="ic-insight" viewBox="0 0 256 256">
+    <path d="M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-16,0a72,72,0,0,0-73.74-72c-39,.92-70.47,33.39-70.26,72.39a71.65,71.65,0,0,0,27.64,56.3A32,32,0,0,1,96,186v6h64v-6a32.15,32.15,0,0,1,12.47-25.35A71.65,71.65,0,0,0,200,104Z"/>
+  </symbol>
+  <!-- download/export -->
+  <symbol id="ic-export" viewBox="0 0 256 256">
+    <path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"/>
+  </symbol>
+  <!-- upload/import -->
+  <symbol id="ic-import" viewBox="0 0 256 256">
+    <path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66-82.34a8,8,0,0,1,11.32,0l40,40a8,8,0,0,1-11.32,11.32L136,86.63V180a8,8,0,0,1-16,0V86.63L93.66,112.94A8,8,0,0,1,82.34,101.62Z"/>
+  </symbol>
+  <!-- warning -->
+  <symbol id="ic-warning" viewBox="0 0 256 256">
+    <path d="M236.8,188.09,149.35,36.22a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,204a8.5,8.5,0,0,1-7.48,4H40.55a8.5,8.5,0,0,1-7.48-4,7.59,7.59,0,0,1,0-7.72L120.52,44.44a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,204ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/>
+  </symbol>
+  <!-- empty state / clipboard-x -->
+  <symbol id="ic-empty" viewBox="0 0 256 256">
+    <path d="M168,16H88A16,16,0,0,0,72,32V48H48A16,16,0,0,0,32,64V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V64a16,16,0,0,0-16-16H184V32A16,16,0,0,0,168,16Zm0,32H88V32h80ZM208,208H48V64H72V80a8,8,0,0,0,16,0V64h80V80a8,8,0,0,0,16,0V64h24Zm-58.34-58.34a8,8,0,0,1-11.32,11.32L128,150.63l-10.34,10.35a8,8,0,0,1-11.32-11.32L116.69,139.3l-10.35-10.34a8,8,0,0,1,11.32-11.32L128,128l10.34-10.34a8,8,0,0,1,11.32,11.32L139.31,139.3Z"/>
+  </symbol>
+  <!-- heart/logo -->
+  <symbol id="ic-heart" viewBox="0 0 256 256">
+    <path d="M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0c-3.35-1.8-63.55-34.69-92.68-80.89A4,4,0,0,1,34.92,144H72a8,8,0,0,0,6.66-3.56l9.34-14,25.34,38a8,8,0,0,0,9.16,3.16,8.23,8.23,0,0,0,4.28-3.34L140.28,144H160a8,8,0,0,0,8-8.53,8.18,8.18,0,0,0-8.25-7.47H136a8,8,0,0,0-6.66,3.56l-9.34,14-25.34-38a8,8,0,0,0-9.17-3.16,8.25,8.25,0,0,0-4.27,3.34L67.72,128H23.53a4,4,0,0,1-3.83-2.81A76.93,76.93,0,0,1,16,102,62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z"/>
+  </symbol>
+  <!-- thermometer/sakit -->
+  <symbol id="ic-sick" viewBox="0 0 256 256">
+    <path d="M148,152.4V48a20,20,0,0,0-40,0V152.4a36,36,0,1,0,40,0ZM128,216a20,20,0,1,1,20-20A20,20,0,0,1,128,216Zm4-66.29V48a4,4,0,0,0-8,0V149.71a36.26,36.26,0,0,0-16,30.29,36,36,0,0,0,72,0A36.26,36.26,0,0,0,132,149.71Z"/>
+  </symbol>
+  <!-- smile/sehat -->
+  <symbol id="ic-healthy" viewBox="0 0 256 256">
+    <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm56-88a8,8,0,0,1-8,8,48.08,48.08,0,0,1-96,0,8,8,0,0,1,16,0,32,32,0,0,0,64,0A8,8,0,0,1,184,128ZM96,108a12,12,0,1,1,12,12A12,12,0,0,1,96,108Zm52,0a12,12,0,1,1,12,12A12,12,0,0,1,148,108Z"/>
+  </symbol>
+  <!-- fire/streak -->
+  <symbol id="ic-fire" viewBox="0 0 256 256">
+    <path d="M181.23,172.84C186.43,163.86,192,150.4,192,132c0-56.25-50.67-84.07-52.8-85.22a8,8,0,0,0-11.61,6.3C126.63,71.18,117.5,84.35,109,97.22,100.88,109.56,93.33,121.29,88,131.55c-.27-7.9-1-16.63-3.16-23.51a8,8,0,0,0-11.93-4.23C69.16,106.3,48,124.56,48,164a80,80,0,0,0,160,0C208,198.43,198.29,182.07,181.23,172.84ZM128,228a64.07,64.07,0,0,1-64-64c0-29.34,14-45.5,23.39-54.28,3.32,12.75,3.32,29.52,3.32,32.24a8,8,0,0,0,5.41,7.57A8,8,0,0,0,105,148c6.45-10.64,21.58-32.49,35.41-49.76C148.08,90.65,160,75.82,168,62.89c14,11.46,40,37.68,40,69.11,0,22.17-8.39,37-16.58,46.44-7.25-3.78-28.5-15.55-39.46-48.56a8,8,0,0,0-14.68-.84C130,140.17,128,155.29,128,164a36,36,0,0,0,72,0,45.52,45.52,0,0,1,0,0A64.07,64.07,0,0,1,128,228Z"/>
+  </symbol>
+  <!-- trophy/rekor -->
+  <symbol id="ic-trophy" viewBox="0 0 256 256">
+    <path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,38.93,40,88.15,88.15,0,0,0,71.07,50V208H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H138V186a88.15,88.15,0,0,0,71.07-50A40,40,0,0,0,248,96V80A16,16,0,0,0,232,64ZM48,120a24,24,0,0,1-24-24V80H48v32q0,4.12.43,8.12ZM200,112a72,72,0,0,1-144,0V56H200Zm32-16a24,24,0,0,1-24,24q.43-4,.43-8.12V80h23.57Z"/>
+  </symbol>
+  <!-- ic-lastill: icon untuk kartu sakit terakhir -->
+  <symbol id="ic-lastill" viewBox="0 0 256 256">
+    <path d="M176,104a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,104Zm-8,24H88a8,8,0,0,0,0,16h80a8,8,0,0,0,0-16Zm88-24v24a32,32,0,0,1-32,32h-5.19c-7.19,15.8-21.79,29.43-43.23,40.16a191.16,191.16,0,0,1-46.15,15.71,7.93,7.93,0,0,1-2.86,0,191.16,191.16,0,0,1-46.15-15.71C59,189.43,44.38,175.8,37.19,160H32A32,32,0,0,1,0,128V104A32,32,0,0,1,32,72h.85a16,16,0,0,1,9.68-10l80-29.09a16.06,16.06,0,0,1,10.94,0l80,29.09a16,16,0,0,1,9.68,10H224A32,32,0,0,1,256,104ZM32.55,144a58.74,58.74,0,0,1-.55-8V88a16,16,0,0,0-16,16v24a16,16,0,0,0,16,16ZM208,136V77.09L128,48,48,77.09V136c0,45,69.09,61.52,80,63.84C138.89,197.52,208,181,208,136Zm32-32a16,16,0,0,0-16-16v48a58.74,58.74,0,0,1-.55,8H224a16,16,0,0,0,16-16Z"/>
+  </symbol>
+</svg>
+
+<!-- PIN SCREEN -->
+<div class="pin-screen" id="pin-screen">
+  <svg class="pin-logo-svg" viewBox="0 0 256 256" fill="#E53935">
+    <path d="M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0c-3.35-1.8-63.55-34.69-92.68-80.89A4,4,0,0,1,34.92,144H72a8,8,0,0,0,6.66-3.56l9.34-14,25.34,38a8,8,0,0,0,9.16,3.16,8.23,8.23,0,0,0,4.28-3.34L140.28,144H160a8,8,0,0,0,8-8.53,8.18,8.18,0,0,0-8.25-7.47H136a8,8,0,0,0-6.66,3.56l-9.34,14-25.34-38a8,8,0,0,0-9.17-3.16,8.25,8.25,0,0,0-4.27,3.34L67.72,128H23.53a4,4,0,0,1-3.83-2.81A76.93,76.93,0,0,1,16,102,62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z"/>
+  </svg>
+  <div class="pin-title">Jurnal Kesehatan</div>
+  <div class="pin-sub">Masukkan PIN untuk melanjutkan</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key empty"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <svg class="logo-svg" viewBox="0 0 256 256" fill="#E53935">
+      <use href="#ic-heart"/>
+    </svg>
+    <span class="logo-text">Jurnal Kesehatan</span>
+    <div style="flex:1"></div>
+    <!-- status sync -->
+    <div class="hdr-status">
+      <div class="hdr-dot" id="hdr-dot"></div>
+      <div class="hdr-spinner" id="hdr-spin"></div>
+      <span class="hdr-status-txt" id="hdr-status-txt">Memuat...</span>
+    </div>
+    <!-- tombol sync -->
+    <button class="btn-sync" onclick="doSyncRefresh()" id="btn-sync" aria-label="Refresh data">
+      <svg viewBox="0 0 256 256" fill="currentColor">
+        <path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h28.69L182.06,73.37a79.56,79.56,0,0,0-56.13-23.43h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27a96,96,0,0,1,135,.79L208,76.69V48a8,8,0,0,1,16,0ZM186.41,183.29a80,80,0,0,1-112.47-.66L59.31,168H88a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V179.31l14.63,14.63A95.43,95.43,0,0,0,130,222.06h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z"/>
+      </svg>
+    </button>
+    <!-- tombol dark mode -->
+    <button class="btn-darkmode" onclick="toggleDark()" id="btn-dark" aria-label="Toggle dark mode">
+      <!-- icon injected by JS -->
+    </button>
+  </div>
+  <div class="header-date" id="hdr-date"></div>
+</header>
+
+<!-- ACCOUNT BAR — rendered by JS -->
+<div class="account-bar" id="account-bar"></div>
+
+<div class="scroll-area" id="scroll-area">
+
+  <!-- ══ BERANDA ══ -->
+  <div class="page active" id="page-home">
+    <div class="grid-2">
+      <div class="scard yellow">
+        <div class="scard-label">Streak Sehat</div>
+        <div class="scard-num" id="sc-streak">0</div>
+        <div class="scard-unit">hari</div>
+        <svg class="scard-icon"><use href="#ic-fire"/></svg>
+        <div class="streak-prog-wrap">
+          <div class="streak-prog-label" id="sc-prog-label">Mulai streak-mu!</div>
+          <div class="streak-prog-bg">
+            <div class="streak-prog-fill" id="sc-prog-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="scard pink">
+        <div class="scard-label">Sakit Tahun Ini</div>
+        <div class="scard-num" id="sc-thisyear">0</div>
+        <div class="scard-unit">kali</div>
+        <svg class="scard-icon"><use href="#ic-riwayat"/></svg>
+      </div>
+    </div>
+
+    <div class="scard dark">
+      <div class="scard-row">
+        <div>
+          <div class="scard-label">Sakit Terakhir</div>
+          <div class="scard-num" id="sc-last-name">&#8211;</div>
+          <div class="scard-unit" id="sc-last-ago">Belum ada data</div>
+        </div>
+        <svg class="scard-right" id="sc-last-icon" viewBox="0 0 256 256" fill="var(--pink)"><use href="#ic-lastill"/></svg>
+      </div>
+    </div>
+
+    <div id="home-insight"></div>
+
+    <div class="sec-title">
+      Riwayat Terbaru
+      <span class="sec-sub" onclick="goTab('riwayat')">Lihat semua &#8594;</span>
+    </div>
+    <div id="home-tl" class="timeline"></div>
+  </div>
+
+  <!-- ══ RIWAYAT ══ -->
+  <div class="page" id="page-riwayat">
+    <div class="sec-title" style="margin-top:4px">Timeline Lengkap</div>
+    <div id="full-tl" class="timeline"></div>
+  </div>
+
+  <!-- ══ STATISTIK ══ -->
+  <div class="page" id="page-statistik">
+    <div class="sec-title" style="margin-top:4px">Tahun Ini</div>
+    <div class="stat3">
+      <div class="stat-box">
+        <div class="stat-num" id="st-total">0</div>
+        <div class="stat-lbl">Total Sakit</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="st-avg-dur">0</div>
+        <div class="stat-lbl">Rata-rata Hari</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="st-month">0</div>
+        <div class="stat-lbl">Bulan Ini</div>
+      </div>
+    </div>
+    <div class="stat2">
+      <div class="stat-box">
+        <div class="stat-num" id="st-total-days">0</div>
+        <div class="stat-lbl">Total Hari Sakit</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="st-avg-gap">&#8211;</div>
+        <div class="stat-lbl">Jarak Antar Sakit</div>
+      </div>
+    </div>
+    <div id="stat-insight" style="margin-bottom:16px"></div>
+
+    <div class="sec-title">
+      Penyakit Terbanyak
+      <span class="sec-sub" id="btn-more-illness" onclick="toggleMore('illness')" style="display:none">Lihat semua &#8594;</span>
+    </div>
+    <div id="top-illness-list" class="top-list" style="margin-bottom:22px"></div>
+
+    <div class="sec-title">
+      Gejala Terbanyak
+      <span class="sec-sub" id="btn-more-symptom" onclick="toggleMore('symptom')" style="display:none">Lihat semua &#8594;</span>
+    </div>
+    <div id="top-symptom-list" class="top-list" style="margin-bottom:22px"></div>
+
+    <div class="sec-title">
+      Streak Sehat
+      <span class="sec-sub" id="btn-more-streak" onclick="toggleMore('streak')" style="display:none">Lihat semua &#8594;</span>
+    </div>
+    <div id="streak-history-list" class="top-list"></div>
+  </div>
+
+  <!-- ══ PENGATURAN ══ -->
+  <div class="page" id="page-pengaturan">
+    <div class="sec-title" style="margin-top:4px">Profil</div>
+
+    <div class="set-card">
+      <h3>Kelola Profil</h3>
+      <p>Kelola profil untuk anggota keluarga. Setiap profil memiliki riwayat sakit yang terpisah.</p>
+      <div id="profile-manage-list" style="margin-bottom:12px"></div>
+      <button class="btn-save" style="margin-top:0" onclick="openAddAccount()">+ Tambah Profil</button>
+    </div>
+
+    <div class="set-card">
+      <h3>Export &amp; Import JSON</h3>
+      <p>Backup data ke file JSON atau pulihkan dari file backup sebelumnya.</p>
+      <div class="btn-row">
+        <button class="btn-cancel-m" style="flex:1;margin-top:0;display:flex;align-items:center;justify-content:center;gap:8px" onclick="document.getElementById('import-file').click()">
+          <svg width="18" height="18" fill="currentColor"><use href="#ic-import"/></svg> Import
+        </button>
+        <button class="btn-save" style="flex:1;margin-top:0;display:flex;align-items:center;justify-content:center;gap:8px" onclick="exportData()">
+          <svg width="18" height="18" fill="currentColor"><use href="#ic-export"/></svg> Export
+        </button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+    </div>
+
+  </div>
+
+</div><!-- /scroll-area -->
+
+<!-- BOTTOM NAV — floating pill hitam -->
+<nav class="bottom-nav" role="navigation">
+  <button class="nav-btn active" id="nb-home" onclick="goTab('home')" aria-label="Beranda">
+    <span class="nav-ic"><svg><use href="#ic-home"/></svg></span>
+    <span class="nav-lbl">Beranda</span>
+  </button>
+  <button class="nav-btn" id="nb-riwayat" onclick="goTab('riwayat')" aria-label="Riwayat">
+    <span class="nav-ic"><svg><use href="#ic-riwayat"/></svg></span>
+    <span class="nav-lbl">Riwayat</span>
+  </button>
+  <button class="nav-fab" onclick="openModal()" aria-label="Tambah data sakit">
+    <svg><use href="#ic-plus"/></svg>
+  </button>
+  <button class="nav-btn" id="nb-statistik" onclick="goTab('statistik')" aria-label="Statistik">
+    <span class="nav-ic"><svg><use href="#ic-stats"/></svg></span>
+    <span class="nav-lbl">Statistik</span>
+  </button>
+  <button class="nav-btn" id="nb-pengaturan" onclick="goTab('pengaturan')" aria-label="Setelan">
+    <span class="nav-ic"><svg><use href="#ic-setting"/></svg></span>
+    <span class="nav-lbl">Setelan</span>
+  </button>
+</nav>
+
+<!-- MODAL FORM -->
+<div class="overlay" id="ov-form" onclick="ovClose(event,'ov-form')" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Catat Sakit Baru</div>
+    <div class="form-row form-group">
+      <div>
+        <label class="form-label" for="f-start">Tanggal Mulai</label>
+        <input type="date" class="form-input" id="f-start">
+      </div>
+      <div>
+        <label class="form-label" for="f-end">Tanggal Sembuh</label>
+        <input type="date" class="form-input" id="f-end">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="check-row">
+        <input type="checkbox" id="f-ongoing" onchange="toggleOngoing(this)">
+        <label for="f-ongoing">Masih sakit / belum sembuh</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="f-name">Nama Penyakit</label>
+      <input type="text" class="form-input" id="f-name" placeholder="Demam, Flu, Maag...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Gejala</label>
+      <div class="quick-symps" id="quick-symps"></div>
+      <div class="symp-row" id="symp-row-input" style="display:none">
+        <input type="text" class="form-input" id="f-symp" placeholder="Gejala lainnya..."
+               onkeydown="if(event.key==='Enter'){addSymp();event.preventDefault();}">
+        <button class="btn-add-s" onclick="addSymp()">+</button>
+      </div>
+      <div class="tags-edit" id="f-tags"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="f-notes">Catatan</label>
+      <textarea class="form-textarea" id="f-notes" placeholder="Obat, kunjungan dokter, dsb..."></textarea>
+    </div>
+    <button class="btn-save" onclick="saveIllness()">Simpan Data</button>
+    <button class="btn-cancel-m" onclick="closeForm()">Batal</button>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI -->
+<div class="overlay overlay-center" id="ov-confirm" onclick="ovClose(event,'ov-confirm')" role="dialog" aria-modal="true">
+  <div class="confirm-box">
+    <div class="cf-emoji" id="cf-emoji">&#128465;</div>
+    <div class="cf-title" id="cf-title">Hapus Data?</div>
+    <div class="cf-msg"   id="cf-msg">Data ini akan dihapus permanen dari perangkat ini.</div>
+    <div class="cf-btns">
+      <button class="btn-neu" onclick="closeConfirm()">Batal</button>
+      <button class="btn-dng" id="cf-ok">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIN CONFIRM (setelah konfirmasi hapus) -->
+<div class="overlay overlay-center" id="ov-pin-confirm" role="dialog" aria-modal="true">
+  <div class="confirm-box">
+    <div class="cf-emoji">🔒</div>
+    <div class="cf-title">Konfirmasi PIN</div>
+    <div class="cf-msg">Masukkan PIN untuk melanjutkan penghapusan.</div>
+    <div class="pin-dots" id="pc-dots" style="justify-content:center;margin:14px 0 8px">
+      <div class="pin-dot" id="pcd0"></div>
+      <div class="pin-dot" id="pcd1"></div>
+      <div class="pin-dot" id="pcd2"></div>
+      <div class="pin-dot" id="pcd3"></div>
+    </div>
+    <div class="pin-pad" style="margin:0 auto 10px">
+      <button class="pin-key" onclick="pcKey('1')">1</button>
+      <button class="pin-key" onclick="pcKey('2')">2</button>
+      <button class="pin-key" onclick="pcKey('3')">3</button>
+      <button class="pin-key" onclick="pcKey('4')">4</button>
+      <button class="pin-key" onclick="pcKey('5')">5</button>
+      <button class="pin-key" onclick="pcKey('6')">6</button>
+      <button class="pin-key" onclick="pcKey('7')">7</button>
+      <button class="pin-key" onclick="pcKey('8')">8</button>
+      <button class="pin-key" onclick="pcKey('9')">9</button>
+      <button class="pin-key empty"></button>
+      <button class="pin-key" onclick="pcKey('0')">0</button>
+      <button class="pin-key del" onclick="pcDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pc-error"></div>
+    <button class="btn-neu" style="width:100%;margin-top:4px" onclick="closePinConfirm()">Batal</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ═══ CONFIG ═══ */
+var GS_URL   = 'https://script.google.com/macros/s/AKfycby-xMz7YmQ5OksM1_gq6OP9CyC1y4fmTDVHfRcTUcXVwaNf8Ox6nllO-JvctmJEijt3/exec';
+var PIN_CODE = '4646';
+
+/* ═══ STATE ═══ */
+var SVG_MOON = '<path d="M240,96a8,8,0,0,1-8,8H216v16a8,8,0,0,1-16,0V104H184a8,8,0,0,1,0-16h16V72a8,8,0,0,1,16,0V88h16A8,8,0,0,1,240,96ZM144,56h8v8a8,8,0,0,0,16,0V56h8a8,8,0,0,0,0-16h-8V32a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16Zm72.77,97a8,8,0,0,1,1.43,8A96,96,0,1,1,95.07,37.8a8,8,0,0,1,10.6,9.06A88.07,88.07,0,0,0,209.14,150.33,8,8,0,0,1,216.77,153Zm-19.39,14.88c-1.79.09-3.59.14-5.38.14A104.11,104.11,0,0,1,88,64c0-1.79,0-3.59.14-5.38A80,80,0,1,0,197.38,167.86Z"/>';
+var SVG_SUN  = '<path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/>';
+
+var DEFAULT_ACCOUNTS = [
+  { key:'saya', label:'Saya', emoji:'👤' }
+];
+/* ACCOUNTS di-load dari Google Sheet. Di memori saja, tidak disimpan ke localStorage */
+var ACCOUNTS   = DEFAULT_ACCOUNTS.slice();
+var curAccount = 0;
+var allData    = {};
+var appData    = [];
+var editId     = null;
+var tempSymps  = [];
+var pendingCb  = null;
+var showMore   = { illness:false, symptom:false, streak:false };
+
+/* Simpan daftar profil ke Sheet (POST action:'saveAccounts') */
+function saveAccounts() {
+  if (!GS_URL) return;
+  fetch(GS_URL, {
+    method: 'POST', mode: 'no-cors',
+    body: JSON.stringify({ action: 'saveAccounts', accounts: ACCOUNTS })
+  }).catch(function(e){ console.warn('saveAccounts failed', e); });
+}
+function curKey() {
+  var acc = ACCOUNTS[curAccount];
+  /* fallback jika profil undefined — kembalikan ke profil pertama */
+  if (!acc) { curAccount = 0; acc = ACCOUNTS[0]; }
+  return acc ? acc.key : 'saya';
+}
+
+/* ═══ PIN ═══ */
+var pinBuffer = '';
+function pinKey(d) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += d;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(checkPin, 120);
+}
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+function updatePinDots() {
+  for (var i = 0; i < 4; i++)
+    document.getElementById('pd' + i).className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+}
+function checkPin() {
+  if (pinBuffer === PIN_CODE) {
+    var ps = document.getElementById('pin-screen');
+    ps.classList.add('hidden');
+    setTimeout(function(){ ps.style.display='none'; }, 350);
+  } else {
+    var dots = document.getElementById('pin-dots');
+    dots.classList.add('shake');
+    setTimeout(function(){ dots.classList.remove('shake'); }, 450);
+    document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
+    pinBuffer = '';
+    updatePinDots();
+  }
+}
+
+/* ═══ PIN CONFIRM (setelah konfirmasi hapus) ═══ */
+var pcBuffer = '';
+function openPinConfirm() {
+  pcBuffer = '';
+  updatePcDots();
+  document.getElementById('pc-error').textContent = '';
+  document.getElementById('ov-pin-confirm').classList.add('open');
+}
+function closePinConfirm() {
+  document.getElementById('ov-pin-confirm').classList.remove('open');
+  pcBuffer = '';
+  pendingCb = null;
+}
+function pcKey(d) {
+  if (pcBuffer.length >= 4) return;
+  pcBuffer += d;
+  updatePcDots();
+  if (pcBuffer.length === 4) setTimeout(checkPc, 120);
+}
+function pcDel() {
+  pcBuffer = pcBuffer.slice(0, -1);
+  updatePcDots();
+  document.getElementById('pc-error').textContent = '';
+}
+function updatePcDots() {
+  for (var i = 0; i < 4; i++)
+    document.getElementById('pcd' + i).className = 'pin-dot' + (i < pcBuffer.length ? ' filled' : '');
+}
+function checkPc() {
+  if (pcBuffer === PIN_CODE) {
+    document.getElementById('ov-pin-confirm').classList.remove('open');
+    if (pendingCb) { pendingCb(); pendingCb = null; }
+  } else {
+    var dots = document.getElementById('pc-dots');
+    dots.classList.add('shake');
+    setTimeout(function(){ dots.classList.remove('shake'); }, 450);
+    document.getElementById('pc-error').textContent = 'PIN salah, coba lagi';
+    pcBuffer = '';
+    updatePcDots();
+  }
+}
+
+/* ═══ DARK MODE — preferensi tampilan boleh pakai localStorage ═══ */
+function setDarkIcon(isDark) {
+  var btn = document.getElementById('btn-dark');
+  btn.innerHTML = '<svg viewBox="0 0 256 256" fill="currentColor">' + (isDark ? SVG_SUN : SVG_MOON) + '</svg>';
+}
+function toggleDark() {
+  var on = document.body.classList.toggle('dark');
+  localStorage.setItem('hl_dark', on ? '1' : '0');
+  setDarkIcon(on);
+  var btn = document.getElementById('btn-dark');
+  btn.classList.remove('bounce');
+  void btn.offsetWidth;
+  btn.classList.add('bounce');
+}
+
+function doSyncRefresh() {
+  var btn = document.getElementById('btn-sync');
+  btn.classList.remove('bounce');
+  void btn.offsetWidth;
+  btn.classList.add('bounce');
+  loadAccountsFromSheet(function() {
+    var k = curKey();
+    if (!allData[k]) allData[k] = [];
+    appData = allData[k];
+    renderAccountBar();
+    renderProfileList();
+    loadFromSheet();
+  });
+}
+function initDark() {
+  var isDark = localStorage.getItem('hl_dark') === '1';
+  if (isDark) document.body.classList.add('dark');
+  setDarkIcon(isDark);
+}
+
+/* ═══ ACCOUNT BAR ═══ */
+function renderAccountBar() {
+  var bar = document.getElementById('account-bar');
+  var html = '';
+  for (var i = 0; i < ACCOUNTS.length; i++) {
+    var a = ACCOUNTS[i];
+    html += '<button class="acc-pill' + (i === curAccount ? ' active' : '') + '" '
+      + 'onclick="switchAccount(' + i + ')">'
+      + a.emoji + ' ' + a.label + '</button>';
+  }
+  if (ACCOUNTS.length < 6) {
+    html += '<button class="acc-pill" onclick="openAddAccount()" '
+      + 'style="font-size:16px;padding:7px 12px">+</button>';
+  }
+  bar.innerHTML = html;
+}
+
+function renderProfileList() {
+  var el = document.getElementById('profile-manage-list');
+  if (!el) return;
+  var html = '';
+  for (var i = 0; i < ACCOUNTS.length; i++) {
+    var a = ACCOUNTS[i];
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;'
+      + (i < ACCOUNTS.length - 1 ? 'border-bottom:1px solid var(--gray-light)' : '') + '">'
+      + '<span style="font-size:22px">' + a.emoji + '</span>'
+      + '<span style="flex:1;font-weight:600;font-size:14px">' + esc(a.label) + '</span>'
+      + (ACCOUNTS.length > 1
+        ? '<button class="btn-ic btn-ic-edit" onclick="openEditAccount(' + i + ')" aria-label="Edit">'
+          + '<svg fill="currentColor"><use href="#ic-edit"/></svg></button>'
+          + '<button class="btn-ic btn-ic-del" onclick="deleteAccount(' + i + ')" aria-label="Hapus">'
+          + '<svg fill="currentColor"><use href="#ic-trash"/></svg></button>'
+        : '<span style="font-size:12px;color:var(--gray)">Profil utama</span>')
+      + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function deleteAccount(idx) {
+  if (ACCOUNTS.length <= 1) { showToast('Minimal 1 profil!'); return; }
+  var accName = ACCOUNTS[idx] ? ACCOUNTS[idx].label : 'profil ini';
+  pendingCb = function() {
+    ACCOUNTS.splice(idx, 1);
+    saveAccounts();
+    if (curAccount >= ACCOUNTS.length) curAccount = 0;
+    renderAccountBar();
+    renderProfileList();
+    switchAccount(curAccount);
+    showToast('Profil dihapus');
+  };
+  document.getElementById('cf-emoji').textContent = '👤';
+  document.getElementById('cf-title').textContent = 'Hapus Profil?';
+  document.getElementById('cf-msg').textContent =
+    'Profil "' + accName + '" dan seluruh riwayat sakitnya di Sheet akan dihapus permanen.';
+  document.getElementById('cf-ok').textContent = 'Hapus';
+  document.getElementById('ov-confirm').classList.add('open');
+}
+
+function switchAccount(idx) {
+  curAccount = idx;
+  showMore = { illness:false, symptom:false, streak:false };
+  renderAccountBar();
+  var key = curKey();
+  if (!allData[key]) allData[key] = [];
+  appData = allData[key];
+  renderAll();
+  loadFromSheet();
+}
+
+/* ── Add account via confirm overlay ── */
+var newAccEmoji = '👤';
+function openAddAccount() {
+  var EMOJIS = ['👤','👨','👩','👦','👧','👴','👵'];
+  newAccEmoji = '👤';
+  /* repurpose confirm box */
+  var box = document.querySelector('.confirm-box');
+  box._orig = box.innerHTML;
+  box.innerHTML = '<div style="font-size:13px;font-weight:700;text-transform:uppercase;'
+    + 'letter-spacing:0.6px;color:var(--gray);margin-bottom:14px">Tambah Profil</div>'
+    + '<input type="text" id="nacc-name" class="form-input" placeholder="Nama profil..." '
+    + 'style="margin-bottom:12px;text-align:center">'
+    + '<div id="emoji-pick" style="display:flex;gap:6px;justify-content:center;'
+    + 'flex-wrap:wrap;margin-bottom:16px">'
+    + EMOJIS.map(function(em, i) {
+        return '<button type="button" onclick="pickEmoji(this,\'' + em + '\')" '
+          + 'style="font-size:22px;background:' + (i===0?'var(--yellow)':'var(--gray-light)')
+          + ';border:none;border-radius:10px;width:40px;height:40px;cursor:pointer">' + em + '</button>';
+      }).join('')
+    + '</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn-neu" style="flex:1" onclick="cancelAddAcc()">Batal</button>'
+    + '<button class="btn-dng" style="flex:1;background:var(--dark);color:var(--yellow)" '
+    + 'onclick="confirmAddAcc()">Tambah</button>'
+    + '</div>';
+  document.getElementById('ov-confirm').classList.add('open');
+}
+function pickEmoji(btn, em) {
+  newAccEmoji = em;
+  var btns = document.getElementById('emoji-pick').querySelectorAll('button');
+  for (var i = 0; i < btns.length; i++) btns[i].style.background = 'var(--gray-light)';
+  btn.style.background = 'var(--yellow)';
+}
+function cancelAddAcc() {
+  var box = document.querySelector('.confirm-box');
+  if (box._orig) { box.innerHTML = box._orig; box._orig = null; }
+  document.getElementById('ov-confirm').classList.remove('open');
+  pendingCb = null;
+}
+function confirmAddAcc() {
+  var inp  = document.getElementById('nacc-name');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) { showToast('Nama tidak boleh kosong!'); return; }
+  var key = name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'') || ('p' + Date.now());
+  ACCOUNTS.push({ key:key, label:name, emoji:newAccEmoji });
+  allData[key] = [];
+  saveAccounts();
+  cancelAddAcc();
+  renderAccountBar();
+  renderProfileList();
+  showToast('Profil ' + name + ' ditambahkan!');
+}
+
+/* ═══ INIT ═══ */
+(function init() {
+  initDark();
+  var now = new Date();
+  document.getElementById('hdr-date').textContent =
+    now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  document.getElementById('cf-ok').addEventListener('click', function() {
+    if (pendingCb) {
+      /* Simpan pendingCb lalu minta PIN konfirmasi */
+      document.getElementById('ov-confirm').classList.remove('open');
+      openPinConfirm();
+    }
+  });
+
+  var key0 = ACCOUNTS[0].key;
+  if (!allData[key0]) allData[key0] = [];
+  appData = allData[key0];
+  renderAccountBar();
+  renderProfileList();
+
+  loadAccountsFromSheet(function() {
+    var k = curKey();
+    if (!allData[k]) allData[k] = [];
+    appData = allData[k];
+    renderAccountBar();
+    renderProfileList();
+    loadFromSheet();
+  });
+})();
+
+var TAB_IDS = ['home','riwayat','statistik','pengaturan'];
+function goTab(name) {
+  for (var t = 0; t < TAB_IDS.length; t++) {
+    document.getElementById('page-' + TAB_IDS[t]).classList.remove('active');
+    var nb = document.getElementById('nb-' + TAB_IDS[t]);
+    if (nb) nb.classList.remove('active');
+  }
+  document.getElementById('page-' + name).classList.add('active');
+  var nb2 = document.getElementById('nb-' + name);
+  if (nb2) {
+    nb2.classList.add('active');
+    nb2.classList.remove('bounce');
+    void nb2.offsetWidth;
+    nb2.classList.add('bounce');
+  }
+  if (name === 'pengaturan') renderProfileList();
+  document.getElementById('scroll-area').scrollTop = 0;
+}
+
+function renderAll() {
+  renderStreaks();
+  renderTimeline('home-tl', 3);
+  renderTimeline('full-tl', 0);
+  renderStats();
+  renderInsight('home-insight');
+}
+
+function todayStr()  { return new Date().toISOString().split('T')[0]; }
+
+/* Normalize any date string/format to YYYY-MM-DD */
+function normDate(s) {
+  if (!s) return '';
+  s = String(s).trim();
+  if (!s) return '';
+
+  /* Already ISO date only: 2026-03-15 */
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  /* ISO datetime from Google Sheets: 2026-02-28T17:00:00.000Z
+     — just take the date part, but adjust for WIB (UTC+7)      */
+  if (s.indexOf('T') !== -1) {
+    var d = new Date(s);
+    if (!isNaN(d)) {
+      /* shift to WIB so midnight UTC doesn't become previous day */
+      var wib = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+      var yr  = wib.getUTCFullYear();
+      var mo  = pad2(wib.getUTCMonth() + 1);
+      var dy  = pad2(wib.getUTCDate());
+      return yr + '-' + mo + '-' + dy;
+    }
+  }
+
+  /* Google Sheets locale: M/D/YYYY */
+  var parts = s.split('/');
+  if (parts.length === 3) {
+    var a = parseInt(parts[0], 10);
+    var b = parseInt(parts[1], 10);
+    var c = parseInt(parts[2], 10);
+    if (parts[2].length === 4) return c + '-' + pad2(a) + '-' + pad2(b);
+    if (parts[0].length === 4) return a + '-' + pad2(b) + '-' + pad2(c);
+  }
+
+  return s;
+}
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function parseDt(s) {
+  var iso = normDate(s);
+  if (!iso) return new Date(NaN);
+  return new Date(iso + 'T00:00:00');
+}
+function diffDays(a, b) {
+  var da = parseDt(a), db = parseDt(b);
+  if (isNaN(da) || isNaN(db)) return 0;
+  return Math.round((db - da) / 86400000);
+}
+function sortDesc(arr) {
+  return arr.slice().sort(function(a, b) {
+    var da = parseDt(a.startDate), db = parseDt(b.startDate);
+    return db - da;
+  });
+}
+function calcDur(start, end) {
+  if (!end) return 1;
+  var d = diffDays(start, end);
+  return d < 1 ? 1 : d;
+}
+function fmtDate(s) {
+  if (!s) return '';
+  var d = parseDt(s);
+  if (isNaN(d)) return s;
+  return d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+}
+function agoTxt(s) {
+  var d = parseDt(s);
+  if (isNaN(d)) return '';
+  var days = Math.round((new Date() - d) / 86400000);
+  if (days === 0) return 'Hari ini';
+  if (days === 1) return '1 hari lalu';
+  if (days < 0)  return 'Akan datang';
+  return days + ' hari lalu';
+}
+
+function renderStreaks() {
+  var now = new Date();
+  var yr = now.getFullYear();
+  
+  // Filter hanya penyakit di tahun ini
+  var thisYearIllnesses = appData.filter(function(i) {
+    return parseDt(i.startDate).getFullYear() === yr;
+  });
+
+  var thisYearCount = thisYearIllnesses.length;
+  document.getElementById('sc-thisyear').textContent = thisYearCount;
+
+  var streak = 0;
+  var streakStart = new Date(yr, 0, 1);  // 1 Januari tahun ini
+  var streakLabel = "Mulai streak tahunan!";
+
+  if (thisYearIllnesses.length === 0) {
+    // Belum sakit sama sekali tahun ini → streak dari 1 Jan
+    streak = Math.round((now - streakStart) / 86400000);
+    streakLabel = "Sehat sejak awal tahun!";
+  } else {
+    // Ada penyakit tahun ini → cari yang terakhir
+    var sortedThisYear = sortDesc(thisYearIllnesses);
+    var last = sortedThisYear[0];
+
+    if (last.ongoing) {
+      streak = 0;
+      streakLabel = "Sedang sakit sekarang";
+    } else {
+      var refDate = last.endDate ? last.endDate : last.startDate;
+      var refDt = parseDt(refDate);
+      
+      // Hanya hitung kalau sembuh di tahun ini
+      if (refDt.getFullYear() === yr) {
+        streak = Math.round((now - refDt) / 86400000);
+        streakLabel = "Sembuh " + agoTxt(refDate);
+      } else {
+        // Kalau penyakit terakhir sebelum tahun ini → anggap sehat sepanjang tahun
+        streak = Math.round((now - streakStart) / 86400000);
+        streakLabel = "Sehat sejak awal tahun!";
+      }
+    }
+  }
+
+  // Tampilkan streak
+  document.getElementById('sc-streak').textContent = streak;
+
+  // Rekor tahunan — hitung dari data di memori, tidak pakai localStorage
+  var rec = 0;
+  if (appData.length > 0) {
+    // Hitung semua streak antar penyakit dari seluruh riwayat untuk cari rekor
+    var allSorted = sortDesc(appData).reverse();
+    // streak dari awal tahun ke sakit pertama (jika ada)
+    var firstIll = null;
+    for (var fi = 0; fi < allSorted.length; fi++) {
+      if (parseDt(allSorted[fi].startDate).getFullYear() === yr) { firstIll = allSorted[fi]; break; }
+    }
+    if (firstIll) {
+      var daysToFirst = diffDays(new Date(yr, 0, 1).toISOString().split('T')[0], firstIll.startDate);
+      if (daysToFirst > rec) rec = daysToFirst;
+    }
+    // streak antar penyakit
+    for (var si = 0; si < allSorted.length - 1; si++) {
+      var endA2 = allSorted[si].endDate || allSorted[si].startDate;
+      var startB2 = allSorted[si+1].startDate;
+      var gap = diffDays(endA2, startB2);
+      if (gap > rec) rec = gap;
+    }
+    // streak saat ini (dari sembuh terakhir sampai sekarang)
+    if (streak > rec) rec = streak;
+  } else {
+    rec = streak;
+  }
+
+  var pct = (rec > 0) ? Math.min(100, Math.round(streak / rec * 100)) : 0;
+  document.getElementById('sc-prog-fill').style.width = pct + '%';
+
+  if (rec === 0 || streak >= rec) {
+    document.getElementById('sc-prog-label').textContent = streak > 0 ? 'Rekor terbaik tahun ini! 🔥' : 'Mulai streak tahunan!';
+  } else {
+    document.getElementById('sc-prog-label').textContent = pct + '% menuju rekor (' + rec + ' hari)';
+  }
+
+  // ── Last Illness card (sc-last-name, sc-last-ago) ── icon tetap masker, tidak berubah
+  var sortedAll = sortDesc(appData);
+  var lastIll = sortedAll.length ? sortedAll[0] : null;
+  if (lastIll) {
+    document.getElementById('sc-last-name').textContent = lastIll.name;
+    if (lastIll.ongoing) {
+      document.getElementById('sc-last-ago').textContent = 'Sedang sakit';
+    } else {
+      document.getElementById('sc-last-ago').textContent = 'Sembuh ' + agoTxt(lastIll.endDate || lastIll.startDate);
+    }
+  } else {
+    document.getElementById('sc-last-name').textContent = '–';
+    document.getElementById('sc-last-ago').textContent = 'Belum ada data';
+  }
+}
+
+function renderTimeline(elId, limit) {
+  var el     = document.getElementById(elId);
+  var sorted = sortDesc(appData);
+  var list   = (limit > 0) ? sorted.slice(0, limit) : sorted;
+
+  if (list.length === 0) {
+    el.innerHTML = '<div class="empty">'
+      + '<svg class="empty-icon"><use href="#ic-empty"/></svg>'
+      + '<h3>Belum Ada Riwayat</h3>'
+      + '<p>Tekan tombol + di bawah untuk mulai mencatat.</p></div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var ill    = list[i];
+    var isLast = (i === list.length - 1);
+    var ongoing = !!ill.ongoing;
+    var durDays = ongoing
+      ? Math.max(1, Math.round((new Date() - parseDt(ill.startDate)) / 86400000))
+      : calcDur(ill.startDate, ill.endDate);
+    var durTxt = ongoing ? (durDays + ' hari (masih sakit)') : (durDays + ' hari');
+    /* gejala tags — tampil langsung tanpa mengulang nama penyakit */
+    var sympTags = '';
+    var symps = ill.symptoms || [];
+    for (var j = 0; j < symps.length; j++) {
+      sympTags += '<span class="tag symp">' + esc(symps[j]) + '</span>';
+    }
+    var dateRange = fmtDate(ill.startDate);
+    if (ill.endDate && !ongoing) dateRange += ' &mdash; ' + fmtDate(ill.endDate);
+    var noteHtml = ill.notes ? '<div class="tl-note">' + esc(ill.notes) + '</div>' : '';
+
+    html += '<div class="tl-item">'
+      + '<div class="tl-spine">'
+      + '<div class="tl-dot ' + (ongoing ? 'ill' : 'ok') + '"></div>'
+      + (isLast ? '' : '<div class="tl-line"></div>')
+      + '</div>'
+      + '<div class="tl-card">'
+      + '<div class="tl-head">'
+      + '<div><div class="tl-name">' + esc(ill.name) + '</div>'
+      + '<div class="tl-date">' + dateRange + '</div></div>'
+      + '<div class="tl-actions">'
+      + '<button class="btn-ic" onclick="openEdit(\'' + ill.id + '\')" aria-label="Edit">'
+      + '<svg fill="currentColor"><use href="#ic-edit"/></svg></button>'
+      + '<button class="btn-ic" onclick="askDel(\'' + ill.id + '\')" aria-label="Hapus">'
+      + '<svg fill="currentColor"><use href="#ic-trash"/></svg></button>'
+      + '</div></div>'
+      + (sympTags ? '<div class="tags-wrap">' + sympTags + '</div>' : '')
+      + '<div class="tl-foot">'
+      + '<span class="dur-badge ' + (ongoing ? 'ill' : '') + '">'
+      + (ongoing ? 'Sedang sakit' : ('&#10003; ' + durTxt))
+      + '</span>'
+      + '<span class="tl-ago">' + agoTxt(ill.startDate) + '</span>'
+      + '</div>'
+      + noteHtml
+      + '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderStats() {
+  var yr = new Date().getFullYear();
+  var mo = new Date().getMonth();
+  var thisYr = appData.filter(function(i) { return parseDt(i.startDate).getFullYear() === yr; });
+  var thisMo = appData.filter(function(i) {
+    var d = parseDt(i.startDate);
+    return d.getFullYear() === yr && d.getMonth() === mo;
+  });
+  document.getElementById('st-total').textContent = thisYr.length;
+  document.getElementById('st-month').textContent = thisMo.length;
+  var totalDays = 0;
+  for (var k = 0; k < thisYr.length; k++) {
+    totalDays += thisYr[k].ongoing
+      ? Math.max(1, Math.round((new Date() - parseDt(thisYr[k].startDate)) / 86400000))
+      : calcDur(thisYr[k].startDate, thisYr[k].endDate);
+  }
+  document.getElementById('st-total-days').textContent = totalDays;
+  var finished = thisYr.filter(function(i) { return !i.ongoing; });
+  var avgDur = 0;
+  if (finished.length) {
+    var s = 0;
+    for (var m = 0; m < finished.length; m++) s += calcDur(finished[m].startDate, finished[m].endDate);
+    avgDur = Math.round(s / finished.length);
+  }
+  document.getElementById('st-avg-dur').textContent = avgDur;
+  var allAsc = sortDesc(appData).reverse();
+  var avgGapTxt = '–';
+  if (allAsc.length > 1) {
+    var sg = 0;
+    for (var g = 1; g < allAsc.length; g++) sg += Math.abs(diffDays(allAsc[g-1].startDate, allAsc[g].startDate));
+    avgGapTxt = Math.round(sg / (allAsc.length - 1)) + ' hr';
+  }
+  document.getElementById('st-avg-gap').textContent = avgGapTxt;
+  renderInsight('stat-insight');
+  renderTopList('top-illness-list', 'btn-more-illness', buildFreq('illness'), 'ill', 'illness');
+  renderTopList('top-symptom-list', 'btn-more-symptom', buildFreq('symptom'), 'symp', 'symptom');
+  renderStreakHistory();
+}
+
+function buildFreq(type) {
+  var freq = {};
+  for (var i = 0; i < appData.length; i++) {
+    if (type === 'illness') {
+      freq[appData[i].name] = (freq[appData[i].name] || 0) + 1;
+    } else {
+      var sy = appData[i].symptoms || [];
+      for (var j = 0; j < sy.length; j++) freq[sy[j]] = (freq[sy[j]] || 0) + 1;
+    }
+  }
+  return Object.keys(freq).map(function(k) { return [k, freq[k]]; })
+    .sort(function(a,b) { return b[1]-a[1]; });
+}
+
+function renderTopList(elId, btnId, sorted, barClass, key) {
+  var el  = document.getElementById(elId);
+  var btn = document.getElementById(btnId);
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-size:13px">Belum ada data</div>';
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+  var limit   = showMore[key] ? sorted.length : 3;
+  var display = sorted.slice(0, limit);
+  var max     = sorted[0][1];
+  /* show/hide "lihat semua" button */
+  if (btn) {
+    if (sorted.length > 3) {
+      btn.style.display = '';
+      btn.textContent   = showMore[key] ? 'Lebih sedikit ↑' : 'Lihat semua →';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+  var html = '';
+  for (var n = 0; n < display.length; n++) {
+    html += '<div class="top-item">'
+      + '<div class="top-rank ' + (n===0?'gold':'') + '">' + (n+1) + '</div>'
+      + '<div class="top-info"><div class="top-name">' + esc(display[n][0]) + '</div>'
+      + '<div class="top-cnt">' + display[n][1] + '&times; total</div></div>'
+      + '<div class="bar-bg"><div class="bar-fill ' + barClass + '" style="width:' + Math.round(display[n][1]/max*100) + '%"></div></div>'
+      + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function toggleMore(key) {
+  showMore[key] = !showMore[key];
+  renderStats();
+}
+
+/* ── Streak History ── */
+function buildStreakHistory() {
+  /* Sort illnesses oldest → newest */
+  var sorted = sortDesc(appData).reverse();
+  var streaks = [];
+  /* streak from end of each illness to start of next */
+  for (var i = 0; i < sorted.length - 1; i++) {
+    var endA = sorted[i].endDate || sorted[i].startDate;
+    var startB = sorted[i+1].startDate;
+    var days = diffDays(endA, startB);
+    if (days > 0) {
+      streaks.push({
+        days: days,
+        from: endA,
+        to:   startB
+      });
+    }
+  }
+  /* current streak: from last illness end to today */
+  if (sorted.length > 0) {
+    var last = sorted[sorted.length - 1];
+    if (!last.ongoing) {
+      var ref = last.endDate || last.startDate;
+      var cur = Math.round((new Date() - parseDt(ref)) / 86400000);
+      if (cur > 0) {
+        streaks.push({ days: cur, from: ref, to: todayStr(), isCurrent: true });
+      }
+    }
+  }
+  /* sort by longest first */
+  streaks.sort(function(a,b){ return b.days - a.days; });
+  return streaks;
+}
+
+function renderStreakHistory() {
+  var el  = document.getElementById('streak-history-list');
+  var btn = document.getElementById('btn-more-streak');
+  var streaks = buildStreakHistory();
+  if (!streaks.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-size:13px">Belum ada data streak</div>';
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+  var limit   = showMore.streak ? streaks.length : 3;
+  var display = streaks.slice(0, limit);
+  var max     = streaks[0].days;
+  if (btn) {
+    if (streaks.length > 3) {
+      btn.style.display = '';
+      btn.textContent   = showMore.streak ? 'Lebih sedikit ↑' : 'Lihat semua →';
+    } else { btn.style.display = 'none'; }
+  }
+  var html = '';
+  for (var n = 0; n < display.length; n++) {
+    var st = display[n];
+    html += '<div class="top-item">'
+      + '<div class="top-rank ' + (n===0?'gold':'') + '">' + (n+1) + '</div>'
+      + '<div class="top-info">'
+      + '<div class="top-name">' + st.days + ' hari' + (st.isCurrent ? ' 🔥' : '') + '</div>'
+      + '<div class="top-cnt">' + fmtDate(st.from) + ' &mdash; ' + (st.isCurrent ? 'sekarang' : fmtDate(st.to)) + '</div>'
+      + '</div>'
+      + '<div class="bar-bg"><div class="bar-fill ill" style="background:var(--yellow);width:' + Math.round(st.days/max*100) + '%"></div></div>'
+      + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderInsight(elId) {
+  var el = document.getElementById(elId);
+  if (!el || appData.length < 2) { if(el) el.innerHTML=''; return; }
+  var allAsc = sortDesc(appData).reverse();
+  var sg = 0;
+  for (var g = 1; g < allAsc.length; g++) sg += Math.abs(diffDays(allAsc[g-1].startDate, allAsc[g].startDate));
+  var avg = Math.round(sg / (allAsc.length - 1));
+  var freq = buildFreq('illness');
+  var topName = freq.length ? freq[0][0] : '–';
+  var topCnt  = freq.length ? freq[0][1] : 0;
+  el.innerHTML = '<div class="insight-card">'
+    + '<svg class="insight-icon" fill="var(--dark)"><use href="#ic-insight"/></svg>'
+    + '<div><div class="insight-text">Kamu rata-rata sakit setiap <b>' + avg + ' hari</b>.</div>'
+    + '<div class="insight-sub">Paling sering: ' + esc(topName) + ' (' + topCnt + 'x).</div>'
+    + '</div></div>';
+}
+
+var QUICK_SYMPS = ['Demam','Batuk','Pilek','Sakit kepala','Mual','Lemas','Nyeri tenggorokan','Diare'];
+
+function renderQuickChips() {
+  var html = '';
+  for (var i = 0; i < QUICK_SYMPS.length; i++) {
+    var s   = QUICK_SYMPS[i];
+    var sel = tempSymps.indexOf(s) !== -1;
+    html += '<button type="button" class="qchip' + (sel ? ' selected' : '') + '" onclick="toggleQuickChip(this,\'' + esc(s) + '\')">' + esc(s) + '</button>';
+  }
+  /* chip Lainnya */
+  var inputVisible = document.getElementById('symp-row-input').style.display !== 'none';
+  html += '<button type="button" class="qchip' + (inputVisible ? ' selected' : '') + '" onclick="toggleSympInput(this)">Lainnya ✏️</button>';
+  document.getElementById('quick-symps').innerHTML = html;
+}
+
+function toggleSympInput(btn) {
+  var row = document.getElementById('symp-row-input');
+  var visible = row.style.display !== 'none';
+  row.style.display = visible ? 'none' : 'flex';
+  btn.classList.toggle('selected', !visible);
+  if (!visible) document.getElementById('f-symp').focus();
+}
+
+function toggleQuickChip(el, s) {
+  var idx = tempSymps.indexOf(s);
+  if (idx === -1) { tempSymps.push(s); }
+  else            { tempSymps.splice(idx, 1); }
+  el.classList.toggle('selected', tempSymps.indexOf(s) !== -1);
+  renderSympTags();
+}
+
+function openEditAccount(idx) {
+  var acc = ACCOUNTS[idx];
+  if (!acc) return;
+
+  /* ── FIX: reset newAccEmoji ke emoji profil yang sedang diedit ── */
+  newAccEmoji = acc.emoji;
+
+  // repurpose confirm box menjadi form edit profil
+  var box = document.querySelector('.confirm-box');
+  box._orig = box.innerHTML;
+
+  box.innerHTML = `
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--gray);margin-bottom:14px">
+      Edit Profil
+    </div>
+    <input type="text" id="edit-acc-name" class="form-input" value="${esc(acc.label)}" 
+           placeholder="Nama profil..." style="margin-bottom:16px;text-align:center">
+    <div id="emoji-pick-edit" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+      ${['👤','👨','👩','👦','👧','👴','👵'].map(function(em, i) {
+        var selected = em === acc.emoji ? 'var(--yellow)' : 'var(--gray-light)';
+        return `<button type="button" onclick="pickEmojiEdit(this,'${em}')" 
+                style="font-size:22px;background:${selected};border:none;border-radius:10px;width:40px;height:40px;cursor:pointer">
+                  ${em}
+                </button>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-neu" style="flex:1" onclick="cancelEditAcc()">Batal</button>
+      <button class="btn-dng" style="flex:1;background:var(--dark);color:var(--yellow)" 
+              onclick="confirmEditAcc(${idx})">Simpan</button>
+    </div>
+  `;
+
+  document.getElementById('ov-confirm').classList.add('open');
+}
+
+function pickEmojiEdit(btn, em) {
+  newAccEmoji = em;  // reuse variabel global (atau buat variabel baru jika mau)
+  var btns = document.getElementById('emoji-pick-edit').querySelectorAll('button');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].style.background = 'var(--gray-light)';
+  }
+  btn.style.background = 'var(--yellow)';
+}
+
+function cancelEditAcc() {
+  var box = document.querySelector('.confirm-box');
+  if (box._orig) {
+    box.innerHTML = box._orig;
+    box._orig = null;
+  }
+  document.getElementById('ov-confirm').classList.remove('open');
+}
+
+function confirmEditAcc(idx) {
+  var inp = document.getElementById('edit-acc-name');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) {
+    showToast('Nama tidak boleh kosong!');
+    return;
+  }
+
+  ACCOUNTS[idx].label = name;
+  if (newAccEmoji) {
+    ACCOUNTS[idx].emoji = newAccEmoji;
+  }
+
+  saveAccounts();
+  renderAccountBar();
+  renderProfileList();
+  cancelEditAcc();
+  showToast('Profil berhasil diperbarui!');
+}
+
+function openModal() {
+  editId = null; tempSymps = [];
+  document.getElementById('modal-title').textContent = 'Catat Sakit Baru';
+  document.getElementById('f-start').value = todayStr();
+  document.getElementById('f-end').value   = '';
+  document.getElementById('f-name').value  = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-ongoing').checked = false;
+  document.getElementById('f-end').disabled    = false;
+  document.getElementById('symp-row-input').style.display = 'none';
+  renderQuickChips();
+  renderSympTags();
+  document.getElementById('ov-form').classList.add('open');
+  document.querySelector('.nav-fab').classList.add('open');
+}
+function openEdit(id) {
+  var ill = null;
+  for (var i = 0; i < appData.length; i++) if (appData[i].id===id) { ill=appData[i]; break; }
+  if (!ill) return;
+  editId = id; tempSymps = (ill.symptoms||[]).slice();
+  document.getElementById('modal-title').textContent = 'Edit Data Sakit';
+  document.getElementById('f-start').value = ill.startDate;
+  document.getElementById('f-end').value   = ill.endDate || '';
+  document.getElementById('f-name').value  = ill.name;
+  document.getElementById('f-notes').value = ill.notes || '';
+  document.getElementById('f-ongoing').checked = !!ill.ongoing;
+  document.getElementById('f-end').disabled    = !!ill.ongoing;
+  /* tampilkan input lainnya jika ada gejala custom (bukan dari QUICK_SYMPS) */
+  var hasCustom = tempSymps.some(function(s){ return QUICK_SYMPS.indexOf(s) === -1; });
+  document.getElementById('symp-row-input').style.display = hasCustom ? 'flex' : 'none';
+  renderQuickChips();
+  renderSympTags();
+  document.getElementById('ov-form').classList.add('open');
+}
+function closeForm() {
+  document.getElementById('ov-form').classList.remove('open');
+  document.querySelector('.nav-fab').classList.remove('open');
+}
+function toggleOngoing(cb) {
+  document.getElementById('f-end').disabled = cb.checked;
+  if (cb.checked) document.getElementById('f-end').value = '';
+}
+function addSymp() {
+  var inp = document.getElementById('f-symp');
+  var v = inp.value.trim();
+  if (!v) return;
+  if (tempSymps.indexOf(v)===-1) { tempSymps.push(v); renderSympTags(); renderQuickChips(); }
+  inp.value=''; inp.focus();
+}
+function removeSymp(idx) {
+  tempSymps.splice(idx,1);
+  renderSympTags();
+  renderQuickChips();
+}
+function renderSympTags() {
+  var h='';
+  for (var i=0;i<tempSymps.length;i++) {
+    h += '<div class="tag-rm" onclick="removeSymp('+i+')">' + esc(tempSymps[i]) + '<span class="tag-rm-x">&#10005;</span></div>';
+  }
+  document.getElementById('f-tags').innerHTML = h;
+}
+function saveIllness() {
+  var name=document.getElementById('f-name').value.trim();
+  var start=document.getElementById('f-start').value;
+  var end=document.getElementById('f-end').value;
+  var notes=document.getElementById('f-notes').value.trim();
+  var ongoing=document.getElementById('f-ongoing').checked;
+  if (!name)  { showToast('Nama penyakit harus diisi!'); return; }
+  if (!start) { showToast('Tanggal mulai harus diisi!');  return; }
+  if (!ongoing && end && parseDt(end)<parseDt(start)) {
+    showToast('Tanggal sembuh tidak boleh sebelum tanggal mulai!'); return;
+  }
+  if (ongoing) end='';
+  var rec={
+    id: editId || String(Date.now()),
+    name: name, startDate: start,
+    endDate: ongoing ? null : (end || null),
+    symptoms: tempSymps.slice(), notes: notes, ongoing: ongoing
+  };
+
+  if (editId) {
+    /* update in-memory */
+    for (var i=0;i<appData.length;i++) if(appData[i].id===editId){appData[i]=rec;break;}
+    /* on sheet: delete old row, then add updated row */
+    syncGs({action:'delete', id:editId});
+    showToast('Data diperbarui!');
+  } else {
+    appData.unshift(rec);
+    showToast('Data disimpan!');
+  }
+
+  /* always POST the (new or updated) record to sheet */
+  syncGs({
+    action:'add', id:rec.id, name:rec.name,
+    startDate:rec.startDate, endDate:rec.endDate||'',
+    symptoms:rec.symptoms, notes:rec.notes
+  });
+
+  saveLocal(); /* no-op — data sudah di Sheet */
+  closeForm(); renderAll();
+}
+function askDel(id) {
+  pendingCb=function(){doDel(id);};
+  document.getElementById('cf-emoji').textContent='🗑️';
+  document.getElementById('cf-title').textContent='Hapus Data?';
+  document.getElementById('cf-msg').textContent='Data sakit ini akan dihapus permanen.';
+  document.getElementById('cf-ok').textContent='Hapus';
+  document.getElementById('ov-confirm').classList.add('open');
+}
+function doDel(id) {
+  syncGs({action:'delete',id:id});
+  appData=appData.filter(function(i){return i.id!==id;});
+  saveLocal(); closeConfirm(); renderAll(); showToast('Data dihapus');
+}
+function closeConfirm() { document.getElementById('ov-confirm').classList.remove('open'); pendingCb=null; }
+function ovClose(e,id) {
+  if (e.target===document.getElementById(id)) {
+    document.getElementById(id).classList.remove('open');
+    if(id==='ov-confirm') pendingCb=null;
+    if(id==='ov-form') document.querySelector('.nav-fab').classList.remove('open');
+  }
+}
+/* Cache per account — TIDAK DIGUNAKAN untuk riwayat & profil.
+   Semua data utama dari Google Sheet. Fungsi ini dikosongkan
+   agar tidak ada data sensitif tersimpan di localStorage. */
+function saveLocal() {
+  /* intentionally no-op — data disimpan di Google Sheet */
+}
+
+function exportData() {
+  var blob=new Blob([JSON.stringify(appData,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url;
+  a.download='riwayat-kesehatan-'+todayStr()+'.json'; a.click();
+  URL.revokeObjectURL(url); showToast('Data berhasil diexport!');
+}
+function importData(input) {
+  var file=input.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e) {
+    try {
+      var parsed=JSON.parse(e.target.result);
+      if(!Array.isArray(parsed)){showToast('Format tidak valid!');return;}
+      /* push each imported record to sheet */
+      var added=0;
+      var existIds={};
+      for(var i=0;i<appData.length;i++) existIds[appData[i].id]=true;
+      for(var j=0;j<parsed.length;j++) {
+        var r=parsed[j];
+        if(r.id && !existIds[r.id]) {
+          appData.push(r);
+          syncGs({action:'add',id:r.id,name:r.name,startDate:r.startDate,
+            endDate:r.endDate||'',symptoms:r.symptoms||[],notes:r.notes||''});
+          added++;
+        }
+      }
+      renderAll(); showToast(added+' data diimport ke Sheet!');
+    } catch(e2){showToast('Gagal baca JSON!');}
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+/* ── LOAD ACCOUNTS FROM SHEET ── */
+function loadAccountsFromSheet(callback) {
+  if (!GS_URL) { if (callback) callback(); return; }
+  fetch(GS_URL + '?action=getAccounts&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(txt) {
+      if (!txt || txt.trim().charAt(0) === '<') throw new Error('HTML response');
+      var data = JSON.parse(txt);
+      if (Array.isArray(data) && data.length > 0) {
+        /* pastikan setiap akun punya key & label valid */
+        var valid = data.filter(function(a) { return a && a.key && a.label; });
+        if (valid.length > 0) {
+          ACCOUNTS = valid;
+          renderAccountBar();
+          renderProfileList();
+        }
+      }
+      if (callback) callback();
+    })
+    .catch(function(err) {
+      console.warn('loadAccountsFromSheet failed, pakai default:', err);
+      if (callback) callback();
+    });
+}
+
+/* ── LOAD FROM SHEET ── */
+function loadFromSheet() {
+  setGsStatus('loading');
+  var accName = curKey();
+
+  fetch(GS_URL + '?account=' + accName + '&t=' + Date.now())
+    .then(function(r) { return r.text(); })
+    .then(function(txt) {
+      if (!txt || txt.trim().charAt(0) === '<')
+        throw new Error('GAS returned HTML');
+
+      var rows;
+      try { rows = JSON.parse(txt); }
+      catch(e) { throw new Error('Cannot parse sheet'); }
+
+      if (!Array.isArray(rows) || rows.length < 2) {
+        allData[accName] = [];
+        appData = allData[accName];
+        setGsStatus('ok');
+        renderAll();
+        return;
+      }
+
+      var result = [];
+      for (var i = 1; i < rows.length; i++) {
+        var r = rows[i];
+        var id       = r[0] ? String(r[0]).trim() : '';
+        var startRaw = r[2] ? normDate(String(r[2]).trim()) : '';
+        var endRaw   = r[3] ? normDate(String(r[3]).trim()) : '';
+        var nama     = r[4] ? String(r[4]).trim() : '';
+        var sympRaw  = r[5] ? String(r[5]).trim() : '';
+        var notes    = r[6] ? String(r[6]).trim() : '';
+
+        if (!id || !startRaw || !nama) continue;
+
+        var sympArr = sympRaw
+          ? sympRaw.split(',').map(function(s){ return s.trim(); }).filter(Boolean)
+          : [];
+
+        result.push({
+          id: id, startDate: startRaw,
+          endDate: endRaw || null, name: nama,
+          symptoms: sympArr, notes: notes,
+          ongoing: !endRaw
+        });
+      }
+
+      allData[accName] = result;
+      appData = allData[accName];
+      setGsStatus('ok');
+      renderAll();
+    })
+    .catch(function(err) {
+      console.error('loadFromSheet:', err);
+      setGsStatus('error');
+      showToast('Gagal memuat Sheet — periksa koneksi');
+      renderAll();
+    });
+}
+
+function setGsStatus(state) {
+  var dot  = document.getElementById('hdr-dot');
+  var spin = document.getElementById('hdr-spin');
+  var txt  = document.getElementById('hdr-status-txt');
+  if (!dot) return;
+  if (state === 'loading') {
+    dot.style.display = 'none'; spin.className = 'hdr-spinner show'; txt.textContent = 'Memuat...';
+  } else if (state === 'ok') {
+    dot.style.display = ''; dot.className = 'hdr-dot on'; spin.className = 'hdr-spinner';
+    txt.textContent = 'Tersinkron ✓';
+  } else if (state === 'syncing') {
+    dot.style.display = 'none'; spin.className = 'hdr-spinner show'; txt.textContent = 'Menyimpan...';
+  } else {
+    dot.style.display = ''; dot.className = 'hdr-dot'; spin.className = 'hdr-spinner';
+    txt.textContent = 'Gagal';
+  }
+}
+
+function syncGs(payload) {
+  setGsStatus('syncing');
+  payload.account = curKey();
+  fetch(GS_URL, { method:'POST', mode:'no-cors', body:JSON.stringify(payload) })
+    .then(function() { setGsStatus('ok'); })
+    .catch(function(err) { console.error('syncGs:', err); setGsStatus('error'); showToast('Gagal simpan ke Sheet!'); });
+}
+function showToast(msg) {
+  var el=document.getElementById('toast');
+  el.innerHTML=msg; el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){el.classList.remove('show');},2800);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
