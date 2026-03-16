@@ -57,7 +57,14 @@ body.dark .scard.pink .scard-label    { color: var(--pink); opacity:0.7; }
 body.dark .scard.pink .scard-unit     { color: var(--pink); opacity:0.6; }
 body.dark .scard.pink .scard-num      { color: var(--pink); }
 body.dark .scard.pink .scard-icon     { fill: var(--pink); opacity:0.6; }
-body.dark .scard.dark   { background: #242529; }
+body.dark .scard.dark   { background: #242529; color: var(--dark); }
+/* teks di dalam scard.dark harus tetap terang di light mode, dan tetap terang di dark mode */
+.scard.dark .scard-label  { color: var(--white); }
+.scard.dark .scard-num    { color: var(--yellow); font-size:26px; letter-spacing:-0.5px; }
+.scard.dark .scard-unit   { color: var(--white); }
+body.dark .scard.dark .scard-label { color: var(--dark); opacity: 0.6; }
+body.dark .scard.dark .scard-num   { color: var(--yellow); }
+body.dark .scard.dark .scard-unit  { color: var(--dark); opacity: 0.6; }
 body.dark .tl-card      { background: #242529; }
 body.dark .tl-line      { background: #2E3033; }
 body.dark .stat-box     { background: #242529; }
@@ -76,18 +83,18 @@ body.dark .qchip         { background: #2E3033; color: #bbb; }
 body.dark .qchip.selected { background: #F0EDE6; color: #161819; }
 body.dark .dur-badge     { background: #1A3318; color: #6DB860; }
 body.dark .dur-badge.ill { background: #3D2535; color: #F0A8C2; }
-body.dark .btn-ic        { background: #1E5080; }
-body.dark .btn-ic svg    { fill: #7EC8F0; }
-body.dark .btn-ic:active { background: #174060; }
-/* tombol profil ikut style kartu penyakit (cream/merah), override dark mode */
+body.dark .btn-ic        { background: #2A2D32; }
+body.dark .btn-ic svg    { fill: #aaa; }
+body.dark .btn-ic:active { background: #1E2124; }
+/* tombol edit & hapus KHUSUS di profil pengaturan */
 .btn-ic-edit            { background: var(--cream); }
 .btn-ic-edit svg        { fill: var(--dark); }
 .btn-ic-del             { background: var(--cream); }
-.btn-ic-del svg         { fill: var(--red); }
+.btn-ic-del svg         { fill: var(--dark); }
 body.dark .btn-ic.btn-ic-edit  { background: #2E3033; }
 body.dark .btn-ic.btn-ic-edit svg { fill: #bbb; }
 body.dark .btn-ic.btn-ic-del   { background: #2E3033; }
-body.dark .btn-ic.btn-ic-del svg  { fill: #FF6B6B; }
+body.dark .btn-ic.btn-ic-del svg  { fill: #bbb; }
 body.dark .check-row     { background: var(--input-bg); }
 body.dark .btn-cancel-m  { background: #2E3033; color: #bbb; }
 body.dark .btn-save      { background: var(--yellow); color: #1A1A1A; }
@@ -258,7 +265,7 @@ body {
 .scard { border-radius:var(--radius); padding:16px; position:relative; overflow:hidden; }
 .scard.yellow { background:var(--yellow); }
 .scard.pink   { background:var(--pink-soft); }
-.scard.dark   { background:var(--dark); color:var(--white); margin-bottom:10px; }
+.scard.dark   { background:var(--dark); margin-bottom:10px; }
 .scard-label  { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; opacity:0.6; margin-bottom:6px; }
 .scard-num    { font-size:42px; font-weight:800; line-height:1; letter-spacing:-1px; }
 .scard-unit   { font-size:12px; opacity:0.6; margin-top:3px; font-weight:500; }
@@ -266,7 +273,6 @@ body {
 /* light mode: api = hitam (di atas kuning), clipboard = pink */
 .scard.yellow .scard-icon { fill: #1A1A1A; }
 .scard.pink   .scard-icon { fill: var(--pink); opacity:0.65; }
-.scard.dark .scard-num  { color:var(--yellow); font-size:26px; letter-spacing:-0.5px; }
 .scard.dark .scard-icon { opacity:0.35; fill: var(--white); }
 
 /* dark mode: api = kuning, clipboard = pink */
@@ -673,7 +679,9 @@ body.dark .scard.pink   .scard-icon { fill: var(--pink); opacity:0.6; }
 
   <!-- ══ STATISTIK ══ -->
   <div class="page" id="page-statistik">
-    <div class="sec-title" style="margin-top:4px">Tahun Ini</div>
+    <!-- pill selector tahun -->
+    <div class="account-bar" id="stat-year-bar" style="padding:4px 0 14px"></div>
+    <div class="sec-title" style="margin-top:4px" id="st-period-label">Tahun Ini</div>
     <div class="stat3">
       <div class="stat-box">
         <div class="stat-num" id="st-total">0</div>
@@ -882,6 +890,7 @@ var editId     = null;
 var tempSymps  = [];
 var pendingCb  = null;
 var showMore   = { illness:false, symptom:false, streak:false };
+var selectedYear = new Date().getFullYear(); /* tahun yang dipilih di statistik */
 
 /* Simpan daftar profil ke Sheet (POST action:'saveAccounts') */
 function saveAccounts() {
@@ -1068,6 +1077,7 @@ function deleteAccount(idx) {
 function switchAccount(idx) {
   curAccount = idx;
   showMore = { illness:false, symptom:false, streak:false };
+  selectedYear = new Date().getFullYear();
   renderAccountBar();
   var key = curKey();
   if (!allData[key]) allData[key] = [];
@@ -1182,6 +1192,8 @@ function renderAll() {
   renderStreaks();
   renderTimeline('home-tl', 3);
   renderTimeline('full-tl', 0);
+  selectedYear = new Date().getFullYear();
+  renderYearPills();
   renderStats();
   renderInsight('home-insight');
 }
@@ -1262,102 +1274,95 @@ function agoTxt(s) {
 }
 
 function renderStreaks() {
-  var now = new Date();
-  var yr = now.getFullYear();
-  
-  // Filter hanya penyakit di tahun ini
-  var thisYearIllnesses = appData.filter(function(i) {
+  var now   = new Date();
+  var today = todayStr();
+  var yr    = now.getFullYear();
+  var jan1  = yr + '-01-01';
+
+  var thisYr = appData.filter(function(i) {
     return parseDt(i.startDate).getFullYear() === yr;
   });
-
-  var thisYearCount = thisYearIllnesses.length;
-  document.getElementById('sc-thisyear').textContent = thisYearCount;
+  document.getElementById('sc-thisyear').textContent = thisYr.length;
 
   var streak = 0;
-  var streakStart = new Date(yr, 0, 1);  // 1 Januari tahun ini
-  var streakLabel = "Mulai streak tahunan!";
+  var sortedThisYr = sortDesc(thisYr);
 
-  if (thisYearIllnesses.length === 0) {
-    // Belum sakit sama sekali tahun ini → streak dari 1 Jan
-    streak = Math.round((now - streakStart) / 86400000);
-    streakLabel = "Sehat sejak awal tahun!";
+  if (thisYr.length === 0) {
+    streak = diffDays(jan1, today);
   } else {
-    // Ada penyakit tahun ini → cari yang terakhir
-    var sortedThisYear = sortDesc(thisYearIllnesses);
-    var last = sortedThisYear[0];
-
+    var last = sortedThisYr[0];
     if (last.ongoing) {
       streak = 0;
-      streakLabel = "Sedang sakit sekarang";
     } else {
-      var refDate = last.endDate ? last.endDate : last.startDate;
-      var refDt = parseDt(refDate);
-      
-      // Hanya hitung kalau sembuh di tahun ini
-      if (refDt.getFullYear() === yr) {
-        streak = Math.round((now - refDt) / 86400000);
-        streakLabel = "Sembuh " + agoTxt(refDate);
-      } else {
-        // Kalau penyakit terakhir sebelum tahun ini → anggap sehat sepanjang tahun
-        streak = Math.round((now - streakStart) / 86400000);
-        streakLabel = "Sehat sejak awal tahun!";
-      }
+      var ref = last.endDate || last.startDate;
+      streak  = diffDays(ref, today);
+      if (streak < 0) streak = 0;
     }
   }
 
-  // Tampilkan streak
   document.getElementById('sc-streak').textContent = streak;
 
-  // Rekor tahunan — hitung dari data di memori, tidak pakai localStorage
+  var periods = buildStreakPeriodsForYear(yr);
+  if (streak > 0) periods.push(streak);
   var rec = 0;
-  if (appData.length > 0) {
-    // Hitung semua streak antar penyakit dari seluruh riwayat untuk cari rekor
-    var allSorted = sortDesc(appData).reverse();
-    // streak dari awal tahun ke sakit pertama (jika ada)
-    var firstIll = null;
-    for (var fi = 0; fi < allSorted.length; fi++) {
-      if (parseDt(allSorted[fi].startDate).getFullYear() === yr) { firstIll = allSorted[fi]; break; }
-    }
-    if (firstIll) {
-      var daysToFirst = diffDays(new Date(yr, 0, 1).toISOString().split('T')[0], firstIll.startDate);
-      if (daysToFirst > rec) rec = daysToFirst;
-    }
-    // streak antar penyakit
-    for (var si = 0; si < allSorted.length - 1; si++) {
-      var endA2 = allSorted[si].endDate || allSorted[si].startDate;
-      var startB2 = allSorted[si+1].startDate;
-      var gap = diffDays(endA2, startB2);
-      if (gap > rec) rec = gap;
-    }
-    // streak saat ini (dari sembuh terakhir sampai sekarang)
-    if (streak > rec) rec = streak;
-  } else {
-    rec = streak;
+  for (var pi = 0; pi < periods.length; pi++) {
+    if (periods[pi] > rec) rec = periods[pi];
   }
 
   var pct = (rec > 0) ? Math.min(100, Math.round(streak / rec * 100)) : 0;
   document.getElementById('sc-prog-fill').style.width = pct + '%';
 
-  if (rec === 0 || streak >= rec) {
-    document.getElementById('sc-prog-label').textContent = streak > 0 ? 'Rekor terbaik tahun ini! 🔥' : 'Mulai streak tahunan!';
+  if (streak === 0 && thisYr.length > 0 && sortedThisYr[0].ongoing) {
+    document.getElementById('sc-prog-label').textContent = 'Sedang sakit';
+  } else if (rec === 0) {
+    document.getElementById('sc-prog-label').textContent = 'Mulai streak-mu!';
+  } else if (streak >= rec) {
+    document.getElementById('sc-prog-label').textContent = 'Rekor terbaik tahun ini! 🔥';
   } else {
     document.getElementById('sc-prog-label').textContent = pct + '% menuju rekor (' + rec + ' hari)';
   }
 
-  // ── Last Illness card (sc-last-name, sc-last-ago) ── icon tetap masker, tidak berubah
-  var sortedAll = sortDesc(appData);
-  var lastIll = sortedAll.length ? sortedAll[0] : null;
+  var allSorted = sortDesc(appData);
+  var lastIll   = allSorted.length ? allSorted[0] : null;
   if (lastIll) {
     document.getElementById('sc-last-name').textContent = lastIll.name;
-    if (lastIll.ongoing) {
-      document.getElementById('sc-last-ago').textContent = 'Sedang sakit';
-    } else {
-      document.getElementById('sc-last-ago').textContent = 'Sembuh ' + agoTxt(lastIll.endDate || lastIll.startDate);
-    }
+    document.getElementById('sc-last-ago').textContent  = lastIll.ongoing
+      ? 'Sedang sakit'
+      : 'Sembuh ' + agoTxt(lastIll.endDate || lastIll.startDate);
   } else {
     document.getElementById('sc-last-name').textContent = '–';
-    document.getElementById('sc-last-ago').textContent = 'Belum ada data';
+    document.getElementById('sc-last-ago').textContent  = 'Belum ada data';
   }
+}
+
+function buildStreakPeriodsForYear(yr) {
+  var jan1    = yr + '-01-01';
+  var dec31   = yr + '-12-31';
+  var today   = todayStr();
+  var yearEnd = today < dec31 ? today : dec31;
+
+  var relevant = appData.filter(function(i) {
+    var s = parseDt(i.startDate).getFullYear();
+    var e = i.endDate ? parseDt(i.endDate).getFullYear() : s;
+    return s === yr || e === yr;
+  });
+  var sorted = sortDesc(relevant).reverse();
+
+  var periods = [];
+  var cursor  = jan1;
+
+  for (var i = 0; i < sorted.length; i++) {
+    var ill      = sorted[i];
+    var illStart = ill.startDate > jan1 ? ill.startDate : jan1;
+    var gap      = diffDays(cursor, illStart);
+    if (gap > 0) periods.push(gap);
+    var illEnd = ill.ongoing ? yearEnd : (ill.endDate || ill.startDate);
+    if (illEnd > cursor) cursor = illEnd;
+  }
+  var tail = diffDays(cursor, yearEnd);
+  if (tail > 0) periods.push(tail);
+
+  return periods;
 }
 
 function renderTimeline(elId, limit) {
@@ -1420,23 +1425,61 @@ function renderTimeline(elId, limit) {
   el.innerHTML = html;
 }
 
+/* ── Pill tahun di Statistik ── */
+function renderYearPills() {
+  var bar = document.getElementById('stat-year-bar');
+  if (!bar) return;
+  /* kumpulkan semua tahun dari data */
+  var years = {};
+  for (var i = 0; i < appData.length; i++) {
+    var y = parseDt(appData[i].startDate).getFullYear();
+    if (!isNaN(y)) years[y] = true;
+  }
+  var thisYear = new Date().getFullYear();
+  years[thisYear] = true; /* selalu tampilkan tahun ini */
+  var sorted = Object.keys(years).map(Number).sort(function(a,b){ return b-a; }); /* terbaru duluan */
+  var html = '';
+  for (var j = 0; j < sorted.length; j++) {
+    var y2 = sorted[j];
+    html += '<button class="acc-pill' + (y2 === selectedYear ? ' active' : '') + '" '
+      + 'onclick="selectYear(' + y2 + ')">' + y2 + '</button>';
+  }
+  bar.innerHTML = html;
+}
+
+function selectYear(yr) {
+  selectedYear = yr;
+  showMore = { illness:false, symptom:false, streak:false };
+  renderYearPills();
+  renderStats();
+}
+
 function renderStats() {
-  var yr = new Date().getFullYear();
+  var yr = selectedYear;
+  var curYr = new Date().getFullYear();
   var mo = new Date().getMonth();
+
+  /* label period */
+  var lbl = document.getElementById('st-period-label');
+  if (lbl) lbl.textContent = yr === curYr ? 'Tahun ' + yr + ' (Berjalan)' : 'Tahun ' + yr;
+
   var thisYr = appData.filter(function(i) { return parseDt(i.startDate).getFullYear() === yr; });
   var thisMo = appData.filter(function(i) {
     var d = parseDt(i.startDate);
     return d.getFullYear() === yr && d.getMonth() === mo;
   });
+
   document.getElementById('st-total').textContent = thisYr.length;
-  document.getElementById('st-month').textContent = thisMo.length;
+  document.getElementById('st-month').textContent = yr === curYr ? thisMo.length : '–';
+
   var totalDays = 0;
   for (var k = 0; k < thisYr.length; k++) {
     totalDays += thisYr[k].ongoing
-      ? Math.max(1, Math.round((new Date() - parseDt(thisYr[k].startDate)) / 86400000))
+      ? Math.max(1, diffDays(thisYr[k].startDate, todayStr()))
       : calcDur(thisYr[k].startDate, thisYr[k].endDate);
   }
   document.getElementById('st-total-days').textContent = totalDays;
+
   var finished = thisYr.filter(function(i) { return !i.ongoing; });
   var avgDur = 0;
   if (finished.length) {
@@ -1444,8 +1487,10 @@ function renderStats() {
     for (var m = 0; m < finished.length; m++) s += calcDur(finished[m].startDate, finished[m].endDate);
     avgDur = Math.round(s / finished.length);
   }
-  document.getElementById('st-avg-dur').textContent = avgDur;
-  var allAsc = sortDesc(appData).reverse();
+  document.getElementById('st-avg-dur').textContent = avgDur || '–';
+
+  /* jarak antar sakit — pakai data tahun yang dipilih */
+  var allAsc = sortDesc(thisYr).reverse();
   var avgGapTxt = '–';
   if (allAsc.length > 1) {
     var sg = 0;
@@ -1453,19 +1498,21 @@ function renderStats() {
     avgGapTxt = Math.round(sg / (allAsc.length - 1)) + ' hr';
   }
   document.getElementById('st-avg-gap').textContent = avgGapTxt;
+
   renderInsight('stat-insight');
-  renderTopList('top-illness-list', 'btn-more-illness', buildFreq('illness'), 'ill', 'illness');
-  renderTopList('top-symptom-list', 'btn-more-symptom', buildFreq('symptom'), 'symp', 'symptom');
+  renderTopList('top-illness-list', 'btn-more-illness', buildFreq('illness', thisYr), 'ill', 'illness');
+  renderTopList('top-symptom-list', 'btn-more-symptom', buildFreq('symptom', thisYr), 'symp', 'symptom');
   renderStreakHistory();
 }
 
-function buildFreq(type) {
+function buildFreq(type, data) {
+  var src = data !== undefined ? data : appData;
   var freq = {};
-  for (var i = 0; i < appData.length; i++) {
+  for (var i = 0; i < src.length; i++) {
     if (type === 'illness') {
-      freq[appData[i].name] = (freq[appData[i].name] || 0) + 1;
+      freq[src[i].name] = (freq[src[i].name] || 0) + 1;
     } else {
-      var sy = appData[i].symptoms || [];
+      var sy = src[i].symptoms || [];
       for (var j = 0; j < sy.length; j++) freq[sy[j]] = (freq[sy[j]] || 0) + 1;
     }
   }
@@ -1512,36 +1559,46 @@ function toggleMore(key) {
 
 /* ── Streak History ── */
 function buildStreakHistory() {
-  /* Sort illnesses oldest → newest */
-  var sorted = sortDesc(appData).reverse();
-  var streaks = [];
-  /* streak from end of each illness to start of next */
-  for (var i = 0; i < sorted.length - 1; i++) {
-    var endA = sorted[i].endDate || sorted[i].startDate;
-    var startB = sorted[i+1].startDate;
-    var days = diffDays(endA, startB);
-    if (days > 0) {
-      streaks.push({
-        days: days,
-        from: endA,
-        to:   startB
-      });
+  // Kumpulkan semua periode sehat dari semua tahun yang ada di data
+  var years = {};
+  var today = todayStr();
+  for (var i = 0; i < appData.length; i++) {
+    years[parseDt(appData[i].startDate).getFullYear()] = true;
+  }
+  years[new Date().getFullYear()] = true; // tahun ini selalu include
+
+  var allPeriods = [];
+  var sortedYears = Object.keys(years).map(Number).sort();
+  for (var yi = 0; yi < sortedYears.length; yi++) {
+    var yr = sortedYears[yi];
+    var jan1 = yr + '-01-01';
+    var dec31 = yr + '-12-31';
+    var yearEnd = today < dec31 ? today : dec31;
+
+    var relevant = appData.filter(function(i) {
+      var s = parseDt(i.startDate).getFullYear();
+      var e = i.endDate ? parseDt(i.endDate).getFullYear() : s;
+      return s === yr || e === yr;
+    });
+    var sorted = sortDesc(relevant).reverse();
+    var cursor = jan1;
+
+    for (var ii = 0; ii < sorted.length; ii++) {
+      var ill = sorted[ii];
+      var illStart = ill.startDate > jan1 ? ill.startDate : jan1;
+      var gap = diffDays(cursor, illStart);
+      if (gap > 0) allPeriods.push({ days: gap, from: cursor, to: illStart, isCurrent: false });
+      var illEnd = ill.ongoing ? yearEnd : (ill.endDate || ill.startDate);
+      if (illEnd > cursor) cursor = illEnd;
+    }
+    var tail = diffDays(cursor, yearEnd);
+    if (tail > 0) {
+      var isCur = (yr === new Date().getFullYear());
+      allPeriods.push({ days: tail, from: cursor, to: yearEnd, isCurrent: isCur });
     }
   }
-  /* current streak: from last illness end to today */
-  if (sorted.length > 0) {
-    var last = sorted[sorted.length - 1];
-    if (!last.ongoing) {
-      var ref = last.endDate || last.startDate;
-      var cur = Math.round((new Date() - parseDt(ref)) / 86400000);
-      if (cur > 0) {
-        streaks.push({ days: cur, from: ref, to: todayStr(), isCurrent: true });
-      }
-    }
-  }
-  /* sort by longest first */
-  streaks.sort(function(a,b){ return b.days - a.days; });
-  return streaks;
+
+  return allPeriods.sort(function(a,b){ return b.days - a.days; });
 }
 
 function renderStreakHistory() {
@@ -1782,23 +1839,26 @@ function saveIllness() {
   if (editId) {
     /* update in-memory */
     for (var i=0;i<appData.length;i++) if(appData[i].id===editId){appData[i]=rec;break;}
-    /* on sheet: delete old row, then add updated row */
-    syncGs({action:'delete', id:editId});
+    /* kirim satu request update ke sheet — atomic, tidak race condition */
+    syncGs({
+      action:'update', id:rec.id, name:rec.name,
+      startDate:rec.startDate, endDate:rec.endDate||'',
+      symptoms:rec.symptoms, notes:rec.notes
+    });
     showToast('Data diperbarui!');
+    saveLocal();
+    closeForm(); renderAll();
   } else {
     appData.unshift(rec);
+    syncGs({
+      action:'add', id:rec.id, name:rec.name,
+      startDate:rec.startDate, endDate:rec.endDate||'',
+      symptoms:rec.symptoms, notes:rec.notes
+    });
     showToast('Data disimpan!');
+    saveLocal();
+    closeForm(); renderAll();
   }
-
-  /* always POST the (new or updated) record to sheet */
-  syncGs({
-    action:'add', id:rec.id, name:rec.name,
-    startDate:rec.startDate, endDate:rec.endDate||'',
-    symptoms:rec.symptoms, notes:rec.notes
-  });
-
-  saveLocal(); /* no-op — data sudah di Sheet */
-  closeForm(); renderAll();
 }
 function askDel(id) {
   pendingCb=function(){doDel(id);};
