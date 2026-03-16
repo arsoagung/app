@@ -842,25 +842,34 @@ function deleteAccount(idx) {
     window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
   }
 
-  /* onAuthStateChange handle SEMUA kondisi:
-     - INITIAL_SESSION: sesi yang sudah ada (buka tab baru / refresh)
-     - SIGNED_IN: baru login
-     - SIGNED_OUT: logout                                              */
+  /* Cek session yang sudah ada — ini yang handle refresh tab */
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user) {
+    currentUser = session.user;
+    document.getElementById('user-name').textContent = currentUser.user_metadata.full_name || 'Pengguna';
+    document.getElementById('user-email').textContent = currentUser.email || '';
+    var avatar = currentUser.user_metadata.avatar_url;
+    if (avatar) document.getElementById('user-avatar').src = avatar;
+    await loadProfile();
+    await loadData();
+    showApp();
+  } else {
+    showLoginScreen();
+  }
+
+  /* Listener untuk perubahan auth (login baru / logout) */
   sb.auth.onAuthStateChange(async function(event, session) {
-    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
-      if (session && session.user) {
-        currentUser = session.user;
-        document.getElementById('user-name').textContent = currentUser.user_metadata.full_name || 'Pengguna';
-        document.getElementById('user-email').textContent = currentUser.email || '';
-        var avatar = currentUser.user_metadata.avatar_url;
-        if (avatar) document.getElementById('user-avatar').src = avatar;
-        await loadProfile();
-        await loadData();
-        showApp();
-      } else {
-        showLoginScreen();
-      }
+    if (event === 'SIGNED_IN' && session && session.user && !currentUser) {
+      currentUser = session.user;
+      document.getElementById('user-name').textContent = currentUser.user_metadata.full_name || 'Pengguna';
+      document.getElementById('user-email').textContent = currentUser.email || '';
+      var av = currentUser.user_metadata.avatar_url;
+      if (av) document.getElementById('user-avatar').src = av;
+      await loadProfile();
+      await loadData();
+      showApp();
     } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
       showLoginScreen();
     }
   });
