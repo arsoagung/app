@@ -801,7 +801,14 @@ function pickEmoji(btn, em) {
 }
 function cancelAddAcc() {
   var box = document.querySelector('.confirm-box');
-  if (box._orig) { box.innerHTML=box._orig; box._orig=null; }
+  if (box._orig) { 
+    box.innerHTML=box._orig; 
+    box._orig=null;
+    /* Re-attach listener karena innerHTML reset menghapus event listener */
+    document.getElementById('cf-ok').addEventListener('click', async function() {
+      if (pendingCb) { var cb=pendingCb; pendingCb=null; await cb(); closeConfirm(); }
+    });
+  }
   document.getElementById('ov-confirm').classList.remove('open');
   pendingCb=null;
 }
@@ -834,7 +841,7 @@ function openEditAccount(idx) {
   document.getElementById('ov-confirm').classList.add('open');
 }
 function pickEmojiEdit(btn,em){ newAccEmoji=em; var btns=document.getElementById('emoji-pick-edit').querySelectorAll('button'); for(var i=0;i<btns.length;i++) btns[i].style.background='var(--gray-light)'; btn.style.background='var(--yellow)'; }
-function cancelEditAcc(){ var box=document.querySelector('.confirm-box'); if(box._orig){box.innerHTML=box._orig;box._orig=null;} document.getElementById('ov-confirm').classList.remove('open'); }
+function cancelEditAcc(){ var box=document.querySelector('.confirm-box'); if(box._orig){ box.innerHTML=box._orig; box._orig=null; document.getElementById('cf-ok').addEventListener('click', async function() { if(pendingCb){var cb=pendingCb;pendingCb=null;await cb();closeConfirm();} }); } document.getElementById('ov-confirm').classList.remove('open'); }
 function confirmEditAcc(idx){ var inp=document.getElementById('edit-acc-name'); var name=inp?inp.value.trim():''; if(!name){showToast('Nama tidak boleh kosong!');return;} ACCOUNTS[idx].label=name; if(newAccEmoji) ACCOUNTS[idx].emoji=newAccEmoji; saveAccounts(); renderAccountBar(); renderProfileList(); cancelEditAcc(); showToast('Profil diperbarui!'); }
 
 function deleteAccount(idx) {
