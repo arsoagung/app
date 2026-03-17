@@ -373,7 +373,7 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
   <div class="header-date" id="hdr-date"></div>
 </header>
 
-<!-- ACCOUNT BAR — hanya di dalam app sebagai tab switcher, tidak di header global -->
+
 <div class="scroll-area" id="scroll-area">
 
   <!-- BERANDA -->
@@ -414,12 +414,14 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
 
   <!-- RIWAYAT -->
   <div class="page" id="page-riwayat">
+    <div class="account-bar" id="account-bar-riwayat" style="padding:0 0 14px"></div>
     <div class="sec-title" style="margin-top:4px">Timeline Lengkap</div>
     <div id="full-tl" class="timeline"></div>
   </div>
 
   <!-- STATISTIK -->
   <div class="page" id="page-statistik">
+    <div class="account-bar" id="account-bar-statistik" style="padding:0 0 4px"></div>
     <div class="account-bar" id="stat-year-bar" style="padding:4px 0 14px"></div>
     <div class="sec-title" style="margin-top:4px" id="st-period-label">Tahun Ini</div>
     <div class="stat3">
@@ -442,21 +444,20 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
 
   <!-- PENGATURAN -->
   <div class="page" id="page-pengaturan">
+
+    <!-- BAGIAN 1: Info akun Google -->
     <div class="sec-title" style="margin-top:4px">Akun</div>
     <div class="set-card">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:12px">
         <img class="user-avatar" id="user-avatar" src="" alt="">
         <div class="user-info">
           <div class="user-name" id="user-name">–</div>
           <div class="user-email" id="user-email">–</div>
         </div>
       </div>
-      <button class="btn-logout" onclick="doLogout()">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
-        Keluar
-      </button>
     </div>
 
+    <!-- BAGIAN 2: Kelola profil keluarga -->
     <div class="sec-title">Profil Anggota Keluarga</div>
     <div class="set-card">
       <p>Setiap profil memiliki riwayat sakit yang terpisah.</p>
@@ -464,21 +465,18 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
       <button class="btn-save" style="margin-top:0" onclick="openAddAccount()">+ Tambah Profil</button>
     </div>
 
-    <div class="sec-title">Zona Bahaya</div>
+    <!-- BAGIAN 3: Logout & hapus akun -->
+    <div class="sec-title">Lainnya</div>
     <div class="set-card">
-      <h3>Hapus Semua Data</h3>
-      <p>Menghapus seluruh riwayat sakit semua profil. Akun Google kamu tetap ada dan bisa login lagi, tapi semua data kosong.</p>
-      <button class="btn-dng" style="width:100%;padding:14px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;border-radius:var(--radius);border:none" onclick="askDeleteAllData()">
-        🗑️ Hapus Semua Data
+      <button class="btn-logout" onclick="doLogout()" style="margin-bottom:10px">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
+        Keluar
+      </button>
+      <button class="btn-dng" style="width:100%;padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;border-radius:var(--radius);border:none" onclick="askDeleteAccount()">
+        ⚠️ Hapus Akun &amp; Semua Data
       </button>
     </div>
-    <div class="set-card">
-      <h3>Hapus Akun</h3>
-      <p>Menghapus akun dan seluruh data secara permanen. Tindakan ini tidak bisa dibatalkan.</p>
-      <button class="btn-dng" style="width:100%;padding:14px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;border-radius:var(--radius);border:none;background:#7f0000" onclick="askDeleteAccount()">
-        ⚠️ Hapus Akun Permanen
-      </button>
-    </div>
+
   </div>
 
 </div>
@@ -719,14 +717,17 @@ function curKey() {
 }
 
 function renderAccountBar() {
-  var bar = document.getElementById('account-bar');
   var html = '';
   for (var i = 0; i < ACCOUNTS.length; i++) {
     html += '<button class="acc-pill' + (i===curAccount?' active':'') + '" onclick="switchAccount('+i+')">'
       + ACCOUNTS[i].emoji + ' ' + ACCOUNTS[i].label + '</button>';
   }
   if (ACCOUNTS.length < 6) html += '<button class="acc-pill" onclick="openAddAccount()" style="font-size:16px;padding:7px 12px">+</button>';
-  bar.innerHTML = html;
+  /* render ke semua instance account-bar di tiap page */
+  ['account-bar','account-bar-riwayat','account-bar-statistik'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
 }
 
 function renderProfileList() {
@@ -1143,21 +1144,7 @@ async function doDel(id) {
 function closeConfirm(){document.getElementById('ov-confirm').classList.remove('open');pendingCb=null;}
 function ovClose(e,id){if(e.target===document.getElementById(id)){document.getElementById(id).classList.remove('open');if(id==='ov-confirm')pendingCb=null;if(id==='ov-form')document.querySelector('.nav-fab').classList.remove('open');}}
 
-/* ═══ HAPUS DATA & AKUN ═══ */
-function askDeleteAllData() {
-  pendingCb = async function() {
-    const { error } = await sb.from('illness_records').delete().eq('user_id', currentUser.id);
-    if (error) { showToast('Gagal menghapus data'); return; }
-    appData = []; allData = {};
-    renderAll();
-    showToast('Semua data berhasil dihapus');
-  };
-  document.getElementById('cf-emoji').textContent = '🗑️';
-  document.getElementById('cf-title').textContent = 'Hapus Semua Data?';
-  document.getElementById('cf-msg').textContent = 'Seluruh riwayat sakit semua profil akan dihapus permanen. Akun kamu tetap ada.';
-  document.getElementById('cf-ok').textContent = 'Hapus Data';
-  document.getElementById('ov-confirm').classList.add('open');
-}
+/* ═══ HAPUS AKUN ═══ */
 
 function askDeleteAccount() {
   pendingCb = async function() {
