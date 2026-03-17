@@ -482,16 +482,16 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
           </svg>
           Ekspor ke Excel
         </button>
-        <button style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--gray-light);color:var(--dark);border:none;border-radius:var(--radius);padding:13px 10px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer" onclick="doLogout()">
+        <button style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#FF4C4C;color:#fff;border:none;border-radius:var(--radius);padding:13px 10px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer" onclick="doLogout()">
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
           Keluar
         </button>
       </div>
       <div style="border-top:1px solid var(--gray-light);padding-top:10px">
-        <p style="font-size:11px;color:var(--gray);margin-bottom:8px;line-height:1.5">Menghapus akun akan menghapus semua data secara permanen dan tidak bisa dibatalkan.</p>
-        <button class="btn-dng" style="width:100%;padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;border-radius:var(--radius);border:none" onclick="askDeleteAccount()">
-          ⚠️ Hapus Akun &amp; Semua Data
+        <button style="width:100%;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--gray-light);color:var(--dark);border:none;border-radius:var(--radius);padding:13px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="askDeleteAccount()">
+          Hapus Akun &amp; Semua Data
         </button>
+        <p style="font-size:11px;color:var(--gray);line-height:1.5;text-align:center">Menghapus akun akan menghapus semua data secara permanen dan tidak bisa dibatalkan.</p>
       </div>
     </div>
 
@@ -862,12 +862,13 @@ function deleteAccount(idx) {
   initDark();
   document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-  /* Fix: cf-ok harus await pendingCb karena bisa async */
+  /* Fix: cf-ok await pendingCb lalu tutup popup */
   document.getElementById('cf-ok').addEventListener('click', async function() {
     if (pendingCb) {
       var cb = pendingCb;
       pendingCb = null;
       await cb();
+      closeConfirm();
     }
   });
 
@@ -1166,7 +1167,7 @@ function askDel(id) {
 async function doDel(id) {
   await deleteRecord(id);
   appData=appData.filter(function(i){return i.id!==id;});
-  closeConfirm(); renderAll(); showToast('Data dihapus');
+  renderAll(); showToast('Data dihapus');
 }
 function closeConfirm(){document.getElementById('ov-confirm').classList.remove('open');pendingCb=null;}
 function ovClose(e,id){if(e.target===document.getElementById(id)){document.getElementById(id).classList.remove('open');if(id==='ov-confirm')pendingCb=null;if(id==='ov-form')document.querySelector('.nav-fab').classList.remove('open');}}
