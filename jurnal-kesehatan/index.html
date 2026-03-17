@@ -6,6 +6,7 @@
 <title>Jurnal Kesehatan</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root {
   --cream: #F4EFE6; --white: #FFFFFF; --dark: #1A1A1A; --gray: #888;
@@ -42,8 +43,13 @@ body.dark .tl-line      { background:#2E3033; }
 body.dark .stat-box     { background:#242529; }
 body.dark .top-item     { background:#242529; }
 body.dark .set-card     { background:#242529; }
-body.dark .modal        { background:#161819; }
-body.dark .confirm-box  { background:#1E2022; }
+body.dark .modal        { background:#1E2022; }
+body.dark .confirm-box  { background:#18191B; }
+body.dark .modal .form-input,
+body.dark .modal .form-textarea { background:#2A2D32; color:var(--dark); }
+body.dark .modal .form-input:focus,
+body.dark .modal .form-textarea:focus { background:#313438; }
+body.dark .confirm-box .form-input { background:#2A2D32; color:var(--dark); }
 body.dark .bottom-nav   { background:#242529;border-top-color:#2E3033; }
 body.dark .nav-btn svg  { fill:#555; }
 body.dark .nav-btn.active svg  { fill:#F0EDE6; }
@@ -246,7 +252,7 @@ body.dark .scard.pink   .scard-icon { fill:var(--pink);opacity:.6; }
 }
 .user-info { flex:1; }
 .user-name { font-size:15px;font-weight:700; }
-.user-email { font-size:12px;color:var(--gray);margin-top:2px; }
+.user-email { font-size:12px;color:var(--gray);margin-top:2px;pointer-events:none;user-select:none; }
 .btn-logout {
   background:var(--cream);color:var(--dark);border:none;
   border-radius:var(--radius);padding:12px;font-family:var(--font);
@@ -452,7 +458,7 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
         <img class="user-avatar" id="user-avatar" src="" alt="">
         <div class="user-info">
           <div class="user-name" id="user-name">–</div>
-          <div class="user-email" id="user-email" style="pointer-events:none;user-select:none">–</div>
+          <div class="user-email" id="user-email">–</div>
         </div>
       </div>
     </div>
@@ -468,6 +474,16 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
     <!-- BAGIAN 3: Logout & hapus akun -->
     <div class="sec-title">Lainnya</div>
     <div class="set-card">
+      <button class="btn-save" style="margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="exportExcel()">
+        <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="6" fill="#1D6F42"/>
+          <path d="M28 8H38C39.1 8 40 8.9 40 10V38C40 39.1 39.1 40 38 40H10C8.9 40 8 39.1 8 38V28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M8 8L20 8V20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 24L24 32M24 24L16 32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M28 24H32M28 28H34M28 32H32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        Ekspor ke Excel
+      </button>
       <button class="btn-logout" onclick="doLogout()" style="margin-bottom:10px">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>
         Keluar
@@ -1152,6 +1168,65 @@ async function doDel(id) {
 }
 function closeConfirm(){document.getElementById('ov-confirm').classList.remove('open');pendingCb=null;}
 function ovClose(e,id){if(e.target===document.getElementById(id)){document.getElementById(id).classList.remove('open');if(id==='ov-confirm')pendingCb=null;if(id==='ov-form')document.querySelector('.nav-fab').classList.remove('open');}}
+
+/* ═══ EXPORT EXCEL ═══ */
+async function exportExcel() {
+  if (!currentUser) return;
+  showToast('Menyiapkan export...');
+
+  const { data, error } = await sb
+    .from('illness_records')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('start_date', { ascending: false });
+
+  if (error) { showToast('Gagal ambil data'); return; }
+  if (!data || data.length === 0) { showToast('Belum ada data untuk diexport'); return; }
+
+  var wb = XLSX.utils.book_new();
+
+  ACCOUNTS.forEach(function(acc) {
+    var rows = data.filter(function(r){ return r.account_key === acc.key; });
+
+    /* Header */
+    var sheetData = [['Nama Penyakit', 'Tanggal Mulai', 'Tanggal Sembuh', 'Durasi', 'Status']];
+
+    rows.forEach(function(r) {
+      var dur = r.ongoing ? 'Masih sakit' :
+        (r.end_date ? Math.max(1, diffDays(r.start_date, r.end_date)) + ' hari' : '1 hari');
+      sheetData.push([
+        r.name,
+        r.start_date,
+        r.end_date || '-',
+        dur,
+        r.ongoing ? 'Sedang sakit' : 'Sudah sembuh'
+      ]);
+    });
+
+    /* Ringkasan statistik */
+    var finished = rows.filter(function(r){ return !r.ongoing; });
+    var totalDays = 0;
+    finished.forEach(function(r){
+      totalDays += r.end_date ? Math.max(1, diffDays(r.start_date, r.end_date)) : 1;
+    });
+    var avgDur = finished.length ? Math.round(totalDays / finished.length) : 0;
+
+    sheetData.push([]);
+    sheetData.push(['RINGKASAN']);
+    sheetData.push(['Total sakit', rows.length + ' kali']);
+    sheetData.push(['Total hari sakit', totalDays + ' hari']);
+    sheetData.push(['Rata-rata durasi', avgDur ? avgDur + ' hari' : '-']);
+
+    var ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [{wch:24},{wch:14},{wch:14},{wch:14},{wch:14}];
+    /* Nama sheet maksimal 31 karakter (limit Excel) */
+    var sheetName = acc.label.substring(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  XLSX.writeFile(wb, 'jurnal-kesehatan-' + todayStr() + '.xlsx');
+  showToast('Export berhasil!');
+}
 
 /* ═══ HAPUS AKUN ═══ */
 
