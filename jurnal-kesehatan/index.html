@@ -843,13 +843,17 @@ function deleteAccount(idx) {
 (async function init() {
   initDark();
   document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('cf-ok').addEventListener('click', function(){ if(pendingCb){pendingCb();pendingCb=null;} });
 
-  var authHandled = false;
+  /* Fix: cf-ok harus await pendingCb karena bisa async */
+  document.getElementById('cf-ok').addEventListener('click', async function() {
+    if (pendingCb) {
+      var cb = pendingCb;
+      pendingCb = null;
+      await cb();
+    }
+  });
 
   async function handleUser(user) {
-    if (authHandled) return;
-    authHandled = true;
     currentUser = user;
     document.getElementById('user-name').textContent = user.user_metadata.full_name || 'Pengguna';
     document.getElementById('user-email').textContent = user.email || '';
@@ -860,30 +864,35 @@ function deleteAccount(idx) {
     showApp();
   }
 
-  /* Listener dulu — ini yang handle OAuth callback redirect */
+  /* Cek session dulu — paling reliable untuk refresh */
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user) {
+    await handleUser(session.user);
+  } else {
+    /* Tidak ada session — pasang listener untuk handle OAuth callback */
+    sb.auth.onAuthStateChange(async function(event, session) {
+      if (event === 'SIGNED_IN' && session && session.user) {
+        await handleUser(session.user);
+      } else if (event === 'INITIAL_SESSION' && (!session || !session.user)) {
+        showLoginScreen();
+      }
+    });
+    /* Fallback 1.5 detik kalau onAuthStateChange tidak fired */
+    setTimeout(function() {
+      if (!currentUser) showLoginScreen();
+    }, 1500);
+  }
+
+  /* Listener untuk SIGNED_OUT saja setelah sudah login */
   sb.auth.onAuthStateChange(async function(event, session) {
-    console.log('Auth event:', event, session ? 'has session' : 'no session');
-    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && session.user) {
-      await handleUser(session.user);
-    } else if (event === 'SIGNED_OUT') {
-      authHandled = false;
+    if (event === 'SIGNED_OUT') {
       currentUser = null;
       appData = []; allData = {};
+      ACCOUNTS = [{ key:'saya', label:'Saya', emoji:'👤' }];
+      curAccount = 0;
       showLoginScreen();
     }
   });
-
-  /* Fallback: kalau 3 detik tidak ada event, cek session manual */
-  setTimeout(async function() {
-    if (authHandled) return;
-    console.log('Fallback: checking session manually...');
-    const { data: { session } } = await sb.auth.getSession();
-    if (session && session.user) {
-      await handleUser(session.user);
-    } else {
-      showLoginScreen();
-    }
-  }, 3000);
 
 })();
 
