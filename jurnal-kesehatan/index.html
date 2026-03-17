@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Jurnal Kesehatan</title>
+<title>Jurnal Sehat</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -75,6 +75,9 @@ body.dark .btn-ic.btn-ic-del svg  { fill:#bbb; }
 body.dark .check-row     { background:var(--input-bg); }
 body.dark .btn-cancel-m  { background:#2E3033;color:#bbb; }
 body.dark .btn-save      { background:var(--yellow);color:#1A1A1A; }
+body.dark .btn-submit    { background:var(--yellow);color:#1A1A1A; }
+body.dark .login-tab.active { background:#3A3D42;color:var(--dark); }
+body.dark .tos-close     { background:var(--yellow);color:#1A1A1A; }
 body.dark .btn-add-s     { background:var(--yellow);color:#1A1A1A; }
 body.dark .top-rank.gold { -webkit-text-stroke:1px #555; }
 body.dark .streak-prog-bg  { background:rgba(255,255,255,.1); }
@@ -90,22 +93,117 @@ body.dark .acc-pill.active { background:var(--yellow);color:#1A1A1A; }
   z-index:600; display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   padding:32px 24px; max-width:430px; margin:0 auto;
+  overflow-y:auto;
 }
 .login-screen.hidden { display:none; }
-.login-logo { width:56px;height:56px;margin-bottom:16px; }
+.hidden { display:none !important; }
+.login-logo { width:56px;height:56px;margin-bottom:16px;flex-shrink:0; }
 .login-title { font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;color:var(--dark); }
-.login-sub   { font-size:13px;color:var(--gray);margin-bottom:40px;text-align:center;line-height:1.6; }
+.login-sub   { font-size:13px;color:var(--gray);margin-bottom:24px;text-align:center;line-height:1.6; }
+
+/* tab masuk / daftar */
+.login-tabs {
+  display:flex;gap:0;width:100%;max-width:300px;
+  background:var(--gray-light);border-radius:var(--radius-sm);
+  padding:3px;margin-bottom:20px;
+}
+.login-tab {
+  flex:1;padding:9px;border:none;border-radius:10px;
+  font-family:var(--font);font-size:13px;font-weight:700;
+  cursor:pointer;background:transparent;color:var(--gray);
+  transition:background .15s,color .15s;
+}
+.login-tab.active { background:var(--white);color:var(--dark);box-shadow:0 1px 4px rgba(0,0,0,.08); }
+body.dark .login-tabs { background:#2E3033; }
+body.dark .login-tab.active { background:#3A3D42;color:var(--dark); }
+
+/* form fields */
+.login-form { width:100%;max-width:300px; }
+.login-input {
+  width:100%;padding:13px 14px;border:none;border-radius:var(--radius-sm);
+  font-family:var(--font);font-size:15px;font-weight:500;
+  color:var(--dark);background:var(--white);outline:none;
+  margin-bottom:10px;-webkit-appearance:none;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.login-input:focus { box-shadow:0 0 0 2px var(--dark); }
+body.dark .login-input { background:#2A2D32;color:var(--dark);box-shadow:none; }
+body.dark .login-input:focus { box-shadow:0 0 0 2px var(--yellow); }
+
+.btn-submit {
+  width:100%;padding:14px;border:none;border-radius:var(--radius);
+  font-family:var(--font);font-size:15px;font-weight:700;
+  background:var(--dark);color:var(--yellow);
+  cursor:pointer;margin-bottom:14px;transition:opacity .15s;
+}
+.btn-submit:disabled { opacity:.45;cursor:not-allowed; }
+
+/* divider */
+.login-divider {
+  display:flex;align-items:center;gap:10px;
+  width:100%;max-width:300px;margin-bottom:14px;
+}
+.login-divider span { font-size:12px;color:var(--gray);white-space:nowrap; }
+.login-divider::before,.login-divider::after {
+  content:'';flex:1;height:1px;background:var(--gray-light);
+}
+
 .btn-google {
   display:flex;align-items:center;gap:12px;
-  background:var(--white);border:2px solid var(--gray-light);
+  background:var(--white);border:none;
   border-radius:var(--radius);padding:14px 24px;
   font-family:var(--font);font-size:15px;font-weight:700;
   color:var(--dark);cursor:pointer;width:100%;max-width:300px;
-  justify-content:center;transition:border-color .2s,box-shadow .2s;
+  justify-content:center;transition:background .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
 }
-.btn-google:hover { border-color:var(--dark);box-shadow:0 2px 12px rgba(0,0,0,.08); }
+.btn-google:hover { background:var(--gray-light); }
+body.dark .btn-google { background:#2A2D32; }
+body.dark .btn-google:hover { background:#313438; }
 .btn-google svg { width:22px;height:22px;flex-shrink:0; }
-.login-note { font-size:11px;color:var(--gray);margin-top:20px;text-align:center;line-height:1.5; }
+
+/* checklist TOS */
+.tos-row {
+  display:flex;align-items:flex-start;gap:10px;
+  width:100%;max-width:300px;margin:14px 0 6px;
+}
+.tos-row input[type=checkbox] {
+  width:17px;height:17px;margin-top:2px;flex-shrink:0;
+  accent-color:var(--dark);cursor:pointer;
+}
+.tos-row label { font-size:12px;color:var(--gray);line-height:1.5;cursor:pointer; }
+.tos-link {
+  color:var(--dark);font-weight:700;text-decoration:underline;
+  cursor:pointer;background:none;border:none;
+  font-family:var(--font);font-size:12px;padding:0;
+}
+body.dark .tos-link { color:var(--yellow); }
+.login-error { font-size:12px;color:#FF4C4C;font-weight:600;width:100%;max-width:300px;min-height:18px;margin-bottom:4px;text-align:center; }
+.login-success { font-size:12px;color:var(--green-dark);font-weight:600;width:100%;max-width:300px;margin-bottom:4px;text-align:center;line-height:1.5; }
+.login-note { font-size:11px;color:var(--gray);margin-top:16px;text-align:center;line-height:1.5; }
+
+/* popup TOS / Privacy */
+.tos-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  backdrop-filter:blur(3px);z-index:700;
+  display:none;align-items:flex-end;justify-content:center;
+}
+.tos-overlay.open { display:flex; }
+.tos-modal {
+  background:var(--white);border-radius:26px 26px 0 0;
+  width:100%;max-width:430px;padding:10px 22px 40px;
+  max-height:85vh;display:flex;flex-direction:column;
+  animation:slideUp .3s cubic-bezier(.34,1.3,.64,1);
+}
+body.dark .tos-modal { background:#1E2022; }
+.tos-handle { width:38px;height:4px;background:var(--gray-light);border-radius:2px;margin:10px auto 16px;flex-shrink:0; }
+.tos-title { font-size:20px;font-weight:800;margin-bottom:14px;flex-shrink:0; }
+.tos-body { overflow-y:auto;flex:1;font-size:13px;color:var(--gray);line-height:1.8; }
+.tos-close {
+  width:100%;margin-top:16px;padding:14px;border:none;
+  border-radius:var(--radius);background:var(--dark);color:var(--yellow);
+  font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0;
+}
 
 /* loading overlay */
 .loading-screen {
@@ -359,20 +457,124 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
 <!-- LOGIN SCREEN -->
 <div class="login-screen hidden" id="login-screen">
   <svg class="login-logo" viewBox="0 0 256 256" fill="#E53935"><use href="#ic-heart"/></svg>
-  <div class="login-title">Jurnal Kesehatan</div>
+  <div class="login-title">Jurnal Sehat</div>
   <div class="login-sub">Catat riwayat kesehatan keluarga<br>dengan mudah dan terorganisir</div>
-  <button class="btn-google" onclick="loginGoogle()">
-    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-    Masuk dengan Google
-  </button>
-  <div class="login-note">Data kamu tersimpan aman di cloud<br>dan bisa diakses dari perangkat mana saja</div>
+
+  <!-- Tab Masuk / Daftar -->
+  <div class="login-tabs">
+    <button class="login-tab active" id="tab-masuk" onclick="switchLoginTab('masuk')">Masuk</button>
+    <button class="login-tab" id="tab-daftar" onclick="switchLoginTab('daftar')">Daftar</button>
+  </div>
+
+  <!-- Error / Success -->
+  <div class="login-error" id="login-error"></div>
+  <div class="login-success hidden" id="login-success"></div>
+
+  <!-- ══ PANEL MASUK ══ -->
+  <div id="panel-masuk" class="login-form">
+    <input type="email" class="login-input" id="masuk-email" placeholder="Email">
+    <input type="password" class="login-input" id="masuk-pass" placeholder="Password">
+    <div style="display:flex;justify-content:flex-end;width:100%;max-width:300px;margin-bottom:14px">
+      <button class="tos-link" onclick="showForgot()">Lupa Password?</button>
+    </div>
+    <button class="btn-submit" onclick="doMasuk()">Masuk</button>
+    <div class="login-divider"><span>atau</span></div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Masuk dengan Google
+    </button>
+    <div class="login-note" style="margin-top:10px">Dengan masuk via Google, kamu menyetujui<br><button class="tos-link" onclick="openTos('privacy')">Kebijakan Privasi</button> dan <button class="tos-link" onclick="openTos('terms')">Syarat &amp; Ketentuan</button> kami</div>
+  </div>
+
+  <!-- ══ PANEL DAFTAR ══ -->
+  <div id="panel-daftar" class="login-form hidden">
+    <input type="email" class="login-input" id="daftar-email" placeholder="Email">
+    <input type="password" class="login-input" id="daftar-pass" placeholder="Password">
+    <input type="password" class="login-input" id="daftar-pass2" placeholder="Konfirmasi Password">
+    <div class="tos-row" style="margin-bottom:14px">
+      <input type="checkbox" id="ck-tos" onchange="updateDaftarState()">
+      <label for="ck-tos">
+        Saya menyetujui <button class="tos-link" onclick="openTos('privacy')">Kebijakan Privasi</button> dan <button class="tos-link" onclick="openTos('terms')">Syarat &amp; Ketentuan</button> penggunaan aplikasi ini
+      </label>
+    </div>
+    <button class="btn-submit" id="btn-daftar" onclick="doDaftar()" disabled style="opacity:.45">Daftar</button>
+    <div class="login-divider"><span>atau</span></div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Daftar dengan Google
+    </button>
+    <div class="login-note" style="margin-top:10px">Dengan mendaftar via Google, kamu menyetujui <button class="tos-link" onclick="openTos('privacy')">Kebijakan Privasi</button> dan <button class="tos-link" onclick="openTos('terms')">Syarat &amp; Ketentuan</button> kami</div>
+  </div>
+
+  <!-- ══ PANEL LUPA PASSWORD ══ -->
+  <div id="panel-forgot" class="login-form hidden">
+    <button class="tos-link" onclick="showMasuk()" style="margin-bottom:16px;font-size:13px">← Kembali ke Masuk</button>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:14px;width:100%;max-width:300px;line-height:1.6">Masukkan email kamu, kami akan kirim link untuk reset password.</p>
+    <input type="email" class="login-input" id="forgot-email" placeholder="Email">
+    <button class="btn-submit" onclick="doForgot()">Kirim Link Reset</button>
+  </div>
+</div>
+
+<!-- POPUP KEBIJAKAN PRIVASI -->
+<div class="tos-overlay" id="ov-privacy" onclick="if(event.target===this)closeTos('privacy')">
+  <div class="tos-modal">
+    <div class="tos-handle"></div>
+    <div class="tos-title">Kebijakan Privasi</div>
+    <div class="tos-body" id="privacy-body">
+<p><strong>Versi Terakhir Diperbarui: 17 Maret 2026</strong></p>
+<p>Selamat datang di aplikasi Jurnal Sehat. Kami sangat menjunjung tinggi privasi Anda sebagai pengguna dan berkomitmen secara penuh untuk mengelola, menjaga, serta melindungi setiap informasi pribadi yang Anda percayakan kepada platform kami.</p>
+<p><strong>1. Informasi yang Kami Kumpulkan dan Kelola</strong></p>
+<p>Autentikasi Pengguna: Kami menggunakan layanan Google SSO untuk proses masuk yang aman. Melalui proses ini, kami menerima informasi dasar berupa nama lengkap dan alamat email Anda yang disediakan oleh Google.</p>
+<p>Konten Jurnal Sehat: Informasi yang Anda masukkan secara sukarela mencakup identitas profil dalam satu akun, riwayat kondisi medis meliputi jenis penyakit, gejala, tanggal mulai dan berakhirnya masa sakit, serta catatan tambahan.</p>
+<p><strong>2. Perlindungan Data Anak dan Batasan Usia</strong></p>
+<p>Layanan kami tidak ditujukan langsung untuk anak-anak. Segala data mengenai anak-anak hanya dapat dimasukkan oleh orang tua atau wali sah. Dengan memasukkan data pihak ketiga, Anda menyatakan memiliki hak atau izin yang sah untuk mencatatkan informasi tersebut.</p>
+<p><strong>3. Lokasi Penyimpanan dan Transfer Data Internasional</strong></p>
+<p>Seluruh data dikelola dan disimpan menggunakan infrastruktur Supabase. Data Anda mungkin disimpan pada server yang berada di luar wilayah negara Anda (misalnya Amerika Serikat atau Singapura). Kami berupaya menerapkan standar keamanan yang ketat sesuai regulasi internasional.</p>
+<p><strong>4. Masa Retensi dan Penghapusan Data Permanen</strong></p>
+<p>Data Anda disimpan selama akun masih aktif. Jika Anda menggunakan fitur "Hapus Akun" melalui menu Pengaturan, seluruh data akan dihapus secara permanen dan tidak dapat dipulihkan kembali.</p>
+<p><strong>5. Penyangkalan Medis dan Batas Tanggung Jawab</strong></p>
+<p>Aplikasi Jurnal Sehat berfungsi murni sebagai media pendokumentasian riwayat kesehatan pribadi dan tidak dimaksudkan sebagai alat diagnosis medis profesional. Kami tidak memberikan saran medis, rekomendasi obat, atau penentuan tindakan medis.</p>
+<p><strong>6. Hubungi Kami</strong></p>
+<p>Email: <a href="mailto:arsoagung@gmail.com">arsoagung@gmail.com</a></p>
+</div>
+    <button class="tos-close" onclick="closeTos('privacy')">Tutup</button>
+  </div>
+</div>
+
+<!-- POPUP SYARAT & KETENTUAN -->
+<div class="tos-overlay" id="ov-terms" onclick="if(event.target===this)closeTos('terms')">
+  <div class="tos-modal">
+    <div class="tos-handle"></div>
+    <div class="tos-title">Syarat &amp; Ketentuan</div>
+    <div class="tos-body" id="terms-body">
+<p><strong>Versi Terakhir Diperbarui: 17 Maret 2026</strong></p>
+<p>Dokumen ini merupakan kontrak hukum yang mengikat antara Anda sebagai pengguna dan pengembang aplikasi Jurnal Sehat. Dengan mengakses atau menggunakan aplikasi ini, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh ketentuan di bawah ini.</p>
+<p><strong>1. Cakupan Layanan dan Perubahan Ketentuan</strong></p>
+<p>Aplikasi Jurnal Sehat adalah platform digital untuk pendokumentasian mandiri riwayat kesehatan pribadi dan keluarga. Kami berhak mengubah ketentuan ini sewaktu-waktu. Penggunaan berkelanjutan setelah adanya perubahan dianggap sebagai penerimaan atas ketentuan baru.</p>
+<p><strong>2. Penyangkalan Medis (Medical Disclaimer)</strong></p>
+<p>Aplikasi ini disediakan murni sebagai alat bantu administratif. Konten dan data yang dihasilkan tidak boleh dianggap sebagai saran medis profesional atau diagnosa medis. Jangan pernah mengabaikan saran dokter berdasarkan informasi di aplikasi ini. Segala keputusan medis sepenuhnya merupakan tanggung jawab pribadi Pengguna.</p>
+<p><strong>3. Keanggotaan dan Keamanan Akun</strong></p>
+<p>Anda bertanggung jawab penuh menjaga kerahasiaan akun yang digunakan untuk masuk ke aplikasi ini. Segala aktivitas yang terjadi di bawah akun Anda dianggap sebagai aktivitas sah yang dilakukan oleh Anda. Kami tidak bertanggung jawab atas penyalahgunaan akibat kelalaian Pengguna.</p>
+<p><strong>4. Hak Kekayaan Intelektual</strong></p>
+<p>Seluruh desain, kode program, logo, dan fitur aplikasi Jurnal Sehat adalah properti intelektual milik pengembang. Anda dilarang menyalin, memodifikasi, mendekompilasi, atau mendistribusikan ulang bagian mana pun tanpa izin tertulis.</p>
+<p><strong>5. Penggunaan yang Diizinkan</strong></p>
+<p>Pengguna setuju menggunakan aplikasi hanya untuk tujuan yang sah sesuai hukum Republik Indonesia. Dilarang memasukkan data palsu, menggunakan untuk tujuan komersial tanpa persetujuan, atau melakukan tindakan yang merugikan integritas sistem.</p>
+<p><strong>6. Batasan Tanggung Jawab</strong></p>
+<p>Kami tidak bertanggung jawab atas kerugian yang timbul dari ketidakmampuan mengakses aplikasi akibat gangguan server, hilangnya data akibat kerusakan layanan pihak ketiga (Supabase atau Google), atau kesalahan teknis dalam input data oleh Pengguna.</p>
+<p><strong>7. Pengakhiran Layanan</strong></p>
+<p>Kami berhak menghentikan akses Anda jika ditemukan pelanggaran ketentuan ini. Anda juga berhak mengakhiri perjanjian ini kapan saja dengan menghapus akun melalui fitur yang tersedia di aplikasi.</p>
+<p><strong>8. Kontak</strong></p>
+<p>Email: <a href="mailto:arsoagung@gmail.com">arsoagung@gmail.com</a></p>
+</div>
+    <button class="tos-close" onclick="closeTos('terms')">Tutup</button>
+  </div>
 </div>
 
 <!-- HEADER -->
 <header class="app-header">
   <div class="app-header-inner">
     <svg class="logo-svg" viewBox="0 0 256 256" fill="#E53935"><use href="#ic-heart"/></svg>
-    <span class="logo-text">Jurnal Kesehatan</span>
+    <span class="logo-text">Jurnal Sehat</span>
     <div style="flex:1"></div>
     <button class="btn-darkmode" onclick="toggleDark()" id="btn-dark" aria-label="Toggle dark mode"></button>
   </div>
@@ -495,7 +697,7 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
       </div>
     </div>
 
-<p style="font-size:11px;color:var(--gray);line-height:1.5;text-align:center;padding:8px 0 4px">Jurnal Kesehatan versi 1.0.0</p>
+<p style="font-size:11px;color:var(--gray);line-height:1.5;text-align:center;padding:8px 0 4px">Jurnal Sehat versi 1.1.0</p>
 
   </div>
 
@@ -605,12 +807,123 @@ var showMore     = { illness:false, symptom:false, streak:false };
 var selectedYear = new Date().getFullYear();
 
 /* ═══ AUTH ═══ */
+
+var loginMode = 'masuk';
+
+function switchLoginTab(mode) {
+  loginMode = mode;
+  document.getElementById('tab-masuk').classList.toggle('active', mode === 'masuk');
+  document.getElementById('tab-daftar').classList.toggle('active', mode === 'daftar');
+  document.getElementById('panel-masuk').classList.toggle('hidden', mode !== 'masuk');
+  document.getElementById('panel-daftar').classList.toggle('hidden', mode !== 'daftar');
+  document.getElementById('panel-forgot').classList.add('hidden');
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-success').classList.add('hidden');
+  document.getElementById('ck-tos').checked = false;
+  updateDaftarState();
+}
+
+function showForgot() {
+  document.getElementById('panel-masuk').classList.add('hidden');
+  document.getElementById('panel-forgot').classList.remove('hidden');
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-success').classList.add('hidden');
+}
+
+function showMasuk() {
+  document.getElementById('panel-forgot').classList.add('hidden');
+  document.getElementById('panel-masuk').classList.remove('hidden');
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-success').classList.add('hidden');
+}
+
+function updateDaftarState() {
+  var ok = document.getElementById('ck-tos').checked;
+  var btn = document.getElementById('btn-daftar');
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '.45';
+}
+
+function openTos(type) { document.getElementById('ov-' + type).classList.add('open'); }
+function closeTos(type) { document.getElementById('ov-' + type).classList.remove('open'); }
+
+async function doMasuk() {
+  var email = document.getElementById('masuk-email').value.trim();
+  var pass  = document.getElementById('masuk-pass').value;
+  var errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!email) { errEl.textContent = 'Email tidak boleh kosong'; return; }
+  if (!pass)  { errEl.textContent = 'Password tidak boleh kosong'; return; }
+  var btn = document.querySelector('#panel-masuk .btn-submit');
+  btn.disabled = true; btn.textContent = 'Masuk...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Masuk';
+  if (error) {
+    errEl.textContent = error.message.includes('Invalid login')
+      ? 'Email atau password salah'
+      : error.message.includes('Email not confirmed')
+      ? 'Email belum dikonfirmasi, cek inbox kamu'
+      : error.message;
+  }
+}
+
+async function doDaftar() {
+  var email = document.getElementById('daftar-email').value.trim();
+  var pass  = document.getElementById('daftar-pass').value;
+  var pass2 = document.getElementById('daftar-pass2').value;
+  var errEl = document.getElementById('login-error');
+  var sucEl = document.getElementById('login-success');
+  errEl.textContent = ''; sucEl.classList.add('hidden');
+  if (!email) { errEl.textContent = 'Email tidak boleh kosong'; return; }
+  if (!pass)  { errEl.textContent = 'Password tidak boleh kosong'; return; }
+  if (pass.length < 6) { errEl.textContent = 'Password minimal 6 karakter'; return; }
+  if (pass !== pass2)  { errEl.textContent = 'Konfirmasi password tidak cocok'; return; }
+  var btn = document.getElementById('btn-daftar');
+  btn.disabled = true; btn.textContent = 'Mendaftar...';
+  const { error } = await sb.auth.signUp({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Daftar'; updateDaftarState();
+  if (error) {
+    errEl.textContent = error.message.includes('already registered')
+      ? 'Email sudah terdaftar, coba masuk' : error.message;
+  } else {
+    sucEl.textContent = '✓ Pendaftaran berhasil! Cek email kamu untuk aktivasi akun.';
+    sucEl.classList.remove('hidden');
+    document.getElementById('daftar-email').value = '';
+    document.getElementById('daftar-pass').value = '';
+    document.getElementById('daftar-pass2').value = '';
+    document.getElementById('ck-tos').checked = false;
+    updateDaftarState();
+  }
+}
+
+async function doForgot() {
+  var email = document.getElementById('forgot-email').value.trim();
+  var errEl = document.getElementById('login-error');
+  var sucEl = document.getElementById('login-success');
+  errEl.textContent = ''; sucEl.classList.add('hidden');
+  if (!email) { errEl.textContent = 'Email tidak boleh kosong'; return; }
+  var btn = document.querySelector('#panel-forgot .btn-submit');
+  btn.disabled = true; btn.textContent = 'Mengirim...';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://arsoagung.github.io/app/jurnal-kesehatan/'
+  });
+  btn.disabled = false; btn.textContent = 'Kirim Link Reset';
+  if (error) {
+    errEl.textContent = error.message;
+  } else {
+    sucEl.textContent = '✓ Link reset password sudah dikirim ke ' + email + '. Cek inbox kamu!';
+    sucEl.classList.remove('hidden');
+    document.getElementById('forgot-email').value = '';
+  }
+}
+
 async function loginGoogle() {
+  document.getElementById('login-error').textContent = '';
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: 'https://arsoagung.github.io/app/jurnal-kesehatan/' }
   });
-  if (error) showToast('Login gagal: ' + error.message);
+  if (error) document.getElementById('login-error').textContent = 'Login gagal: ' + error.message;
 }
 
 async function doLogout() {
@@ -619,6 +932,7 @@ async function doLogout() {
   appData = []; allData = {};
   ACCOUNTS = [{ key:'saya', label:'Saya', emoji:'👤' }];
   curAccount = 0;
+  switchLoginTab('masuk');
   showLoginScreen();
 }
 
