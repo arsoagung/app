@@ -844,42 +844,46 @@ function deleteAccount(idx) {
   document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('cf-ok').addEventListener('click', function(){ if(pendingCb){pendingCb();pendingCb=null;} });
 
-  /* Bersihkan hash OAuth dari URL supaya tidak loop */
-  if (window.location.hash && window.location.hash.includes('access_token')) {
-    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-  }
+  var authHandled = false;
 
-  /* Cek session yang sudah ada — ini yang handle refresh tab */
-  const { data: { session } } = await sb.auth.getSession();
-  if (session && session.user) {
-    currentUser = session.user;
-    document.getElementById('user-name').textContent = currentUser.user_metadata.full_name || 'Pengguna';
-    document.getElementById('user-email').textContent = currentUser.email || '';
-    var avatar = currentUser.user_metadata.avatar_url;
-    if (avatar) document.getElementById('user-avatar').src = avatar;
+  async function handleUser(user) {
+    if (authHandled) return;
+    authHandled = true;
+    currentUser = user;
+    document.getElementById('user-name').textContent = user.user_metadata.full_name || 'Pengguna';
+    document.getElementById('user-email').textContent = user.email || '';
+    var av = user.user_metadata.avatar_url;
+    if (av) document.getElementById('user-avatar').src = av;
     await loadProfile();
     await loadData();
     showApp();
-  } else {
-    showLoginScreen();
   }
 
-  /* Listener untuk perubahan auth (login baru / logout) */
+  /* Listener dulu — ini yang handle OAuth callback redirect */
   sb.auth.onAuthStateChange(async function(event, session) {
-    if (event === 'SIGNED_IN' && session && session.user && !currentUser) {
-      currentUser = session.user;
-      document.getElementById('user-name').textContent = currentUser.user_metadata.full_name || 'Pengguna';
-      document.getElementById('user-email').textContent = currentUser.email || '';
-      var av = currentUser.user_metadata.avatar_url;
-      if (av) document.getElementById('user-avatar').src = av;
-      await loadProfile();
-      await loadData();
-      showApp();
+    console.log('Auth event:', event, session ? 'has session' : 'no session');
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && session.user) {
+      await handleUser(session.user);
     } else if (event === 'SIGNED_OUT') {
+      authHandled = false;
       currentUser = null;
+      appData = []; allData = {};
       showLoginScreen();
     }
   });
+
+  /* Fallback: kalau 3 detik tidak ada event, cek session manual */
+  setTimeout(async function() {
+    if (authHandled) return;
+    console.log('Fallback: checking session manually...');
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      await handleUser(session.user);
+    } else {
+      showLoginScreen();
+    }
+  }, 3000);
+
 })();
 
 var TAB_IDS = ['home','riwayat','statistik','pengaturan'];
