@@ -343,6 +343,12 @@ body.dark .scard.pink   .scard-icon { fill:var(--pink);opacity:.6; }
 .set-card { background:var(--white);border-radius:var(--radius);padding:18px;margin-bottom:12px; }
 .set-card h3 { font-size:15px;font-weight:700;margin-bottom:5px; }
 .set-card p  { font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:12px; }
+.set-menu-item {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 0;font-size:15px;font-weight:600;color:var(--dark);
+  cursor:pointer;transition:opacity .15s;
+}
+.set-menu-item:active { opacity:.6; }
 .btn-row { display:flex;gap:8px; }
 .user-avatar {
   width:44px;height:44px;border-radius:50%;object-fit:cover;
@@ -457,6 +463,9 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
 <!-- LOGIN SCREEN -->
 <div class="login-screen hidden" id="login-screen">
   <svg class="login-logo" viewBox="0 0 256 256" fill="#E53935"><use href="#ic-heart"/></svg>
+  <div style="position:absolute;top:52px;right:20px">
+  <button class="btn-darkmode" onclick="toggleDark()" id="btn-dark-login" aria-label="Toggle dark mode"></button>
+</div>
   <div class="login-title">Jurnal Sehat</div>
   <div class="login-sub">Catat riwayat kesehatan keluarga<br>dengan mudah dan terorganisir</div>
 
@@ -570,6 +579,20 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
   </div>
 </div>
 
+<!-- POPUP FEEDBACK -->
+<div class="tos-overlay" id="ov-feedback" onclick="if(event.target===this)closeFeedback()">
+  <div class="tos-modal" style="padding-bottom:32px">
+    <div class="tos-handle"></div>
+    <div class="tos-title">Kirim Masukan</div>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:14px;line-height:1.6">Masukan, saran, atau laporan bug kamu sangat berarti untuk pengembangan Jurnal Sehat.</p>
+    <textarea id="feedback-text" class="form-textarea" placeholder="Tulis masukan kamu di sini..." style="margin-bottom:10px;min-height:120px"></textarea>
+    <div id="feedback-error" style="font-size:12px;color:#FF4C4C;font-weight:600;min-height:18px;margin-bottom:6px"></div>
+    <div id="feedback-success" class="hidden" style="font-size:12px;color:var(--green-dark);font-weight:600;margin-bottom:6px;line-height:1.5">✓ Masukan berhasil dikirim! Terima kasih.</div>
+    <button class="tos-close" id="btn-kirim-feedback" onclick="doSendFeedback()">Kirim Masukan</button>
+    <button onclick="closeFeedback()" style="width:100%;margin-top:10px;padding:12px;border:none;border-radius:var(--radius);background:transparent;color:var(--gray);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">Batal</button>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header class="app-header">
   <div class="app-header-inner">
@@ -673,6 +696,25 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
       <button class="btn-save" style="margin-top:0" onclick="openAddAccount()">+ Tambah Profil</button>
     </div>
 
+    <!-- BAGIAN 3: Informasi -->
+    <div class="sec-title">Informasi</div>
+    <div class="set-card">
+      <div onclick="openTos('privacy')" class="set-menu-item">
+        <span>Kebijakan Privasi</span>
+        <span style="color:var(--gray);font-size:18px">›</span>
+      </div>
+      <div style="height:1px;background:var(--gray-light);margin:2px 0"></div>
+      <div onclick="openTos('terms')" class="set-menu-item">
+        <span>Syarat &amp; Ketentuan</span>
+        <span style="color:var(--gray);font-size:18px">›</span>
+      </div>
+      <div style="height:1px;background:var(--gray-light);margin:2px 0"></div>
+      <div onclick="openFeedback()" class="set-menu-item">
+        <span>Kirim Masukan</span>
+        <span style="color:var(--gray);font-size:18px">›</span>
+      </div>
+    </div>
+
     <!-- BAGIAN 3: Logout & hapus akun -->
     <div class="sec-title">Lainnya</div>
     <div class="set-card">
@@ -697,7 +739,7 @@ body.dark .btn-logout { background:#2E3033;color:#bbb; }
       </div>
     </div>
 
-<p style="font-size:11px;color:var(--gray);line-height:1.5;text-align:center;padding:8px 0 4px">Jurnal Sehat versi 1.1.0</p>
+<p style="font-size:11px;color:var(--gray);line-height:1.5;text-align:center;padding:8px 0 4px">Jurnal Sehat versi 1.1.1</p>
 
   </div>
 
@@ -846,6 +888,40 @@ function updateDaftarState() {
 
 function openTos(type) { document.getElementById('ov-' + type).classList.add('open'); }
 function closeTos(type) { document.getElementById('ov-' + type).classList.remove('open'); }
+
+function openFeedback() {
+  document.getElementById('feedback-text').value = '';
+  document.getElementById('feedback-error').textContent = '';
+  document.getElementById('feedback-success').classList.add('hidden');
+  document.getElementById('btn-kirim-feedback').disabled = false;
+  document.getElementById('btn-kirim-feedback').textContent = 'Kirim Masukan';
+  document.getElementById('ov-feedback').classList.add('open');
+}
+function closeFeedback() {
+  document.getElementById('ov-feedback').classList.remove('open');
+}
+async function doSendFeedback() {
+  var pesan = document.getElementById('feedback-text').value.trim();
+  var errEl = document.getElementById('feedback-error');
+  var sucEl = document.getElementById('feedback-success');
+  errEl.textContent = '';
+  if (!pesan) { errEl.textContent = 'Masukan tidak boleh kosong'; return; }
+  var btn = document.getElementById('btn-kirim-feedback');
+  btn.disabled = true; btn.textContent = 'Mengirim...';
+  const { error } = await sb.from('feedback').insert({
+    user_id: currentUser ? currentUser.id : null,
+    email:   currentUser ? currentUser.email : null,
+    pesan:   pesan
+  });
+  btn.disabled = false; btn.textContent = 'Kirim Masukan';
+  if (error) {
+    errEl.textContent = 'Gagal mengirim, coba lagi';
+  } else {
+    sucEl.classList.remove('hidden');
+    document.getElementById('feedback-text').value = '';
+    setTimeout(function(){ closeFeedback(); }, 2000);
+  }
+}
 
 async function doMasuk() {
   var email = document.getElementById('masuk-email').value.trim();
@@ -1027,8 +1103,11 @@ async function deleteAccountData(accountKey) {
 
 /* ═══ DARK MODE ═══ */
 function setDarkIcon(isDark) {
-  var btn = document.getElementById('btn-dark');
-  btn.innerHTML = '<svg viewBox="0 0 256 256" fill="currentColor">' + (isDark ? SVG_SUN : SVG_MOON) + '</svg>';
+  var svg = '<svg viewBox="0 0 256 256" fill="currentColor">' + (isDark ? SVG_SUN : SVG_MOON) + '</svg>';
+  var btn1 = document.getElementById('btn-dark');
+  var btn2 = document.getElementById('btn-dark-login');
+  if (btn1) btn1.innerHTML = svg;
+  if (btn2) btn2.innerHTML = svg;
 }
 function toggleDark() {
   var on = document.body.classList.toggle('dark');
