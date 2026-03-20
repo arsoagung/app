@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Targetin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & TOKENS ── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#111113;--bg2:#191a1d;--bg3:#222328;--bg4:#2e2f36;
+  --text:#f2f2f0;--text2:#72737c;--text3:#3e3f47;
+  --lime:#c8f135;--lime-dim:#1a2904;--lime-muted:#8ab520;
+  --purple:#9b72f8;--purple-dim:#1e1040;
+  --red:#ff5555;--red-dim:#2e0e0e;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--r99:99px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+
+/* ── TOPBAR ── */
+.topbar{padding:52px 20px 8px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between}
+.topbar-txt h1{font-size:26px;font-weight:800;letter-spacing:-0.8px;line-height:1.1}
+.topbar-txt .sub{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
+.topbar-fab{width:42px;height:42px;border-radius:50%;background:var(--lime);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(200,241,53,.3);transition:transform .12s;flex-shrink:0;margin-top:4px}
+.topbar-fab:active{transform:scale(.9)}
+.topbar-fab svg{width:18px;height:18px;stroke:#111;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── FILTER PILLS ── */
+.filter-row{display:flex;gap:6px;padding:10px 20px 12px;flex-shrink:0;overflow-x:auto}
+.filter-row::-webkit-scrollbar{display:none}
+.fpill{padding:7px 16px;border-radius:var(--r99);background:var(--bg3);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.fpill.active{background:#fff;color:#111}
+
+/* ── SCROLL ── */
+.scroll{flex:1;overflow-y:auto;padding:0 16px 12px;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── CATEGORY GROUP ── */
+.cat-group{margin-bottom:20px}
+.cat-group-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-left:2px}
+
+/* ── HABIT ROW ── */
+.hrow{background:var(--bg2);border-radius:var(--r16);margin-bottom:6px;overflow:hidden}
+.hrow-head{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer}
+.hrow-icon{width:36px;height:36px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hrow-info{flex:1;min-width:0}
+.hrow-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrow-sub{font-size:11px;font-weight:500;margin-top:1px;color:var(--text2)}
+.hrow-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.hrow-badge{font-size:11px;font-weight:800;white-space:nowrap}
+.chevron{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .22s}
+.chevron svg{width:14px;height:14px;stroke:var(--text3);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.hrow.expanded .chevron{transform:rotate(180deg)}
+.hrow.inactive .hrow-icon{opacity:.55}
+.hrow.inactive .hrow-name{color:var(--text2)}
+.hrow.inactive .hrow-sub{color:var(--text3)}
+
+/* ── SWIPE ACTION ── */
+.hrow-wrap{position:relative;margin-bottom:6px;border-radius:var(--r16);overflow:hidden}
+.hrow-wrap .hrow{margin-bottom:0;border-radius:var(--r16);position:relative;z-index:1;transition:transform .25s cubic-bezier(.25,.46,.45,.94);will-change:transform;touch-action:pan-y}
+.swipe-bg{position:absolute;inset:0;border-radius:var(--r16);display:flex;align-items:center;justify-content:flex-end;padding-right:16px;gap:10px;z-index:0}
+/* active: red stop bg */
+.swipe-bg.stop-bg{background:var(--red-dim)}
+.swipe-bg.stop-bg .swipe-lbl{color:var(--red)}
+.swipe-bg.stop-bg .swipe-icon svg{stroke:var(--red)}
+/* inactive: red delete bg */
+.swipe-bg.del-bg{background:var(--red-dim)}
+.swipe-bg.del-bg .swipe-lbl{color:var(--red)}
+.swipe-bg.del-bg .swipe-icon svg{stroke:var(--red)}
+.swipe-icon{display:flex;align-items:center;justify-content:center;width:22px;height:22px}
+.swipe-icon svg{width:18px;height:18px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.swipe-lbl{font-size:13px;font-weight:800}
+
+/* ── MINI PROGRESS BAR (collapsed card) ── */
+.hrow-mini-bar{height:3px;background:var(--bg4);overflow:hidden;border-radius:0 0 var(--r16) var(--r16)}
+.hrow.expanded .hrow-mini-bar{display:none}
+.hrow-mini-fill{height:100%;border-radius:var(--r99);transition:width .5s}
+.hrow-body{display:none;padding:0 14px 14px}
+.hrow.expanded .hrow-body{display:block}
+.hrow-sep{height:1px;background:var(--bg3);margin:0 0 14px}
+.big-time{display:flex;align-items:baseline;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.big-num{font-size:38px;font-weight:800;letter-spacing:-2px;line-height:1}
+.big-unit{font-size:12px;font-weight:600;color:var(--text2)}
+.big-sec{font-size:11px;color:var(--text2);font-weight:600;margin-bottom:12px}
+
+/* ── PROGRESS BAR ── */
+.cpbar{margin-bottom:12px}
+.cpbar-labels{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--text2);margin-bottom:5px}
+.cpbar-track{height:3px;background:var(--bg4);border-radius:var(--r99);overflow:hidden}
+.cpbar-fill{height:100%;border-radius:var(--r99);transition:width .5s}
+
+/* ── INFO ROWS ── */
+.irow{display:flex;justify-content:space-between;font-size:12px;padding:5px 0}
+.irow+.irow{border-top:1px solid var(--bg3)}
+.irow-lab{color:var(--text2);font-weight:600}
+.irow-val{font-weight:700}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chip{background:var(--bg3);border-radius:var(--r8);padding:7px 10px;flex:1;min-width:80px}
+.chip-lbl{font-size:9px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px}
+.chip-val{font-size:11px;font-weight:700}
+
+/* ── ACTION BUTTONS ── */
+.card-acts{display:flex;gap:6px;margin-top:2px}
+.abtn{flex:1;padding:9px 6px;border-radius:var(--r12);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:none;background:var(--bg3);color:var(--text2);transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.abtn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.abtn:hover{background:var(--lime-dim);color:var(--lime)}
+.abtn:active{opacity:.75}
+
+/* ── BOTTOM NAV — floating pill ── */
+.bottom-nav{flex-shrink:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,6px));background:transparent;display:flex;align-items:center}
+.bnav-track{position:relative;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:var(--r99);padding:7px 7px;box-shadow:0 8px 32px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);width:100%}
+.bnav-indicator{position:absolute;top:7px;height:44px;background:var(--lime);border-radius:var(--r99);pointer-events:none;z-index:0;transition:left .32s cubic-bezier(.34,1.4,.64,1),width .32s cubic-bezier(.34,1.4,.64,1)}
+.bnav-item{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:transparent;border-radius:var(--r99);height:44px;gap:6px;flex:1;padding:0 4px;white-space:nowrap}
+.bnav-icon{display:flex;align-items:center;justify-content:center;width:20px;height:20px;flex-shrink:0}
+.bnav-icon svg{width:18px;height:18px;fill:none;stroke:var(--text2);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.bnav-icon .fi{fill:var(--text2);stroke:none;width:18px;height:18px;transition:fill .2s}
+.bnav-label{font-size:12px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;color:#111;white-space:nowrap;display:inline-block;width:0;overflow:hidden;opacity:0;transition:width .3s cubic-bezier(.34,1.4,.64,1),opacity .2s}
+.bnav-item.active .bnav-label{opacity:1}
+.bnav-item.active .bnav-icon svg{stroke:#111}
+.bnav-item.active .bnav-icon .fi{fill:#111}
+
+/* ── BOUNCE ── */
+@keyframes bnav-bounce{
+  0%{transform:translateY(0) scale(1)}
+  28%{transform:translateY(-6px) scale(1.18)}
+  55%{transform:translateY(-2px) scale(1.06)}
+  72%{transform:translateY(-4px) scale(1.1)}
+  100%{transform:translateY(0) scale(1)}
+}
+.bnav-icon.bounce{animation:bnav-bounce .44s cubic-bezier(.36,.07,.19,.97);transform-origin:center center}
+
+/* ── EMPTY ── */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:48px 32px;text-align:center}
+.empty-icon{width:60px;height:60px;border-radius:var(--r20);background:var(--bg3);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.empty-icon svg{width:26px;height:26px;fill:none;stroke:var(--text3);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.empty-title{font-size:18px;font-weight:800}
+.empty-sub{font-size:13px;color:var(--text2);line-height:1.6;font-weight:500}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.scard{background:var(--bg2);border-radius:var(--r16);padding:14px 16px}
+.scard-num{font-size:34px;font-weight:800;letter-spacing:-1.5px;line-height:1;margin-bottom:3px}
+.scard-lab{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px}
+.sec-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-left:2px}
+
+/* ── RIWAYAT ── */
+.riw-section{margin-bottom:20px}
+.riw-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-left:2px}
+/* block per target */
+.riw-habit-block{background:var(--bg2);border-radius:var(--r16);margin-bottom:8px;overflow:hidden}
+.riw-habit-head{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+.riw-habit-icon{width:34px;height:34px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.riw-habit-info{flex:1;min-width:0}
+.riw-habit-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.riw-habit-meta{font-size:11px;color:var(--text2);font-weight:500;margin-top:1px}
+.riw-habit-pct{font-size:12px;font-weight:800;flex-shrink:0}
+/* mini progress in riwayat */
+.riw-habit-bar{height:2px;background:var(--bg4);margin:0 14px 10px}
+.riw-habit-fill{height:100%;border-radius:var(--r99)}
+/* rows */
+.riw-rows{padding:0 14px 10px}
+.riw-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--bg3)}
+.riw-info{flex:1;min-width:0}
+.riw-date{font-size:12px;color:var(--text2);font-weight:500}
+.riw-dur{font-size:12px;font-weight:800;color:var(--text);white-space:nowrap;flex-shrink:0}
+.riw-del{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--r8);background:transparent;border:none;color:var(--text3);cursor:pointer;flex-shrink:0;transition:background .12s,color .12s}
+.riw-del svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.riw-del:hover{background:var(--red-dim);color:var(--red)}
+.riw-more{width:100%;padding:8px;border-radius:var(--r8);background:var(--bg3);border:none;color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-top:6px;display:block}
+.riw-more:hover{background:var(--bg4)}
+
+/* ── RIWAYAT DETAIL MODAL ── */
+.riw-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:220;display:none;align-items:flex-end;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.riw-modal-bg.open{display:flex}
+.riw-modal{width:100%;max-width:430px;margin:0 auto;background:var(--bg2);border-radius:var(--r24) var(--r24) 0 0;padding:0 20px 36px;max-height:86vh;overflow-y:auto;animation:slide-up .22s ease}
+.riw-modal::-webkit-scrollbar{display:none}
+.riw-modal-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.riw-modal-icon{width:42px;height:42px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.riw-modal-title{font-size:18px;font-weight:800;letter-spacing:-0.4px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.riw-stats-row{display:flex;gap:8px;margin-bottom:16px}
+.riw-stat{flex:1;background:var(--bg3);border-radius:var(--r12);padding:10px 12px;text-align:center}
+.riw-stat-num{font-size:18px;font-weight:800;letter-spacing:-0.5px;line-height:1;margin-bottom:2px}
+.riw-stat-lab{font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px}
+.riw-full-list .riw-item{border-top:1px solid var(--bg3)}
+.riw-full-list .riw-item:first-child{border-top:none}
+/* ── STATS PER TARGET ── */
+.stcat-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-left:2px}
+.stblock{background:var(--bg2);border-radius:var(--r16);margin-bottom:8px;overflow:hidden}
+.stblock-head{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer}
+.stblock-icon{width:36px;height:36px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stblock-info{flex:1;min-width:0}
+.stblock-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stblock-snap{font-size:11px;color:var(--text2);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stblock-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.stblock-krusial{font-size:12px;font-weight:800;white-space:nowrap}
+.stblock-chev{width:18px;height:18px;flex-shrink:0;transition:transform .22s}
+.stblock-chev svg{width:14px;height:14px;stroke:var(--text3);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stblock.open .stblock-chev{transform:rotate(180deg)}
+.stblock-body{display:none;padding:0 14px 14px}
+.stblock.open .stblock-body{display:block}
+.stblock-sep{height:1px;background:var(--bg3);margin:0 0 14px}
+/* 3 angka — sama style dengan chip di halaman target */
+.st3{display:flex;gap:6px;margin-bottom:14px}
+.st3-card{flex:1;background:var(--bg3);border-radius:var(--r8);padding:7px 10px}
+.st3-lbl{font-size:9px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px}
+.st3-num{font-size:12px;font-weight:700}
+/* bar chart — lebih tinggi */
+.stchart{margin-bottom:14px}
+.stchart-title{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:8px}
+.stchart-outer{position:relative}
+.stchart-bars{display:flex;align-items:flex-end;gap:5px;height:100px;position:relative}
+.stchart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.stchart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px}
+.stchart-val{font-size:9px;font-weight:700;color:var(--text2);white-space:nowrap}
+.stchart-tline{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.18);pointer-events:none}
+.stchart-tline-lbl{position:absolute;right:0;font-size:8px;font-weight:700;color:var(--text3);white-space:nowrap;transform:translateY(-11px)}
+
+.settings-card{background:var(--bg2);border-radius:var(--r16);overflow:hidden;margin-bottom:8px}
+.srow{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border:none;background:transparent;width:100%;font-family:'Plus Jakarta Sans',sans-serif;text-align:left;transition:background .12s}
+.srow:hover{background:var(--bg3)}
+.srow+.srow{border-top:1px solid var(--bg3)}
+.srow-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.srow-icon svg{width:16px;height:16px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.srow-txt{flex:1}
+.srow-title{font-size:14px;font-weight:700;color:var(--text)}
+.srow-sub{font-size:11px;color:var(--text2);font-weight:500;margin-top:1px}
+.srow-chev{width:16px;height:16px;stroke:var(--text3);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sbadge{background:var(--bg3);border-radius:var(--r8);padding:3px 9px;font-size:10px;font-weight:700;color:var(--text2)}
+
+/* ── MODAL BASE ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.modal-bg.open{display:flex}
+.modal{width:100%;max-width:430px;margin:0 auto;background:var(--bg2);border-radius:var(--r24) var(--r24) 0 0;padding:0 20px 36px;max-height:92vh;overflow-y:auto;animation:slide-up .22s ease}
+.modal::-webkit-scrollbar{display:none}
+@keyframes slide-up{from{transform:translateY(44px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mpull{display:flex;justify-content:center;padding:12px 0 18px}
+.mpull-bar{width:38px;height:4px;background:var(--bg4);border-radius:var(--r99)}
+.modal h2{font-size:20px;font-weight:800;letter-spacing:-0.5px;margin-bottom:22px}
+.fg{margin-bottom:18px}
+.flbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;font-weight:700;margin-bottom:7px;display:block}
+.finput{width:100%;background:var(--bg3);border:none;border-radius:var(--r12);padding:12px 14px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none}
+.finput::placeholder{color:var(--text3)}
+.finput:focus{background:var(--bg4)}
+.fwarn{font-size:11px;color:var(--red);font-weight:600;margin-top:5px;padding-left:2px;display:none}
+.fbtns{display:flex;gap:8px;margin-top:24px}
+.fbtn-save{flex:1;padding:14px;border-radius:var(--r16);background:var(--lime);border:none;color:#111;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer}
+.fbtn-cancel{padding:14px 18px;border-radius:var(--r16);background:var(--bg3);border:none;color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+
+/* ── ICON + COLOR PICKERS ── */
+.igrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.iopt{padding:10px 6px;border-radius:var(--r12);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;transition:background .1s}
+.iopt svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.iopt.sel{background:var(--purple-dim)}
+.iopt.sel svg{stroke:var(--purple)}
+.cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.copt{height:32px;border-radius:var(--r8);cursor:pointer;border:none;transition:transform .1s}
+.copt.sel{transform:scale(1.12);box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+
+/* ── CATEGORY CHIPS ── */
+.kchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.kchip{padding:7px 13px;border-radius:var(--r99);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .12s}
+.kchip.sel{background:var(--purple-dim);color:var(--purple)}
+
+/* ── TARGET MODE SELECTOR ── */
+.tmode-row{display:flex;gap:6px;margin-bottom:4px}
+.tmode-opt{flex:1;padding:10px 6px;border-radius:var(--r12);background:var(--bg3);border:none;color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .14s,color .14s;text-align:center}
+.tmode-opt.active{background:var(--purple-dim);color:var(--purple)}
+.tmode-opt:not(.active):hover{background:var(--bg4);color:var(--text)}
+
+/* ── TARGET INPUTS ── */
+.target-inputs{display:flex;gap:8px}
+.tinput-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.tinput-lbl{font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
+.tinput{width:100%;background:var(--bg3);border:none;border-radius:var(--r12);padding:14px 6px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;text-align:center;outline:none;-webkit-appearance:none;letter-spacing:-0.5px}
+.tinput:focus{background:var(--bg4)}
+.tinput::-webkit-outer-spin-button,.tinput::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.tinput[type=number]{-moz-appearance:textfield}
+.target-preview{text-align:center;font-size:12px;color:var(--text2);font-weight:600;margin-top:10px;min-height:18px}
+
+/* ── STOP/RESTART OPTIONS ── */
+.stop-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.stop-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r12);background:var(--bg3);cursor:pointer;border:none;width:100%;font-family:'Plus Jakarta Sans',sans-serif;text-align:left;transition:background .12s}
+.stop-opt.sel{background:var(--bg4)}
+.sopt-radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--text3);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.stop-opt.sel .sopt-radio{border-color:var(--lime);background:var(--lime)}
+.stop-opt.sel .sopt-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:#111}
+.sopt-txt{font-size:13px;font-weight:600;color:var(--text)}
+.sopt-sub{font-size:11px;color:var(--text2);font-weight:500;margin-top:1px}
+
+/* ── CONFIRM DIALOG ── */
+.cf-bg{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.cf-bg.open{display:flex}
+.cf-box{width:100%;max-width:360px;background:var(--bg2);border-radius:var(--r20);padding:22px;animation:pop-in .18s ease}
+@keyframes pop-in{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.cf-title{font-size:17px;font-weight:800;letter-spacing:-0.4px;margin-bottom:7px}
+.cf-sub{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:16px;font-weight:500}
+.cf-btns{display:flex;gap:8px}
+.cf-btns button{flex:1;padding:12px;border-radius:var(--r12);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none}
+.cf-cancel{background:var(--bg3);color:var(--text2)}
+.cf-ok{background:var(--red-dim);color:var(--red)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg4);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:var(--r99);z-index:400;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── CAT MODAL ── */
+.cat-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:250;display:none;align-items:flex-end;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.cat-modal-bg.open{display:flex}
+.cat-modal{width:100%;max-width:430px;margin:0 auto;background:var(--bg2);border-radius:var(--r24) var(--r24) 0 0;padding:0 20px 36px;max-height:80vh;overflow-y:auto;animation:slide-up .22s ease}
+.cat-modal::-webkit-scrollbar{display:none}
+.cat-modal h2{font-size:18px;font-weight:800;letter-spacing:-0.4px;margin-bottom:16px}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--r12);margin-bottom:6px}
+.cat-item-name{font-size:13px;font-weight:700}
+.cat-item-sub{font-size:11px;color:var(--text2);font-weight:500;margin-top:1px}
+.cat-del{padding:5px 10px;border-radius:var(--r8);background:var(--bg4);border:none;color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+.cat-del:not([disabled]):hover{background:var(--lime-dim);color:var(--lime)}
+.cat-del[disabled]{opacity:.4;cursor:default}
+.cat-add-row{display:flex;gap:8px;margin-top:4px}
+.cat-add-input{flex:1;background:var(--bg3);border:none;border-radius:var(--r12);padding:10px 14px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;outline:none}
+.cat-add-input::placeholder{color:var(--text3)}
+.cat-add-btn{padding:10px 16px;border-radius:var(--r12);background:var(--lime-dim);color:var(--lime);border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.cat-add-btn:hover{background:#253a06}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-txt">
+      <h1 id="topbar-title">Target</h1>
+      <div class="sub" id="topbar-sub">Kebiasaanmu, terpantau.</div>
+    </div>
+    <button class="topbar-fab" id="fab-btn" onclick="openAddModal()">
+      <svg viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+    </button>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-row" id="filter-row">
+    <button class="fpill active" onclick="setFilter('active',this)">Aktif</button>
+    <button class="fpill" onclick="setFilter('inactive',this)">Tidak Aktif</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="scroll" id="main-scroll"></div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bnav-track" id="bnav-track">
+      <div class="bnav-indicator" id="bnav-indicator"></div>
+      <!-- Target -->
+      <button class="bnav-item active" id="bnav-target" onclick="switchTab('target',this)">
+        <div class="bnav-icon">
+          <svg class="fi" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12ZM74.36,80h42.33L77.16,119.52,40,114.34Zm74.41-9.45a76.65,76.65,0,0,1,59.11-22.47,76.46,76.46,0,0,1-22.42,59.16L128,164.68,91.32,128ZM176,181.64,141.67,216l-5.19-37.17L176,139.31Zm-74.16,9.5C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Z"/>
+          </svg>
+        </div>
+        <span class="bnav-label">Target</span>
+      </button>
+      <!-- Riwayat -->
+      <button class="bnav-item" id="bnav-riwayat" onclick="switchTab('riwayat',this)">
+        <div class="bnav-icon">
+          <svg class="fi" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M224,128A96,96,0,0,1,62.11,197.82a8,8,0,1,1,11-11.64A80,80,0,1,0,71.43,71.43C67.9,75,64.58,78.51,61.35,82L77.66,98.34A8,8,0,0,1,72,112H32a8,8,0,0,1-8-8V64a8,8,0,0,1,13.66-5.66L50,70.7c3.22-3.49,6.54-7,10.06-10.55A96,96,0,0,1,224,128ZM128,72a8,8,0,0,0-8,8v48a8,8,0,0,0,3.88,6.86l40,24a8,8,0,1,0,8.24-13.72L136,123.47V80A8,8,0,0,0,128,72Z"/>
+          </svg>
+        </div>
+        <span class="bnav-label">Riwayat</span>
+      </button>
+      <!-- Statistik -->
+      <button class="bnav-item" id="bnav-stats" onclick="switchTab('stats',this)">
+        <div class="bnav-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        </div>
+        <span class="bnav-label">Statistik</span>
+      </button>
+      <!-- Pengaturan -->
+      <button class="bnav-item" id="bnav-settings" onclick="switchTab('settings',this)">
+        <div class="bnav-icon">
+          <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <span class="bnav-label">Pengaturan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- STOP MODAL -->
+<div class="modal-bg" id="stop-modal" onclick="if(event.target===this)closeStopModal()">
+  <div class="modal">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <h2>Berhenti</h2>
+    <div class="fg">
+      <label class="flbl">Waktu Berhenti</label>
+      <div class="stop-opts">
+        <button class="stop-opt sel" id="stop-now-btn" onclick="selectStopOpt('now')">
+          <div class="sopt-radio"></div>
+          <div><div class="sopt-txt">Sekarang</div><div class="sopt-sub" id="stop-now-lbl">—</div></div>
+        </button>
+        <button class="stop-opt" id="stop-custom-btn" onclick="selectStopOpt('custom')">
+          <div class="sopt-radio"></div>
+          <div><div class="sopt-txt">Tentukan waktu lain</div><div class="sopt-sub">Masukkan waktu berhenti yang sebenarnya</div></div>
+        </button>
+      </div>
+      <input class="finput" id="stop-dt" type="datetime-local" style="display:none" onchange="validateStopDt()">
+      <div class="fwarn" id="stop-dt-warn">Waktu tidak boleh melebihi saat ini</div>
+    </div>
+    <div class="fbtns">
+      <button class="fbtn-cancel" onclick="closeStopModal()">Batal</button>
+      <button class="fbtn-save" style="background:var(--lime-dim);color:var(--lime)" onclick="doStopConfirm()">Berhenti</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTART MODAL -->
+<div class="modal-bg" id="restart-modal" onclick="if(event.target===this)closeRestartModal()">
+  <div class="modal">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <h2>Mulai Lagi</h2>
+    <div class="fg">
+      <label class="flbl">Mulai dari kapan?</label>
+      <div class="stop-opts">
+        <button class="stop-opt sel" id="restart-now-btn" onclick="selectRestartOpt('now')">
+          <div class="sopt-radio"></div>
+          <div><div class="sopt-txt">Sekarang</div><div class="sopt-sub" id="restart-now-lbl">—</div></div>
+        </button>
+        <button class="stop-opt" id="restart-custom-btn" onclick="selectRestartOpt('custom')">
+          <div class="sopt-radio"></div>
+          <div><div class="sopt-txt">Dari tanggal lain</div><div class="sopt-sub">Masukkan tanggal mulai yang sebenarnya</div></div>
+        </button>
+      </div>
+      <input class="finput" id="restart-dt" type="datetime-local" style="display:none">
+    </div>
+    <div class="fbtns">
+      <button class="fbtn-cancel" onclick="closeRestartModal()">Batal</button>
+      <button class="fbtn-save" onclick="doRestartConfirm()">Mulai Lagi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <h2 id="modal-h2">Tambah Tracker</h2>
+
+    <div class="fg"><label class="flbl">Nama</label><input class="finput" id="f-name" placeholder="cth. Ngga Marah" maxlength="44"></div>
+    <div class="fg"><label class="flbl">Ikon</label><div class="igrid" id="igrid"></div></div>
+    <div class="fg"><label class="flbl">Warna</label><div class="cgrid" id="cgrid"></div></div>
+
+    <div class="fg">
+      <label class="flbl">Kategori</label>
+      <div class="kchips" id="kchips"></div>
+      <button onclick="openCatModal()" style="width:100%;padding:10px 14px;border-radius:var(--r12);background:var(--bg3);border:none;color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4"/></svg>
+        Kelola / Tambah Kategori
+      </button>
+    </div>
+
+    <div class="fg">
+      <label class="flbl">Mulai Dari</label>
+      <input class="finput" id="f-start" type="datetime-local" onchange="onStartChange()">
+      <div class="fwarn" id="f-start-warn">Waktu tidak boleh melebihi saat ini</div>
+    </div>
+
+    <div class="fg">
+      <label class="flbl">Target</label>
+      <div class="tmode-row">
+        <button class="tmode-opt active" id="tmode-none"  onclick="selectTargetMode('none')">Tanpa Target</button>
+        <button class="tmode-opt"        id="tmode-until" onclick="selectTargetMode('until')">Sampai Tanggal</button>
+        <button class="tmode-opt"        id="tmode-dur"   onclick="selectTargetMode('dur')">Durasi</button>
+      </div>
+      <!-- Sampai Tanggal -->
+      <div id="until-wrap" style="display:none;margin-top:10px">
+        <input class="finput" id="f-until" type="datetime-local" onchange="onUntilChange()">
+        <div class="fwarn" id="f-until-warn">Harus setelah tanggal mulai</div>
+      </div>
+      <!-- Durasi -->
+      <div id="dur-wrap" style="display:none;margin-top:10px">
+        <div class="target-inputs">
+          <div class="tinput-wrap"><div class="tinput-lbl">Hari</div><input class="tinput" id="tp-d" type="number" min="0" placeholder="0" oninput="onDurInput()" onblur="normalizeDur()"></div>
+          <div class="tinput-wrap"><div class="tinput-lbl">Jam</div><input  class="tinput" id="tp-h" type="number" min="0" placeholder="0" oninput="onDurInput()" onblur="normalizeDur()"></div>
+          <div class="tinput-wrap"><div class="tinput-lbl">Menit</div><input class="tinput" id="tp-m" type="number" min="0" placeholder="0" oninput="onDurInput()" onblur="normalizeDur()"></div>
+        </div>
+      </div>
+      <div class="target-preview" id="target-preview"></div>
+    </div>
+
+    <div class="fbtns">
+      <button class="fbtn-cancel" onclick="closeModal()">Batal</button>
+      <button class="fbtn-save" onclick="saveHabit()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- KATEGORI MODAL -->
+<div class="cat-modal-bg" id="cat-modal-bg" onclick="if(event.target===this)closeCatModal()">
+  <div class="cat-modal">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <h2>Kelola Kategori</h2>
+    <div id="cat-list"></div>
+    <div class="cat-add-row">
+      <input class="cat-add-input" id="cat-input" placeholder="Nama kategori baru..." maxlength="30" onkeydown="if(event.key==='Enter')addCat()">
+      <button class="cat-add-btn" onclick="addCat()">+ Tambah</button>
+    </div>
+    <div style="font-size:12px;color:var(--text2);font-weight:500;line-height:1.6;padding:0 4px;margin-top:10px">Kategori default tidak bisa dihapus. Kategori kustom hanya bisa dihapus jika tidak dipakai tracker manapun.</div>
+    <div class="fbtns" style="margin-top:20px"><button class="fbtn-save" onclick="closeCatModal()">Selesai</button></div>
+  </div>
+</div>
+
+<!-- RIWAYAT DETAIL MODAL -->
+<div class="riw-modal-bg" id="riw-modal-bg" onclick="if(event.target===this)closeRiwayatModal()">
+  <div class="riw-modal" id="riw-modal-content">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <!-- content injected by JS -->
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="cf-bg" id="cf-bg">
+  <div class="cf-box">
+    <div class="cf-title" id="cf-title"></div>
+    <div class="cf-sub" id="cf-sub"></div>
+    <div class="cf-btns" id="cf-btns"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+'use strict';
+
+/* ════════════════════════════════════════
+   ICONS
+════════════════════════════════════════ */
+const ICONS = {
+  fast:   `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
+  angry:  `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 15s1.5-2 4-2 4 2 4 2"/><path d="M9 9l1.5 1.5M15 9l-1.5 1.5"/></svg>`,
+  ice:    `<svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>`,
+  run:    `<svg viewBox="0 0 24 24"><circle cx="14" cy="4" r="2"/><path d="M5 21l4-6 3 3 3-5 3 5M6 12l3-4 4 2 3-4"/></svg>`,
+  muscle: `<svg viewBox="0 0 24 24"><path d="M6.5 6.5c2-2 5-2 7 0l4 4c2 2 2 5 0 7s-5 2-7 0"/><path d="M9 9l6 6"/></svg>`,
+  phone:  `<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>`,
+  drink:  `<svg viewBox="0 0 24 24"><path d="M5 3h14l-2 14H7L5 3zM3 3h18M10 11h4"/></svg>`,
+  smoke:  `<svg viewBox="0 0 24 24"><path d="M2 16h12M2 19h12M17 16h.01M20 16h.01M20 8c0-2-2-4-4-4M16 8c0-1-1-2-2-2"/></svg>`,
+  sleep:  `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  water:  `<svg viewBox="0 0 24 24"><path d="M12 2C6 10 6 13 6 14a6 6 0 0 0 12 0c0-1 0-4-6-12z"/></svg>`,
+  yoga:   `<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M12 7v4M9 11H6M18 11h-3M9 11l-2 5M15 11l2 5"/></svg>`,
+  book:   `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/></svg>`,
+  game:   `<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="16" cy="11" r="1"/><circle cx="18" cy="13" r="1"/></svg>`,
+  coffee: `<svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
+  sugar:  `<svg viewBox="0 0 24 24"><path d="M9 3L3 9l9 9 9-9-6-6zM3 9h18"/></svg>`,
+  money:  `<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>`,
+  target: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+  heart:  `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+  walk:   `<svg viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><path d="M9 8l-2 6M15 8l2 6M9 14l-1 6M15 14l1 6M9 14h6"/></svg>`,
+  brain:  `<svg viewBox="0 0 24 24"><path d="M9.5 2a4.5 4.5 0 0 1 0 9H9v4h6V11h-.5a4.5 4.5 0 0 1 0-9"/><path d="M9 15v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5"/></svg>`,
+  social: `<svg viewBox="0 0 24 24"><circle cx="17" cy="8" r="4"/><circle cx="7" cy="8" r="4"/><path d="M1 20v-2a4 4 0 0 1 4-4h4M19 20v-2a4 4 0 0 0-4-4h-2"/></svg>`,
+  star:   `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  sun:    `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+  spicy:  `<svg viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+};
+const ICON_KEYS = Object.keys(ICONS);
+const COLORS = ['#c8f135','#9b72f8','#60a5fa','#3dd68c','#ff6060','#f5c030','#f472b6','#fb923c','#6ee7b7','#a78bfa','#38bdf8','#e879a0'];
+const DEFAULT_CATS = ['Kesehatan','Emosi','Produktivitas','Keuangan'];
+
+const TAB_META = {
+  target:   { title:'Target',     sub:'Kebiasaanmu, terpantau.' },
+  riwayat:  { title:'Riwayat',    sub:'Semua yang pernah diberhentikan.' },
+  stats:    { title:'Statistik',  sub:'Ringkasan kebiasaanmu.' },
+  settings: { title:'Pengaturan', sub:'Data & preferensi.' },
+};
+
+const SVG_EDIT    = `<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const SVG_STOP    = `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`;
+const SVG_RESTART = `<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 .5-3M3 3v6h6"/></svg>`;
+const SVG_TRASH   = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let habits = [], customCats = [];
+let currentTab = 'target', currentFilter = 'active';
+let editingId = null, ticker = null;
+let expandedIds = new Set();
+let openRiwayatCats = new Set(), showAllRiwayat = false;
+let fmIcon = ICON_KEYS[0], fmColor = COLORS[0], fmCat = '';
+let targetMode = 'none'; // 'none' | 'until' | 'dur'
+let stopHabitId = null, stopOpt = 'now';
+let restartHabitId = null, restartOpt = 'now';
+const expandedStats = new Set();
+
+/* ════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════ */
+function persist() {
+  try { localStorage.setItem('targetin1', JSON.stringify({ habits, customCats })); } catch(e) {}
+}
+function hydrate() {
+  try {
+    const d = JSON.parse(localStorage.getItem('targetin1') || '{}');
+    habits = d.habits || [];
+    customCats = d.customCats || [];
+  } catch(e) { habits = []; customCats = []; }
+  if (!habits.length) seed();
+  renderMain();
+  startTicker();
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function allCats() { return [...new Set([...DEFAULT_CATS, ...customCats])]; }
+
+function seed() {
+  const n = Date.now();
+  const d = 86400000, h = 3600000;
+
+  function mkHistory(stops) {
+    // stops: array of [daysAgo, durDays]
+    return stops.map(([ago, durD]) => ({
+      id: uid(),
+      stoppedAt: n - ago * d,
+      dur: durD * d + Math.floor(Math.random() * 6 * h)
+    }));
+  }
+
+  habits = [
+    // ── Kesehatan ──
+    {
+      id:uid(), name:'Intermittent Fasting', icon:'fast', color:'#c8f135', cat:'Kesehatan',
+      start:n - 3*d, goalMs:30*d, goalUntil:0, active:true, record:8*d,
+      history: mkHistory([[32,8],[55,5],[80,10],[100,3],[130,7]])
+    },
+    {
+      id:uid(), name:'Ngga Minum Es', icon:'water', color:'#60a5fa', cat:'Kesehatan',
+      start:n - 1*d, goalMs:21*d, goalUntil:0, active:true, record:18*d,
+      history: mkHistory([[22,18],[45,14],[70,9],[95,12],[120,6]])
+    },
+    {
+      id:uid(), name:'Tidur Sebelum Jam 11', icon:'sleep', color:'#a78bfa', cat:'Kesehatan',
+      start:n - 5*d, goalMs:14*d, goalUntil:0, active:true, record:11*d,
+      history: mkHistory([[18,11],[36,7],[58,9],[82,5],[105,4]])
+    },
+    // ── Emosi ──
+    {
+      id:uid(), name:'Ngga Marah', icon:'angry', color:'#9b72f8', cat:'Emosi',
+      start:n - 4*d, goalMs:7*d, goalUntil:0, active:true, record:6*d,
+      history: mkHistory([[12,6],[28,4],[46,5],[65,3],[90,7]])
+    },
+    {
+      id:uid(), name:'Ngga Overthinking', icon:'brain', color:'#f472b6', cat:'Emosi',
+      start:n - 2*d, goalMs:0, goalUntil:0, active:true, record:9*d,
+      history: mkHistory([[15,9],[38,5],[60,7],[88,4],[110,6]])
+    },
+    // ── Produktivitas ──
+    {
+      id:uid(), name:'Ngga Main HP Saat Kerja', icon:'phone', color:'#fb923c', cat:'Produktivitas',
+      start:n - 6*h, goalMs:7*d, goalUntil:0, active:true, record:5*d,
+      history: mkHistory([[10,5],[25,3],[42,6],[68,4],[92,2]])
+    },
+    {
+      id:uid(), name:'Ngga Begadang', icon:'star', color:'#38bdf8', cat:'Produktivitas',
+      start:n - 2*d, goalMs:14*d, goalUntil:0, active:false, stoppedAt:n - 2*d, record:7*d,
+      history: mkHistory([[2,7],[20,4],[40,6],[62,3],[85,5]])
+    },
+    // ── Keuangan ──
+    {
+      id:uid(), name:'Ngga Belanja Impulsif', icon:'money', color:'#3dd68c', cat:'Keuangan',
+      start:n - 8*d, goalMs:30*d, goalUntil:0, active:true, record:12*d,
+      history: mkHistory([[35,12],[58,8],[80,10],[105,6],[128,9]])
+    },
+  ];
+  persist();
+}
+
+/* ════════════════════════════════════════
+   TIME HELPERS
+════════════════════════════════════════ */
+function elapsed(h) {
+  return (!h.active && h.stoppedAt) ? h.stoppedAt - h.start : Date.now() - h.start;
+}
+function decompose(ms) {
+  const tot = Math.max(0, Math.floor(ms / 1000));
+  const s = tot % 60, m = Math.floor(tot/60) % 60, hr = Math.floor(tot/3600) % 24, d = Math.floor(tot/86400);
+  return { d, h:hr, m, s };
+}
+function fmtFull(ms) {
+  const { d, h, m } = decompose(ms);
+  return `${d} hari ${h} jam ${m} menit`;
+}
+function fmtBadge(ms) {
+  const { d, h, m } = decompose(ms);
+  if (d) return `${d}h ${h}j`;
+  if (h) return `${h}j ${m}m`;
+  return `${m}m`;
+}
+function fmtCompact(ms) {
+  const { d, h, m, s } = decompose(ms);
+  if (d) return `${d}h ${h}j ${m}m`;
+  if (h) return `${h}j ${m}m ${s}d`;
+  if (m) return `${m}m ${s}d`;
+  return `${s}d`;
+}
+function fmtGoal(ms) {
+  if (!ms) return 'Tanpa target';
+  return fmtFull(ms);
+}
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })
+    + ' · ' + new Date(ts).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+}
+function fmtDateShort(ts) {
+  return new Date(ts).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' })
+    + ' · ' + new Date(ts).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+}
+function toInputDT(ts) {
+  return new Date(ts - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
+}
+function effectiveGoalMs(h) {
+  if (h.goalUntil) return Math.max(0, h.goalUntil - h.start);
+  return h.goalMs || 0;
+}
+function pct(h) {
+  const g = effectiveGoalMs(h);
+  if (!g) return null;
+  return Math.min(100, Math.round(elapsed(h) / g * 100));
+}
+function iSvg(k, sz, col) {
+  return (ICONS[k] || ICONS.target).replace('<svg ', `<svg width="${sz}" height="${sz}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" `);
+}
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+let _toastT = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  if (_toastT) clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ════════════════════════════════════════
+   NAVBAR — sliding indicator
+════════════════════════════════════════ */
+function measureLabelWidth(label) {
+  const prev = label.style.width;
+  label.style.width = 'auto';
+  label.style.visibility = 'hidden';
+  label.style.overflow = 'visible';
+  const w = Math.ceil(label.getBoundingClientRect().width);
+  label.style.width = prev;
+  label.style.visibility = '';
+  label.style.overflow = 'hidden';
+  return w;
+}
+function activateLabel(item) {
+  const lbl = item.querySelector('.bnav-label');
+  if (lbl) lbl.style.width = measureLabelWidth(lbl) + 'px';
+}
+function deactivateLabel(item) {
+  const lbl = item.querySelector('.bnav-label');
+  if (lbl) lbl.style.width = '0px';
+}
+function moveIndicator(el) {
+  const track = document.getElementById('bnav-track');
+  const ind = document.getElementById('bnav-indicator');
+  if (!track || !ind || !el) return;
+  const tr = track.getBoundingClientRect(), er = el.getBoundingClientRect();
+  ind.style.left = (er.left - tr.left) + 'px';
+  ind.style.width = er.width + 'px';
+}
+function initIndicator() {
+  document.querySelectorAll('.bnav-item').forEach(it => {
+    if (!it.classList.contains('active')) deactivateLabel(it);
+    else activateLabel(it);
+  });
+  const active = document.querySelector('.bnav-item.active');
+  const ind = document.getElementById('bnav-indicator');
+  if (!active || !ind) return;
+  ind.style.transition = 'none';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    moveIndicator(active);
+    ind.style.transition = 'left .32s cubic-bezier(.34,1.4,.64,1),width .32s cubic-bezier(.34,1.4,.64,1)';
+  }));
+}
+
+/* ════════════════════════════════════════
+   TAB & FILTER
+════════════════════════════════════════ */
+function switchTab(v, el) {
+  currentTab = v;
+  document.querySelectorAll('.bnav-item').forEach(x => { x.classList.remove('active'); deactivateLabel(x); });
+  el.classList.add('active');
+  activateLabel(el);
+  // bounce
+  const ic = el.querySelector('.bnav-icon');
+  if (ic) { ic.classList.remove('bounce'); void ic.offsetWidth; ic.classList.add('bounce'); }
+  // slide indicator
+  requestAnimationFrame(() => requestAnimationFrame(() => moveIndicator(el)));
+  document.getElementById('filter-row').style.display = v === 'target' ? 'flex' : 'none';
+  const m = TAB_META[v] || TAB_META.target;
+  document.getElementById('topbar-title').textContent = m.title;
+  document.getElementById('topbar-sub').textContent = m.sub;
+  renderMain();
+}
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.fpill').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  renderMain();
+}
+function visibleHabits() {
+  if (currentFilter === 'inactive') return habits.filter(h => !h.active);
+  return habits.filter(h => h.active);
+}
+
+/* ════════════════════════════════════════
+   RENDER ROUTER
+════════════════════════════════════════ */
+function renderMain() {
+  const el = document.getElementById('main-scroll');
+  if (currentTab === 'stats')    { el.innerHTML = statsHTML();    return; }
+  if (currentTab === 'riwayat')  { el.innerHTML = riwayatHTML();  return; }
+  if (currentTab === 'settings') { el.innerHTML = settingsHTML(); return; }
+  renderTarget(el);
+}
+
+/* ════════════════════════════════════════
+   TAB: TARGET
+════════════════════════════════════════ */
+function renderTarget(el) {
+  const list = visibleHabits();
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 256 256" fill="var(--text3)" xmlns="http://www.w3.org/2000/svg"><path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12Z"/></svg></div><div class="empty-title">Belum ada tracker</div><div class="empty-sub">Tekan + untuk menambahkan tracker baru.</div></div>`;
+    return;
+  }
+  const groups = {};
+  list.forEach(h => { const k = h.cat || 'Umum'; if (!groups[k]) groups[k] = []; groups[k].push(h); });
+  el.innerHTML = Object.entries(groups).map(([cat, hs]) =>
+    `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
+  ).join('');
+}
+
+function rowHTML(h) {
+  const ms = elapsed(h), ia = h.active, p = pct(h), exp = expandedIds.has(h.id);
+  const { d, h:hr, m, s } = decompose(ms);
+  const ac = ia ? (h.color || 'var(--lime)') : 'var(--text3)';
+  const iconCol = ia ? (h.color || 'var(--lime)') : 'var(--text2)';
+  const gms = effectiveGoalMs(h);
+
+  const mulaiLabel = ia ? 'Mulai' : 'Terakhir Mulai';
+
+  const swipeBgClass = ia ? 'stop-bg' : 'del-bg';
+  const swipeIcon    = ia ? SVG_STOP : SVG_TRASH;
+  const swipeLabel   = ia ? 'Berhenti' : 'Hapus';
+
+  return `<div class="hrow-wrap" id="wrap-${h.id}">
+    <div class="swipe-bg ${swipeBgClass}">
+      <div class="swipe-icon">${swipeIcon}</div>
+      <span class="swipe-lbl">${swipeLabel}</span>
+    </div>
+    <div class="hrow${exp?' expanded':''}${!ia?' inactive':''}" id="row-${h.id}"
+         data-id="${h.id}" data-active="${ia}"
+         ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)"
+         onmousedown="swipeStart(event,this)" onmousemove="swipeMove(event,this)" onmouseup="swipeEnd(event,this)" onmouseleave="swipeCancel(this)">
+    <div class="hrow-head" onclick="toggleRow('${h.id}')">
+      <div class="hrow-icon" style="background:${ia ? h.color+'18' : 'var(--bg3)'}">${iSvg(h.icon,18,iconCol)}</div>
+      <div class="hrow-info">
+        <div class="hrow-name">${h.name}</div>
+        ${!exp ? `<div class="hrow-sub" style="color:${ia?'var(--text2)':'var(--text3)'}">
+          ${ia ? `${new Date(h.start).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})} · ${new Date(h.start).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}` : 'Tidak aktif'}
+        </div>` : ''}
+      </div>
+      <div class="hrow-right">
+        ${ia ? `<div class="hrow-badge" style="color:${ac}">${fmtBadge(ms)}</div>` : ''}
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      </div>
+    </div>
+    ${gms && p !== null ? `<div class="hrow-mini-bar"><div class="hrow-mini-fill" style="width:${p}%;background:${ia ? ac : 'var(--text3)'}"></div></div>` : ''}
+    <div class="hrow-body">
+      <div class="hrow-sep"></div>
+      <div class="big-time" style="color:${ia ? ac : 'var(--text2)'}">
+        <span class="big-num">${d}</span><span class="big-unit">hari</span>
+        <span class="big-num">${hr}</span><span class="big-unit">jam</span>
+        <span class="big-num">${m}</span><span class="big-unit">menit</span>
+      </div>
+      <div class="big-sec">${s} detik</div>
+      ${p !== null ? `<div class="cpbar">
+        <div class="cpbar-labels" style="color:${ia?'var(--text2)':'var(--text3)'}">
+          <span>${fmtGoal(gms)}</span><span>${p}%</span>
+        </div>
+        <div class="cpbar-track"><div class="cpbar-fill" style="width:${p}%;background:${ia ? ac : 'var(--text3)'}"></div></div>
+      </div>` : ''}
+      ${gms ? `<div class="chips">
+        <div class="chip"><div class="chip-lbl">${mulaiLabel}</div><div class="chip-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtDateShort(h.start)}</div></div>
+        ${h.record > 0 ? `<div class="chip"><div class="chip-lbl">Rekor</div><div class="chip-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtFull(h.record)}</div></div>` : ''}
+        <div class="chip"><div class="chip-lbl">Target</div><div class="chip-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtGoal(gms)}</div></div>
+      </div>` : `<div style="margin-bottom:12px">
+        <div class="irow"><span class="irow-lab">${mulaiLabel}</span><span class="irow-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtDate(h.start)}</span></div>
+        ${!ia && h.stoppedAt ? `<div class="irow"><span class="irow-lab">Berhenti</span><span class="irow-val" style="color:var(--text2)">${fmtDate(h.stoppedAt)}</span></div>` : ''}
+        ${h.record > 0 ? `<div class="irow"><span class="irow-lab">Rekor</span><span class="irow-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtFull(h.record)}</span></div>` : ''}
+      </div>`}
+      ${ia
+        ? `<div class="card-acts">
+            <button class="abtn" onclick="openEditModal('${h.id}')">${SVG_EDIT} Edit</button>
+            <button class="abtn" onclick="openStopModal('${h.id}')">${SVG_STOP} Berhenti</button>
+           </div>`
+        : `<div class="card-acts">
+            <button class="abtn" onclick="openRestartModal('${h.id}')">${SVG_RESTART} Mulai Lagi</button>
+            <button class="abtn" onclick="openEditModal('${h.id}')">${SVG_EDIT} Edit</button>
+            <button class="abtn" onclick="confirmDelete('${h.id}')">${SVG_TRASH} Hapus</button>
+           </div>`
+      }
+    </div>
+    </div>
+  </div>`;
+}
+/* ════════════════════════════════════════
+   SWIPE ACTION
+════════════════════════════════════════ */
+const SWIPE_PEEK  = 80;   // px — seberapa jauh untuk "peek" tombol
+const SWIPE_FULL  = 160;  // px — seberapa jauh untuk trigger aksi
+let _sw = null; // active swipe state
+
+function swipeStart(e, el) {
+  if (el.classList.contains('expanded')) return; // jangan swipe kalau expand
+  const touch = e.touches ? e.touches[0] : e;
+  _sw = { el, id: el.dataset.id, active: el.dataset.active === 'true',
+          startX: touch.clientX, startY: touch.clientY,
+          dx: 0, triggered: false, isSwipe: false };
+}
+
+function swipeMove(e, el) {
+  if (!_sw || _sw.el !== el) return;
+  const touch = e.touches ? e.touches[0] : e;
+  const dx = touch.clientX - _sw.startX;
+  const dy = touch.clientY - _sw.startY;
+
+  // Tentukan apakah ini swipe horizontal (abaikan vertical scroll)
+  if (!_sw.isSwipe && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+  if (!_sw.isSwipe) {
+    if (Math.abs(dy) > Math.abs(dx)) { _sw = null; return; } // vertical → batalkan
+    _sw.isSwipe = true;
+  }
+
+  if (e.cancelable) e.preventDefault();
+  _sw.dx = Math.max(-SWIPE_FULL * 1.2, Math.min(0, dx)); // hanya ke kiri
+
+  // Terapkan transform dengan sedikit resistance di luar SWIPE_FULL
+  let tx = _sw.dx;
+  if (tx < -SWIPE_FULL) tx = -SWIPE_FULL - (Math.abs(_sw.dx) - SWIPE_FULL) * 0.3;
+  el.style.transition = 'none';
+  el.style.transform = `translateX(${tx}px)`;
+}
+
+function swipeEnd(e, el) {
+  if (!_sw || _sw.el !== el || !_sw.isSwipe) { _sw = null; return; }
+  const dx = _sw.dx;
+  const id = _sw.id;
+  const isActive = _sw.active;
+  _sw = null;
+
+  el.style.transition = '';
+
+  if (dx <= -SWIPE_FULL) {
+    // Full swipe → trigger aksi langsung
+    el.style.transform = `translateX(-${SWIPE_FULL}px)`;
+    setTimeout(() => {
+      resetSwipe(el);
+      if (isActive) openStopModal(id);
+      else confirmDelete(id);
+    }, 180);
+  } else if (dx <= -SWIPE_PEEK) {
+    // Peek — tahan di posisi peek, tap di luar = reset
+    el.style.transform = `translateX(-${SWIPE_PEEK}px)`;
+    el._swiped = true;
+    // satu tap di luar card → reset
+    const dismiss = (ev) => {
+      if (!el.contains(ev.target)) {
+        resetSwipe(el);
+        document.removeEventListener('touchstart', dismiss);
+        document.removeEventListener('mousedown', dismiss);
+      }
+    };
+    setTimeout(() => {
+      document.addEventListener('touchstart', dismiss, { once:false, passive:true });
+      document.addEventListener('mousedown', dismiss, { once:false });
+    }, 50);
+  } else {
+    resetSwipe(el);
+  }
+}
+
+function swipeCancel(el) {
+  if (!_sw || _sw.el !== el) return;
+  _sw = null;
+  resetSwipe(el);
+}
+
+function resetSwipe(el) {
+  el.style.transition = 'transform .25s cubic-bezier(.25,.46,.45,.94)';
+  el.style.transform = 'translateX(0)';
+  el._swiped = false;
+}
+
+/* Override toggleRow agar tap pada card yang sedang di-peek akan reset dulu */
+function toggleRow(id) {
+  const el = document.getElementById('row-' + id);
+  if (el && el._swiped) { resetSwipe(el); return; }
+  if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
+  renderMain();
+}
+
+/* ════════════════════════════════════════
+   TAB: RIWAYAT
+════════════════════════════════════════ */
+const expandedRiwayat = new Set();
+
+function riwayatHTML() {
+  const habitsWithHistory = habits.filter(h => (h.history||[]).length > 0);
+
+  if (!habitsWithHistory.length) {
+    return `<div class="empty">
+      <div class="empty-icon">
+        <svg viewBox="0 0 256 256" fill="var(--text3)" xmlns="http://www.w3.org/2000/svg">
+          <path d="M224,128A96,96,0,0,1,62.11,197.82a8,8,0,1,1,11-11.64A80,80,0,1,0,71.43,71.43C67.9,75,64.58,78.51,61.35,82L77.66,98.34A8,8,0,0,1,72,112H32a8,8,0,0,1-8-8V64a8,8,0,0,1,13.66-5.66L50,70.7c3.22-3.49,6.54-7,10.06-10.55A96,96,0,0,1,224,128ZM128,72a8,8,0,0,0-8,8v48a8,8,0,0,0,3.88,6.86l40,24a8,8,0,1,0,8.24-13.72L136,123.47V80A8,8,0,0,0,128,72Z"/>
+        </svg>
+      </div>
+      <div class="empty-title">Belum ada riwayat</div>
+      <div class="empty-sub">Setiap kali menekan Berhenti, catatan akan muncul di sini.</div>
+    </div>`;
+  }
+
+  // Kelompokkan per kategori, sort abjad
+  const catMap = {};
+  habitsWithHistory.forEach(h => {
+    const cat = h.cat || 'Umum';
+    if (!catMap[cat]) catMap[cat] = [];
+    catMap[cat].push(h);
+  });
+  const sortedCats = Object.keys(catMap).sort((a,b) => a.localeCompare(b,'id'));
+
+  return sortedCats.map(cat => {
+    const catHabits = catMap[cat];
+    const blocks = catHabits.map(h => riwayatHabitBlock(h)).join('');
+    return `<div class="riw-section">
+      <div class="riw-section-label">${cat}</div>
+      ${blocks}
+    </div>`;
+  }).join('');
+}
+
+function riwayatHabitBlock(h) {
+  const hist = [...(h.history||[])].sort((a,b) => b.stoppedAt - a.stoppedAt);
+  const shown = hist.slice(0,3);
+  const p = pct(h);
+  const gms = effectiveGoalMs(h);
+  const ac = h.color || 'var(--lime)';
+
+  const rows = shown.map(rec => riwayatRow(h.id, rec)).join('');
+
+  const seeAllBtn = hist.length > 3
+    ? `<button class="riw-more" onclick="openRiwayatModal('${h.id}')">Lihat semua ${hist.length} entri</button>`
+    : '';
+
+  return `<div class="riw-habit-block">
+    <div class="riw-habit-head">
+      <div class="riw-habit-icon" style="background:${h.color}18">${iSvg(h.icon,16,h.color||'var(--lime)')}</div>
+      <div class="riw-habit-info">
+        <div class="riw-habit-name">${h.name}</div>
+      </div>
+    </div>
+    <div class="riw-rows">${rows}${seeAllBtn}</div>
+  </div>`;
+}
+
+function riwayatRow(hId, rec) {
+  return `<div class="riw-item">
+    <div class="riw-info">
+      <div class="riw-date">${fmtDateShort(rec.stoppedAt)}</div>
+    </div>
+    <div class="riw-dur">${fmtCompact(rec.dur)}</div>
+    <button class="riw-del" onclick="deleteRiwayat('${hId}','${rec.id}')" title="Hapus">${SVG_TRASH}</button>
+  </div>`;
+}
+
+/* ── Riwayat Detail Modal ── */
+let riwayatModalHabitId = null;
+
+function openRiwayatModal(hId) {
+  riwayatModalHabitId = hId;
+  renderRiwayatModal();
+  document.getElementById('riw-modal-bg').classList.add('open');
+}
+function closeRiwayatModal() {
+  document.getElementById('riw-modal-bg').classList.remove('open');
+  riwayatModalHabitId = null;
+}
+function renderRiwayatModal() {
+  const h = habits.find(x => x.id === riwayatModalHabitId);
+  if (!h) { closeRiwayatModal(); return; }
+
+  const hist = [...(h.history||[])].sort((a,b) => b.stoppedAt - a.stoppedAt);
+  const ac = h.color || 'var(--lime)';
+  const gms = effectiveGoalMs(h);
+  const p = pct(h);
+  const rows = hist.map(rec => riwayatRow(h.id, rec)).join('');
+
+  document.getElementById('riw-modal-content').innerHTML = `
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <div class="riw-modal-header">
+      <div class="riw-modal-icon" style="background:${h.color}18">${iSvg(h.icon,22,h.color||'var(--lime)')}</div>
+      <div class="riw-modal-title">${h.name}</div>
+    </div>
+    <div class="sec-label">${hist.length} Entri Riwayat</div>
+    <div class="riw-full-list">${rows}</div>
+    <div style="margin-top:16px">
+      <button class="fbtn-cancel" style="width:100%" onclick="closeRiwayatModal()">Tutup</button>
+    </div>
+  `;
+}
+
+function toggleRiwayatCat(c) {
+  if (openRiwayatCats.has(c)) openRiwayatCats.delete(c); else openRiwayatCats.add(c);
+  renderMain();
+}
+function deleteRiwayat(hId, recId) {
+  showConfirm('Hapus Entri?', 'Entri riwayat ini akan dihapus permanen.', [
+    { label:'Batal', cls:'cf-cancel' },
+    { label:'Hapus', cls:'cf-ok', action:() => {
+      const h = habits.find(x => x.id === hId);
+      if (h) h.history = (h.history||[]).filter(r => r.id !== recId);
+      persist();
+      // refresh modal kalau sedang buka
+      if (riwayatModalHabitId === hId) renderRiwayatModal();
+      renderMain();
+    }}
+  ]);
+}
+
+/* ════════════════════════════════════════
+   TAB: STATISTIK
+════════════════════════════════════════ */
+function statsHTML() {
+  const total = habits.length;
+  const active = habits.filter(h=>h.active).length;
+  const wg = habits.filter(h=>effectiveGoalMs(h)>0);
+  const completed = wg.filter(h=>(pct(h)||0)>=100).length;
+  const avgPct = wg.length ? Math.round(wg.reduce((s,h)=>s+(pct(h)||0),0)/wg.length) : 0;
+
+  // per kategori, abjad
+  const catMap = {};
+  habits.forEach(h => {
+    const k = h.cat || 'Umum';
+    if (!catMap[k]) catMap[k] = [];
+    catMap[k].push(h);
+  });
+  const sortedCats = Object.keys(catMap).sort((a,b)=>a.localeCompare(b,'id'));
+
+  const perTargetBlocks = sortedCats.map(cat => {
+    const blocks = catMap[cat].map(h => statsBlock(h)).join('');
+    return `<div style="margin-bottom:20px">
+      <div class="stcat-label">${cat}</div>
+      ${blocks}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="stats-grid">
+    <div class="scard"><div class="scard-num" style="color:var(--lime)">${total}</div><div class="scard-lab">Total</div></div>
+    <div class="scard"><div class="scard-num" style="color:var(--purple)">${active}</div><div class="scard-lab">Aktif</div></div>
+    <div class="scard"><div class="scard-num" style="color:#3dd68c">${completed}</div><div class="scard-lab">Target Tercapai</div></div>
+    <div class="scard"><div class="scard-num" style="color:#60a5fa">${avgPct}%</div><div class="scard-lab">Avg Progress</div></div>
+  </div>
+  <div class="sec-label" style="margin-top:4px">Per Target</div>
+  ${perTargetBlocks}`;
+}
+
+function statsBlock(h) {
+  const hist = [...(h.history||[])].sort((a,b)=>b.stoppedAt-a.stoppedAt);
+  const isOpen = expandedStats.has(h.id);
+  const ac = h.color || 'var(--lime)';
+  const gms = effectiveGoalMs(h);
+  const p = pct(h);
+  const ms = elapsed(h);
+
+  /* ── krusial: 1 angka di kanan ── */
+  let krusialVal = '', krusialColor = ac;
+  if (h.active) {
+    krusialVal = fmtBadge(ms); // durasi berjalan
+  } else if (hist.length) {
+    krusialVal = fmtBadge(hist[0].dur); // durasi sesi terakhir
+    krusialColor = 'var(--text2)';
+  }
+
+  /* ── 1 baris snapshot ── */
+  let snap = '';
+  if (h.active && gms) {
+    snap = `Progress ${p}% · ${fmtBadge(ms)} berjalan`;
+  } else if (h.active) {
+    snap = `Aktif · ${fmtBadge(ms)} berjalan`;
+  } else if (hist.length) {
+    snap = `${hist.length} sesi · terakhir ${fmtDateShort(hist[0].stoppedAt)}`;
+  } else {
+    snap = 'Belum ada riwayat';
+  }
+
+  if (!isOpen) {
+    return `<div class="stblock" id="stb-${h.id}" onclick="toggleStats('${h.id}')">
+      <div class="stblock-head">
+        <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,h.active?ac:'var(--text2)')}</div>
+        <div class="stblock-info">
+          <div class="stblock-name">${h.name}</div>
+          <div class="stblock-snap">${snap}</div>
+        </div>
+        <div class="stblock-right">
+          ${krusialVal ? `<div class="stblock-krusial" style="color:${krusialColor}">${krusialVal}</div>` : ''}
+          <div class="stblock-chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  /* ── expanded ── */
+  // 3 angka
+  const rekMs = h.record || (hist.length ? Math.max(...hist.map(r=>r.dur)) : 0);
+  const avgMs = hist.length ? Math.round(hist.reduce((s,r)=>s+r.dur,0)/hist.length) : 0;
+  const totalSesi = hist.length;
+
+  // mini bar chart — 5 sesi terakhir (index 0 = terbaru, tampil kiri ke kanan = lama ke baru)
+  const chartSessions = hist.slice(0,5).reverse(); // tampilkan lama→baru
+  const chartHTML = chartSessions.length >= 2 ? (() => {
+    const maxDur = Math.max(...chartSessions.map(r=>r.dur), gms||1);
+    const targetLineY = gms ? (1 - gms/maxDur)*100 : null;
+    const bars = chartSessions.map((r,i) => {
+      const heightPct = Math.max(5, Math.round(r.dur/maxDur*100));
+      const isLatest = i === chartSessions.length - 1;
+      const barColor = isLatest ? ac : ac + '55';
+      return `<div class="stchart-col">
+        <div class="stchart-val">${fmtBadge(r.dur)}</div>
+        <div class="stchart-bar" style="height:${heightPct}%;background:${barColor}"></div>
+      </div>`;
+    }).join('');
+    const tline = targetLineY !== null
+      ? `<div class="stchart-tline" style="top:${targetLineY}%"><span class="stchart-tline-lbl">Target ${fmtBadge(gms)}</span></div>`
+      : '';
+    return `<div class="stchart">
+      <div class="stchart-title">5 Sesi Terakhir${gms?' (-- = target)':''}</div>
+      <div class="stchart-outer">
+        <div class="stchart-bars">${bars}</div>
+        ${tline}
+      </div>
+    </div>`;
+  })() : '';
+
+  return `<div class="stblock open" id="stb-${h.id}">
+    <div class="stblock-head" onclick="toggleStats('${h.id}')">
+      <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,h.active?ac:'var(--text2)')}</div>
+      <div class="stblock-info">
+        <div class="stblock-name">${h.name}</div>
+        <div class="stblock-snap">${snap}</div>
+      </div>
+      <div class="stblock-right">
+        ${krusialVal ? `<div class="stblock-krusial" style="color:${krusialColor}">${krusialVal}</div>` : ''}
+        <div class="stblock-chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      </div>
+    </div>
+    <div class="stblock-body">
+      <div class="stblock-sep"></div>
+      <div class="st3">
+        <div class="st3-card">
+          <div class="st3-lbl">Rekor</div>
+          <div class="st3-num">${rekMs ? fmtBadge(rekMs) : '—'}</div>
+        </div>
+        <div class="st3-card">
+          <div class="st3-lbl">Rata-rata</div>
+          <div class="st3-num">${avgMs ? fmtBadge(avgMs) : '—'}</div>
+        </div>
+        <div class="st3-card">
+          <div class="st3-lbl">Total Sesi</div>
+          <div class="st3-num">${totalSesi}</div>
+        </div>
+      </div>
+      ${chartHTML}
+    </div>
+  </div>`;
+}
+
+function toggleStats(id) {
+  if (expandedStats.has(id)) expandedStats.delete(id);
+  else expandedStats.add(id);
+  renderMain();
+}
+
+/* ════════════════════════════════════════
+   TAB: PENGATURAN
+════════════════════════════════════════ */
+function settingsHTML() {
+  const total = habits.length, active = habits.filter(h=>h.active).length;
+  return `
+  <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
+    <div style="width:50px;height:50px;border-radius:50%;background:var(--lime-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">${iSvg('social',22,'var(--lime)')}</div>
+    <div><div style="font-size:15px;font-weight:800">Kamu</div><div style="font-size:12px;color:var(--text2);font-weight:500;margin-top:2px">${total} tracker · ${active} aktif</div></div>
+  </div>
+  <div class="sec-label">Data</div>
+  <div class="settings-card" style="margin-bottom:16px">
+    <button class="srow" onclick="doExport()">
+      <div class="srow-icon" style="background:var(--lime-dim)"><svg viewBox="0 0 24 24" stroke="var(--lime)"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Export Data</div><div class="srow-sub">Simpan semua tracker ke file JSON</div></div>
+      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="srow" onclick="triggerImport()">
+      <div class="srow-icon" style="background:var(--purple-dim)"><svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Import Data</div><div class="srow-sub">Gabungkan dari file JSON</div></div>
+      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+  <div class="sec-label">Kategori</div>
+  <div class="settings-card" style="margin-bottom:16px">
+    <button class="srow" onclick="openCatModal()">
+      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Kelola Kategori</div><div class="srow-sub">Tambah atau hapus kategori kustom</div></div>
+      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+  <div class="sec-label">Akun</div>
+  <div class="settings-card" style="margin-bottom:16px;opacity:.3;pointer-events:none">
+    <div class="srow">
+      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Login / Daftar</div><div class="srow-sub">Sync antar perangkat</div></div>
+      <span class="sbadge">Segera</span>
+    </div>
+  </div>
+  <div class="sec-label">Tentang</div>
+  <div class="settings-card" style="margin-bottom:24px">
+    <div class="srow" style="cursor:default">
+      <div class="srow-icon" style="background:var(--lime-dim)"><svg viewBox="0 0 24 24" stroke="var(--lime)"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Targetin</div><div class="srow-sub">Versi 2.0 · Local-first · Data tidak dikirim ke mana-mana</div></div>
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   TICKER
+════════════════════════════════════════ */
+function startTicker() {
+  if (ticker) clearInterval(ticker);
+  ticker = setInterval(() => { if (currentTab === 'target') renderMain(); }, 1000);
+}
+
+/* ════════════════════════════════════════
+   STOP MODAL
+════════════════════════════════════════ */
+function openStopModal(id) {
+  stopHabitId = id; stopOpt = 'now';
+  const now = new Date(); now.setSeconds(0,0);
+  document.getElementById('stop-now-lbl').textContent =
+    now.toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
+  const dtEl = document.getElementById('stop-dt');
+  dtEl.value = toInputDT(Date.now());
+  dtEl.max   = toInputDT(Date.now());
+  dtEl.style.outline = 'none';
+  document.getElementById('stop-dt-warn').style.display = 'none';
+  selectStopOpt('now');
+  document.getElementById('stop-modal').classList.add('open');
+}
+function closeStopModal() { document.getElementById('stop-modal').classList.remove('open'); stopHabitId = null; }
+function selectStopOpt(v) {
+  stopOpt = v;
+  document.getElementById('stop-now-btn').classList.toggle('sel', v==='now');
+  document.getElementById('stop-custom-btn').classList.toggle('sel', v==='custom');
+  const dtEl = document.getElementById('stop-dt');
+  dtEl.style.display = v==='custom' ? 'block' : 'none';
+  if (v === 'custom') {
+    dtEl.max = toInputDT(Date.now());
+    document.getElementById('stop-dt-warn').style.display = 'none';
+    dtEl.style.outline = 'none';
+  }
+}
+function validateStopDt() {
+  const dtEl = document.getElementById('stop-dt');
+  const warn = document.getElementById('stop-dt-warn');
+  const future = new Date(dtEl.value).getTime() > Date.now();
+  warn.style.display = future ? 'block' : 'none';
+  dtEl.style.outline = future ? '2px solid var(--red)' : 'none';
+}
+function doStopConfirm() {
+  if (!stopHabitId) return;
+  let ts = Date.now();
+  if (stopOpt === 'custom') {
+    const val = document.getElementById('stop-dt').value;
+    if (val) ts = new Date(val).getTime();
+    if (ts > Date.now()) { validateStopDt(); return; }
+  }
+  const h = habits.find(x => x.id === stopHabitId);
+  if (!h) return;
+  const dur = ts - h.start;
+  if (dur > h.record) h.record = dur;
+  if (!h.history) h.history = [];
+  h.history.unshift({ id:uid(), stoppedAt:ts, dur });
+  h.stoppedAt = ts; h.active = false;
+  persist(); closeStopModal(); renderMain();
+}
+
+/* ════════════════════════════════════════
+   RESTART MODAL
+════════════════════════════════════════ */
+function openRestartModal(id) {
+  restartHabitId = id; restartOpt = 'now';
+  const now = new Date(); now.setSeconds(0,0);
+  document.getElementById('restart-now-lbl').textContent =
+    now.toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
+  const dtEl = document.getElementById('restart-dt');
+  dtEl.value = toInputDT(Date.now());
+  dtEl.max   = toInputDT(Date.now());
+  selectRestartOpt('now');
+  document.getElementById('restart-modal').classList.add('open');
+}
+function closeRestartModal() { document.getElementById('restart-modal').classList.remove('open'); restartHabitId = null; }
+function selectRestartOpt(v) {
+  restartOpt = v;
+  document.getElementById('restart-now-btn').classList.toggle('sel', v==='now');
+  document.getElementById('restart-custom-btn').classList.toggle('sel', v==='custom');
+  const dtEl = document.getElementById('restart-dt');
+  dtEl.style.display = v==='custom' ? 'block' : 'none';
+  if (v === 'custom') dtEl.max = toInputDT(Date.now());
+}
+function doRestartConfirm() {
+  if (!restartHabitId) return;
+  let ts = Date.now();
+  if (restartOpt === 'custom') {
+    const val = document.getElementById('restart-dt').value;
+    if (val) ts = new Date(val).getTime();
+  }
+  const h = habits.find(x => x.id === restartHabitId);
+  h.start = ts; h.active = true; h.stoppedAt = null;
+  persist(); closeRestartModal();
+  switchTab('target', document.getElementById('bnav-target'));
+}
+
+/* ════════════════════════════════════════
+   ADD / EDIT MODAL
+════════════════════════════════════════ */
+function buildPickerUI() {
+  document.getElementById('igrid').innerHTML = ICON_KEYS.map(k =>
+    `<div class="iopt${k===fmIcon?' sel':''}" onclick="pickIcon('${k}')">${iSvg(k,20,k===fmIcon?'var(--purple)':'#fff')}</div>`
+  ).join('');
+  document.getElementById('cgrid').innerHTML = COLORS.map(c =>
+    `<div class="copt${c===fmColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`
+  ).join('');
+  document.getElementById('kchips').innerHTML = allCats().map(c =>
+    `<button class="kchip${c===fmCat?' sel':''}" onclick="pickCat('${c}',this)">${c}</button>`
+  ).join('');
+}
+function pickIcon(k) { fmIcon = k; buildPickerUI(); }
+function pickColor(c) { fmColor = c; buildPickerUI(); }
+function pickCat(c, el) { fmCat = c; document.querySelectorAll('.kchip').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); }
+
+/* Target mode */
+function selectTargetMode(mode) {
+  targetMode = mode;
+  ['none','until','dur'].forEach(m => {
+    document.getElementById('tmode-'+m).classList.toggle('active', m===mode);
+  });
+  const uw = document.getElementById('until-wrap');
+  const dw = document.getElementById('dur-wrap');
+  uw.style.display = mode==='until' ? 'block' : 'none';
+  dw.style.display = mode==='dur'   ? 'block' : 'none';
+  // clear the inactive field
+  if (mode !== 'until') {
+    document.getElementById('f-until').value = '';
+    document.getElementById('f-until-warn').style.display = 'none';
+  }
+  if (mode !== 'dur') {
+    ['tp-d','tp-h','tp-m'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  }
+  updateTargetPreview();
+}
+
+function onStartChange() {
+  const el = document.getElementById('f-start');
+  const warn = document.getElementById('f-start-warn');
+  const future = new Date(el.value).getTime() > Date.now();
+  warn.style.display = future ? 'block' : 'none';
+  el.style.outline = future ? '2px solid var(--red)' : 'none';
+  // update until min
+  const untilEl = document.getElementById('f-until');
+  if (el.value) untilEl.min = toInputDT(new Date(el.value).getTime() + 60000);
+  if (untilEl.value) onUntilChange();
+}
+function onUntilChange() {
+  const startTs = new Date(document.getElementById('f-start').value).getTime();
+  const untilTs = new Date(document.getElementById('f-until').value).getTime();
+  const warn = document.getElementById('f-until-warn');
+  const bad = startTs && untilTs <= startTs;
+  warn.style.display = bad ? 'block' : 'none';
+  document.getElementById('f-until').style.outline = bad ? '2px solid var(--red)' : 'none';
+  updateTargetPreview();
+}
+function onDurInput() { updateTargetPreview(); }
+function normalizeDur() {
+  const d = parseInt(document.getElementById('tp-d').value)||0;
+  const h = parseInt(document.getElementById('tp-h').value)||0;
+  const m = parseInt(document.getElementById('tp-m').value)||0;
+  const tot = d*1440 + h*60 + m;
+  document.getElementById('tp-d').value = Math.floor(tot/1440) || '';
+  document.getElementById('tp-h').value = Math.floor((tot%1440)/60) || '';
+  document.getElementById('tp-m').value = tot%60 || '';
+  updateTargetPreview();
+}
+function getDurMs() {
+  const d = parseInt(document.getElementById('tp-d').value)||0;
+  const h = parseInt(document.getElementById('tp-h').value)||0;
+  const m = parseInt(document.getElementById('tp-m').value)||0;
+  return ((d*86400)+(h*3600)+(m*60))*1000;
+}
+function updateTargetPreview() {
+  const el = document.getElementById('target-preview');
+  if (!el) return;
+  if (targetMode === 'none') { el.textContent = 'Tanpa target'; return; }
+  if (targetMode === 'until') {
+    const startTs = new Date(document.getElementById('f-start').value).getTime();
+    const untilTs = new Date(document.getElementById('f-until').value).getTime();
+    if (untilTs > startTs) { el.textContent = fmtGoal(untilTs - startTs); return; }
+    el.textContent = '';
+    return;
+  }
+  const ms = getDurMs();
+  el.textContent = ms ? fmtGoal(ms) : '';
+}
+
+function setTargetUI(goalMs, goalUntil) {
+  if (!goalMs && !goalUntil) { selectTargetMode('none'); return; }
+  if (goalUntil) {
+    selectTargetMode('until');
+    document.getElementById('f-until').value = toInputDT(goalUntil);
+  } else {
+    selectTargetMode('dur');
+    const { d, h, m } = decompose(goalMs);
+    document.getElementById('tp-d').value = d||'';
+    document.getElementById('tp-h').value = h||'';
+    document.getElementById('tp-m').value = m||'';
+  }
+  updateTargetPreview();
+}
+
+function openAddModal() {
+  editingId = null; fmIcon = ICON_KEYS[0]; fmColor = COLORS[0]; fmCat = '';
+  document.getElementById('modal-h2').textContent = 'Tambah Tracker';
+  document.getElementById('f-name').value = '';
+  const now = toInputDT(Date.now() - new Date().getSeconds()*1000);
+  document.getElementById('f-start').value = now;
+  document.getElementById('f-start').max   = toInputDT(Date.now());
+  document.getElementById('f-start').style.outline = 'none';
+  document.getElementById('f-start-warn').style.display = 'none';
+  buildPickerUI();
+  selectTargetMode('none');
+  document.getElementById('modal-bg').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 260);
+  const fab = document.getElementById('fab-btn');
+  if (fab) { fab.classList.remove('bounce'); void fab.offsetWidth; fab.classList.add('bounce'); }
+}
+function openEditModal(id) {
+  const h = habits.find(x => x.id === id); if (!h) return;
+  editingId = id; fmIcon = h.icon||ICON_KEYS[0]; fmColor = h.color||COLORS[0]; fmCat = h.cat||'';
+  document.getElementById('modal-h2').textContent = 'Edit Tracker';
+  document.getElementById('f-name').value = h.name;
+  document.getElementById('f-start').value = toInputDT(h.start);
+  document.getElementById('f-start').max   = toInputDT(Date.now());
+  document.getElementById('f-start').style.outline = 'none';
+  document.getElementById('f-start-warn').style.display = 'none';
+  buildPickerUI();
+  setTimeout(() => setTargetUI(h.goalMs||0, h.goalUntil||0), 50);
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
+
+function saveHabit() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+
+  const startRaw = document.getElementById('f-start').value;
+  const start = startRaw ? new Date(startRaw).getTime() : Date.now();
+  if (start > Date.now()) {
+    document.getElementById('f-start-warn').style.display = 'block';
+    document.getElementById('f-start').focus();
+    return;
+  }
+
+  let goalMs = 0, goalUntil = 0;
+  if (targetMode === 'dur') {
+    normalizeDur();
+    goalMs = getDurMs();
+  } else if (targetMode === 'until') {
+    const untilVal = document.getElementById('f-until').value;
+    if (!untilVal) { showToast('Isi tanggal target atau pilih Durasi.'); return; }
+    const untilTs = new Date(untilVal).getTime();
+    if (untilTs <= start) {
+      document.getElementById('f-until-warn').style.display = 'block';
+      document.getElementById('f-until').focus();
+      return;
+    }
+    goalUntil = untilTs;
+    goalMs = untilTs - start;
+  }
+
+  const cat = fmCat || 'Umum';
+  if (editingId) {
+    Object.assign(habits.find(x => x.id === editingId), { name, icon:fmIcon, color:fmColor, cat, start, goalMs, goalUntil });
+  } else {
+    habits.unshift({ id:uid(), name, icon:fmIcon, color:fmColor, cat, start, goalMs, goalUntil, active:true, record:0, history:[] });
+  }
+  persist(); closeModal(); renderMain();
+}
+
+/* ════════════════════════════════════════
+   KATEGORI MODAL
+════════════════════════════════════════ */
+function openCatModal() {
+  renderCatList();
+  document.getElementById('cat-input').value = '';
+  document.getElementById('cat-modal-bg').classList.add('open');
+}
+function closeCatModal() {
+  document.getElementById('cat-modal-bg').classList.remove('open');
+  // refresh chips in add/edit modal if open
+  const kc = document.getElementById('kchips');
+  if (kc) kc.innerHTML = allCats().map(c =>
+    `<button class="kchip${c===fmCat?' sel':''}" onclick="pickCat('${c}',this)">${c}</button>`
+  ).join('');
+}
+function renderCatList() {
+  const used = new Set(habits.map(h=>h.cat));
+  document.getElementById('cat-list').innerHTML = allCats().map(c => {
+    const isDef = DEFAULT_CATS.includes(c);
+    const inUse = used.has(c);
+    const cnt   = habits.filter(h=>h.cat===c).length;
+    return `<div class="cat-item">
+      <div><div class="cat-item-name">${c}</div><div class="cat-item-sub">${cnt>0 ? cnt+' tracker' : isDef ? 'Default' : 'Belum dipakai'}</div></div>
+      ${!isDef
+        ? `<button class="cat-del" ${inUse?'disabled':''} onclick="deleteCat('${c}')">${inUse?'Dipakai':'Hapus'}</button>`
+        : `<span style="font-size:11px;color:var(--text3);font-weight:600">Default</span>`}
+    </div>`;
+  }).join('');
+}
+function addCat() {
+  const val = document.getElementById('cat-input').value.trim();
+  if (!val) return;
+  if (allCats().includes(val)) { showToast('Kategori sudah ada.'); return; }
+  customCats.push(val);
+  persist();
+  document.getElementById('cat-input').value = '';
+  renderCatList();
+  showToast(`Kategori "${val}" ditambahkan.`);
+}
+function deleteCat(c) {
+  if (habits.some(h=>h.cat===c)) { showToast('Tidak bisa dihapus, masih dipakai tracker.'); return; }
+  showConfirm('Hapus Kategori?', `Kategori "${c}" akan dihapus.`, [
+    { label:'Batal', cls:'cf-cancel' },
+    { label:'Hapus', cls:'cf-ok', action:() => {
+      customCats = customCats.filter(x=>x!==c);
+      if (fmCat===c) fmCat='';
+      persist(); renderCatList();
+      showToast('Kategori dihapus.');
+    }}
+  ]);
+}
+
+/* ════════════════════════════════════════
+   EXPORT / IMPORT
+════════════════════════════════════════ */
+function doExport() {
+  const blob = new Blob([JSON.stringify({habits,customCats},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `targetin-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+function triggerImport() { document.getElementById('import-file').click(); }
+function handleImport(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      const imp = d.habits || d;
+      if (!Array.isArray(imp)) throw 0;
+      const ids = new Set(habits.map(h=>h.id));
+      const newOnes = imp.filter(h=>h.id&&h.name&&!ids.has(h.id));
+      habits = [...habits, ...newOnes];
+      if (d.customCats) customCats = [...new Set([...customCats,...d.customCats])];
+      persist(); renderMain();
+      showToast(`Import berhasil! ${newOnes.length} tracker ditambahkan.`);
+    } catch { showToast('File tidak valid.'); }
+  };
+  r.readAsText(file); e.target.value = '';
+}
+
+/* ════════════════════════════════════════
+   DELETE
+════════════════════════════════════════ */
+function confirmDelete(id) {
+  const h = habits.find(x=>x.id===id);
+  const histCount = (h.history||[]).length;
+  const sub = histCount > 0
+    ? `"${h.name}" akan dihapus permanen beserta ${histCount} entri riwayatnya.`
+    : `"${h.name}" akan dihapus permanen.`;
+  showConfirm('Hapus Tracker?', sub, [
+    { label:'Batal', cls:'cf-cancel' },
+    { label:'Hapus', cls:'cf-ok', action:() => {
+      habits = habits.filter(x=>x.id!==id);
+      expandedIds.delete(id);
+      persist(); renderMain();
+    }}
+  ]);
+}
+
+/* ════════════════════════════════════════
+   CONFIRM DIALOG
+════════════════════════════════════════ */
+function showConfirm(title, sub, btns) {
+  document.getElementById('cf-title').textContent = title;
+  document.getElementById('cf-sub').textContent = sub;
+  const bc = document.getElementById('cf-btns'); bc.innerHTML = '';
+  btns.forEach(b => {
+    const el = document.createElement('button');
+    el.textContent = b.label; el.className = b.cls || '';
+    el.onclick = () => { closeConfirm(); if (b.action) b.action(); };
+    bc.appendChild(el);
+  });
+  document.getElementById('cf-bg').classList.add('open');
+}
+function closeConfirm() { document.getElementById('cf-bg').classList.remove('open'); }
+document.getElementById('cf-bg').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeConfirm();
+});
+
+/* ════════════════════════════════════════
+   BOOT
+════════════════════════════════════════ */
+hydrate();
+requestAnimationFrame(initIndicator);
+window.addEventListener('resize', () => {
+  const a = document.querySelector('.bnav-item.active');
+  if (a) moveIndicator(a);
+});
+</script>
+</body>
+</html>
