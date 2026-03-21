@@ -23,17 +23,23 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .app{display:flex;flex-direction:column;height:100%;overflow:hidden}
 
 /* ── TOPBAR ── */
-.topbar{padding:52px 20px 8px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between}
-.topbar-txt h1{font-size:26px;font-weight:800;letter-spacing:-0.8px;line-height:1.1}
-.topbar-txt .sub{font-size:12px;color:var(--text2);margin-top:3px;font-weight:500}
-.topbar-fab{width:42px;height:42px;border-radius:50%;background:var(--lime);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(200,241,53,.3);transition:transform .12s;flex-shrink:0;margin-top:4px}
+.topbar{padding:48px 16px 0;flex-shrink:0}
+.topbar-brand{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px}
+.topbar-brand h1{font-size:24px;font-weight:800;letter-spacing:-0.8px;line-height:1}
+.topbar-sub{font-size:13px;font-weight:600;color:var(--text);text-align:left;padding-bottom:10px;letter-spacing:0}
+.topbar-filter{display:flex;align-items:center;gap:6px;padding:4px 0 10px}
+.topbar-filter-pills{display:flex;gap:6px;flex:1}
+.topbar-fab{height:32px;padding:0 14px;border-radius:var(--r99);background:var(--lime);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;box-shadow:0 2px 10px rgba(200,241,53,.3);transition:transform .12s;flex-shrink:0}
 .topbar-fab:active{transform:scale(.9)}
-.topbar-fab svg{width:18px;height:18px;stroke:#111;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.topbar-fab svg{width:15px;height:15px;stroke:#111;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── TARGET DIVIDER ── */
+.target-divider{display:flex;align-items:center;gap:10px;padding:16px 2px 12px}
+.target-divider-line{flex:1;height:1px;background:var(--bg3)}
+.target-divider-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;flex-shrink:0}
 
 /* ── FILTER PILLS ── */
-.filter-row{display:flex;gap:6px;padding:10px 20px 12px;flex-shrink:0;overflow-x:auto}
-.filter-row::-webkit-scrollbar{display:none}
-.fpill{padding:7px 16px;border-radius:var(--r99);background:var(--bg3);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.fpill{padding:6px 14px;border-radius:var(--r99);background:var(--bg3);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;white-space:nowrap;transition:all .15s;flex-shrink:0;height:32px;display:flex;align-items:center}
 .fpill.active{background:#fff;color:#111}
 
 /* ── SCROLL ── */
@@ -62,16 +68,16 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 
 /* ── SWIPE ACTION ── */
 .hrow-wrap{position:relative;margin-bottom:6px;border-radius:var(--r16);overflow:hidden}
-.hrow-wrap .hrow{margin-bottom:0;border-radius:var(--r16);position:relative;z-index:1;transition:transform .25s cubic-bezier(.25,.46,.45,.94);will-change:transform;touch-action:pan-y}
-.swipe-bg{position:absolute;inset:0;border-radius:var(--r16);display:flex;align-items:center;justify-content:flex-end;padding-right:16px;gap:10px;z-index:0}
-/* active: red stop bg */
+.hrow-wrap .hrow{margin-bottom:0;border-radius:var(--r16);position:relative;z-index:1;transition:transform .25s cubic-bezier(.25,.46,.45,.94);will-change:transform}
+.swipe-bg{position:absolute;inset:0;border-radius:var(--r16);display:flex;align-items:center;justify-content:flex-end;padding-right:20px;gap:8px;z-index:0}
 .swipe-bg.stop-bg{background:var(--red-dim)}
 .swipe-bg.stop-bg .swipe-lbl{color:var(--red)}
 .swipe-bg.stop-bg .swipe-icon svg{stroke:var(--red)}
-/* inactive: red delete bg */
 .swipe-bg.del-bg{background:var(--red-dim)}
 .swipe-bg.del-bg .swipe-lbl{color:var(--red)}
 .swipe-bg.del-bg .swipe-icon svg{stroke:var(--red)}
+.swipe-bg.arc-bg .swipe-lbl{color:#a3c75a}
+.swipe-bg.arc-bg .swipe-icon svg{stroke:#a3c75a}
 .swipe-icon{display:flex;align-items:center;justify-content:center;width:22px;height:22px}
 .swipe-icon svg{width:18px;height:18px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .swipe-lbl{font-size:13px;font-weight:800}
@@ -108,9 +114,9 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 
 /* ── ACTION BUTTONS ── */
 .card-acts{display:flex;gap:6px;margin-top:2px}
-.abtn{flex:1;padding:9px 6px;border-radius:var(--r12);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:none;background:var(--bg3);color:var(--text2);transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.abtn{flex:1;padding:9px 6px;border-radius:var(--r12);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:none;background:var(--bg3);color:var(--text);transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:4px}
 .abtn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.abtn:hover{background:var(--lime-dim);color:var(--lime)}
+.abtn:hover{background:var(--text);color:#111}
 .abtn:active{opacity:.75}
 
 /* ── BOTTOM NAV — floating pill ── */
@@ -334,19 +340,22 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="topbar-txt">
-      <h1 id="topbar-title">Target</h1>
-      <div class="sub" id="topbar-sub">Kebiasaanmu, terpantau.</div>
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 256 256" fill="var(--lime)" xmlns="http://www.w3.org/2000/svg">
+        <path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12ZM74.36,80h42.33L77.16,119.52,40,114.34Zm74.41-9.45a76.65,76.65,0,0,1,59.11-22.47,76.46,76.46,0,0,1-22.42,59.16L128,164.68,91.32,128ZM176,181.64,141.67,216l-5.19-37.17L176,139.31Zm-74.16,9.5C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Z"/>
+      </svg>
+      <h1>Targetin</h1>
     </div>
-    <button class="topbar-fab" id="fab-btn" onclick="openAddModal()">
-      <svg viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-    </button>
-  </div>
-
-  <!-- FILTER -->
-  <div class="filter-row" id="filter-row">
-    <button class="fpill active" onclick="setFilter('active',this)">Aktif</button>
-    <button class="fpill" onclick="setFilter('inactive',this)">Tidak Aktif</button>
+    <div class="topbar-sub" id="topbar-sub">Target</div>
+    <div class="topbar-filter" id="filter-row">
+      <div class="topbar-filter-pills">
+        <button class="fpill active" onclick="setFilter('active',this)">Target</button>
+        <button class="fpill" onclick="setFilter('inactive',this)">Arsip</button>
+      </div>
+      <button class="topbar-fab" id="fab-btn" onclick="openAddModal()">
+        <svg viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- CONTENT -->
@@ -520,6 +529,32 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
   <div class="riw-modal" id="riw-modal-content">
     <div class="mpull"><div class="mpull-bar"></div></div>
     <!-- content injected by JS -->
+  </div>
+</div>
+
+<!-- INFO MODAL (privasi & syarat) -->
+<div class="modal-bg" id="info-modal-bg" onclick="if(event.target===this)closeInfoModal()">
+  <div class="modal">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <h2 id="info-modal-title"></h2>
+    <div id="info-modal-body" style="color:var(--text2);font-size:13px;font-weight:500;line-height:1.7;min-height:120px"></div>
+    <div class="fbtns" style="margin-top:24px"><button class="fbtn-save" onclick="closeInfoModal()">Tutup</button></div>
+  </div>
+</div>
+
+<!-- MASUKAN MODAL -->
+<div class="modal-bg" id="masukan-modal-bg" onclick="if(event.target===this)closeMasukanModal()">
+  <div class="modal">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <h2>Kirim Masukan</h2>
+    <div class="fg">
+      <label class="flbl">Masukan kamu</label>
+      <textarea class="finput" id="masukan-text" rows="5" placeholder="Tulis masukan, saran, atau laporan bug di sini..." style="resize:none;line-height:1.6;min-height:120px"></textarea>
+    </div>
+    <div class="fbtns">
+      <button class="fbtn-cancel" onclick="closeMasukanModal()">Batal</button>
+      <button class="fbtn-save" onclick="submitMasukan()">Kirim</button>
+    </div>
   </div>
 </div>
 
@@ -794,20 +829,25 @@ function initIndicator() {
 /* ════════════════════════════════════════
    TAB & FILTER
 ════════════════════════════════════════ */
+const TAB_NAMES = { target:'Target', riwayat:'Riwayat', stats:'Statistik', settings:'Pengaturan' };
+
 function switchTab(v, el) {
   currentTab = v;
   document.querySelectorAll('.bnav-item').forEach(x => { x.classList.remove('active'); deactivateLabel(x); });
   el.classList.add('active');
   activateLabel(el);
-  // bounce
   const ic = el.querySelector('.bnav-icon');
   if (ic) { ic.classList.remove('bounce'); void ic.offsetWidth; ic.classList.add('bounce'); }
-  // slide indicator
   requestAnimationFrame(() => requestAnimationFrame(() => moveIndicator(el)));
-  document.getElementById('filter-row').style.display = v === 'target' ? 'flex' : 'none';
-  const m = TAB_META[v] || TAB_META.target;
-  document.getElementById('topbar-title').textContent = m.title;
-  document.getElementById('topbar-sub').textContent = m.sub;
+  // pills & fab hanya di tab target
+  const isTarget = v === 'target';
+  const fr = document.getElementById('filter-row');
+  if (fr) fr.style.display = isTarget ? 'flex' : 'none';
+  const fab = document.getElementById('fab-btn');
+  if (fab) fab.style.display = isTarget ? 'flex' : 'none';
+  // sub heading
+  const sub = document.getElementById('topbar-sub');
+  if (sub) sub.textContent = TAB_NAMES[v] || '';
   renderMain();
 }
 function setFilter(f, el) {
@@ -835,17 +875,61 @@ function renderMain() {
 /* ════════════════════════════════════════
    TAB: TARGET
 ════════════════════════════════════════ */
+const SVG_ARCHIVE = `<svg viewBox="0 0 24 24"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><path d="M10 12h4"/></svg>`;
+
 function renderTarget(el) {
-  const list = visibleHabits();
-  if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 256 256" fill="var(--text3)" xmlns="http://www.w3.org/2000/svg"><path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12Z"/></svg></div><div class="empty-title">Belum ada tracker</div><div class="empty-sub">Tekan + untuk menambahkan tracker baru.</div></div>`;
+  if (currentFilter === 'inactive') {
+    // ARSIP — hanya yang sudah diarsipkan (h.archived === true)
+    const archived = habits.filter(h => h.archived);
+    if (!archived.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><path d="M10 12h4"/></svg></div><div class="empty-title">Arsip kosong</div><div class="empty-sub">Target yang diarsipkan akan muncul di sini.</div></div>`;
+      return;
+    }
+    const groups = {};
+    archived.forEach(h => { const k = h.cat||'Umum'; if(!groups[k])groups[k]=[]; groups[k].push(h); });
+    el.innerHTML = Object.entries(groups).map(([cat, hs]) =>
+      `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
+    ).join('');
     return;
   }
-  const groups = {};
-  list.forEach(h => { const k = h.cat || 'Umum'; if (!groups[k]) groups[k] = []; groups[k].push(h); });
-  el.innerHTML = Object.entries(groups).map(([cat, hs]) =>
-    `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
-  ).join('');
+
+  // TARGET pill — aktif di atas, pembatas, tidak aktif (non-archived) di bawah
+  const active   = habits.filter(h => h.active);
+  const inactive = habits.filter(h => !h.active && !h.archived);
+
+  if (!active.length && !inactive.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 256 256" fill="var(--text3)" xmlns="http://www.w3.org/2000/svg"><path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12Z"/></svg></div><div class="empty-title">Belum ada target</div><div class="empty-sub">Tekan + untuk menambahkan target baru.</div></div>`;
+    return;
+  }
+
+  let html = '';
+
+  // Aktif
+  if (active.length) {
+    const g = {};
+    active.forEach(h => { const k=h.cat||'Umum'; if(!g[k])g[k]=[]; g[k].push(h); });
+    html += Object.entries(g).map(([cat,hs]) =>
+      `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
+    ).join('');
+  } else {
+    html += `<div style="padding:16px 2px 8px;font-size:13px;color:var(--text3);font-weight:500">Tidak ada target aktif.</div>`;
+  }
+
+  // Tidak aktif (bukan arsip)
+  if (inactive.length) {
+    const g = {};
+    inactive.forEach(h => { const k=h.cat||'Umum'; if(!g[k])g[k]=[]; g[k].push(h); });
+    html += `<div class="target-divider">
+      <div class="target-divider-line"></div>
+      <span class="target-divider-lbl">Tidak Aktif</span>
+      <div class="target-divider-line"></div>
+    </div>`;
+    html += Object.entries(g).map(([cat,hs]) =>
+      `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
+    ).join('');
+  }
+
+  el.innerHTML = html;
 }
 
 function rowHTML(h) {
@@ -857,9 +941,31 @@ function rowHTML(h) {
 
   const mulaiLabel = ia ? 'Mulai' : 'Terakhir Mulai';
 
-  const swipeBgClass = ia ? 'stop-bg' : 'del-bg';
-  const swipeIcon    = ia ? SVG_STOP : SVG_TRASH;
-  const swipeLabel   = ia ? 'Berhenti' : 'Hapus';
+  const isArchived = !!h.archived;
+  const swipeBgClass = ia ? 'stop-bg' : isArchived ? 'del-bg' : 'arc-bg';
+  const swipeIcon    = ia ? SVG_STOP : isArchived ? SVG_TRASH : SVG_ARCHIVE;
+  const swipeLabel   = ia ? 'Berhenti' : isArchived ? 'Hapus' : 'Arsipkan';
+
+  // card-acts per state
+  let cardActs = '';
+  if (ia) {
+    cardActs = `<div class="card-acts">
+      <button class="abtn" onclick="openEditModal('${h.id}')">${SVG_EDIT} Edit</button>
+      <button class="abtn" onclick="openStopModal('${h.id}')">${SVG_STOP} Berhenti</button>
+    </div>`;
+  } else if (isArchived) {
+    cardActs = `<div class="card-acts">
+      <button class="abtn" onclick="openRestartModal('${h.id}')">${SVG_RESTART} Mulai Lagi</button>
+      <button class="abtn" onclick="openEditModal('${h.id}')">${SVG_EDIT} Edit</button>
+      <button class="abtn" onclick="confirmDelete('${h.id}')">${SVG_TRASH} Hapus</button>
+    </div>`;
+  } else {
+    cardActs = `<div class="card-acts">
+      <button class="abtn" onclick="openRestartModal('${h.id}')">${SVG_RESTART} Mulai Lagi</button>
+      <button class="abtn" onclick="openEditModal('${h.id}')">${SVG_EDIT} Edit</button>
+      <button class="abtn" onclick="confirmArchive('${h.id}')">${SVG_ARCHIVE} Arsipkan</button>
+    </div>`;
+  }
 
   return `<div class="hrow-wrap" id="wrap-${h.id}">
     <div class="swipe-bg ${swipeBgClass}">
@@ -867,7 +973,7 @@ function rowHTML(h) {
       <span class="swipe-lbl">${swipeLabel}</span>
     </div>
     <div class="hrow${exp?' expanded':''}${!ia?' inactive':''}" id="row-${h.id}"
-         data-id="${h.id}" data-active="${ia}"
+         data-id="${h.id}" data-active="${ia}" data-archived="${isArchived}"
          ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)"
          onmousedown="swipeStart(event,this)" onmousemove="swipeMove(event,this)" onmouseup="swipeEnd(event,this)" onmouseleave="swipeCancel(this)">
     <div class="hrow-head" onclick="toggleRow('${h.id}')">
@@ -907,17 +1013,7 @@ function rowHTML(h) {
         ${!ia && h.stoppedAt ? `<div class="irow"><span class="irow-lab">Berhenti</span><span class="irow-val" style="color:var(--text2)">${fmtDate(h.stoppedAt)}</span></div>` : ''}
         ${h.record > 0 ? `<div class="irow"><span class="irow-lab">Rekor</span><span class="irow-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtFull(h.record)}</span></div>` : ''}
       </div>`}
-      ${ia
-        ? `<div class="card-acts">
-            <button class="abtn" onclick="openEditModal('${h.id}')">${SVG_EDIT} Edit</button>
-            <button class="abtn" onclick="openStopModal('${h.id}')">${SVG_STOP} Berhenti</button>
-           </div>`
-        : `<div class="card-acts">
-            <button class="abtn" onclick="openRestartModal('${h.id}')">${SVG_RESTART} Mulai Lagi</button>
-            <button class="abtn" onclick="openEditModal('${h.id}')">${SVG_EDIT} Edit</button>
-            <button class="abtn" onclick="confirmDelete('${h.id}')">${SVG_TRASH} Hapus</button>
-           </div>`
-      }
+      ${cardActs}
     </div>
     </div>
   </div>`;
@@ -925,73 +1021,66 @@ function rowHTML(h) {
 /* ════════════════════════════════════════
    SWIPE ACTION
 ════════════════════════════════════════ */
-const SWIPE_PEEK  = 80;   // px — seberapa jauh untuk "peek" tombol
-const SWIPE_FULL  = 160;  // px — seberapa jauh untuk trigger aksi
-let _sw = null; // active swipe state
+const SWIPE_REVEAL = 90;
+const SWIPE_COMMIT = 150;
+let _sw = null;
 
 function swipeStart(e, el) {
-  if (el.classList.contains('expanded')) return; // jangan swipe kalau expand
-  const touch = e.touches ? e.touches[0] : e;
+  if (el.classList.contains('expanded')) return;
+  if (e.touches && e.touches.length > 1) return;
+  const pt = e.touches ? e.touches[0] : e;
   _sw = { el, id: el.dataset.id, active: el.dataset.active === 'true',
-          startX: touch.clientX, startY: touch.clientY,
-          dx: 0, triggered: false, isSwipe: false };
+          startX: pt.clientX, startY: pt.clientY, dx: 0, dir: null };
 }
 
 function swipeMove(e, el) {
   if (!_sw || _sw.el !== el) return;
-  const touch = e.touches ? e.touches[0] : e;
-  const dx = touch.clientX - _sw.startX;
-  const dy = touch.clientY - _sw.startY;
+  const pt = e.touches ? e.touches[0] : e;
+  const dx = pt.clientX - _sw.startX;
+  const dy = pt.clientY - _sw.startY;
 
-  // Tentukan apakah ini swipe horizontal (abaikan vertical scroll)
-  if (!_sw.isSwipe && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-  if (!_sw.isSwipe) {
-    if (Math.abs(dy) > Math.abs(dx)) { _sw = null; return; } // vertical → batalkan
-    _sw.isSwipe = true;
+  if (!_sw.dir) {
+    if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+    _sw.dir = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
   }
+  if (_sw.dir === 'v') { _sw = null; return; }
 
   if (e.cancelable) e.preventDefault();
-  _sw.dx = Math.max(-SWIPE_FULL * 1.2, Math.min(0, dx)); // hanya ke kiri
-
-  // Terapkan transform dengan sedikit resistance di luar SWIPE_FULL
-  let tx = _sw.dx;
-  if (tx < -SWIPE_FULL) tx = -SWIPE_FULL - (Math.abs(_sw.dx) - SWIPE_FULL) * 0.3;
+  const rawDx = Math.min(0, dx);
+  let tx = rawDx;
+  if (tx < -SWIPE_COMMIT) tx = -SWIPE_COMMIT - (Math.abs(rawDx) - SWIPE_COMMIT) * 0.25;
+  _sw.dx = rawDx;
   el.style.transition = 'none';
   el.style.transform = `translateX(${tx}px)`;
 }
 
 function swipeEnd(e, el) {
-  if (!_sw || _sw.el !== el || !_sw.isSwipe) { _sw = null; return; }
-  const dx = _sw.dx;
-  const id = _sw.id;
-  const isActive = _sw.active;
+  if (!_sw || _sw.el !== el || _sw.dir !== 'h') { _sw = null; return; }
+  const dx = _sw.dx, id = _sw.id, isActive = _sw.active;
   _sw = null;
+  el.style.transition = 'transform .22s cubic-bezier(.25,.46,.45,.94)';
 
-  el.style.transition = '';
-
-  if (dx <= -SWIPE_FULL) {
-    // Full swipe → trigger aksi langsung
-    el.style.transform = `translateX(-${SWIPE_FULL}px)`;
+  if (dx <= -SWIPE_COMMIT) {
+    el.style.transform = `translateX(-${SWIPE_COMMIT}px)`;
     setTimeout(() => {
       resetSwipe(el);
       if (isActive) openStopModal(id);
-      else confirmDelete(id);
+      else if (el.dataset.archived === 'true') confirmDelete(id);
+      else confirmArchive(id);
     }, 180);
-  } else if (dx <= -SWIPE_PEEK) {
-    // Peek — tahan di posisi peek, tap di luar = reset
-    el.style.transform = `translateX(-${SWIPE_PEEK}px)`;
+  } else if (dx <= -SWIPE_REVEAL) {
+    el.style.transform = `translateX(-${SWIPE_REVEAL}px)`;
     el._swiped = true;
-    // satu tap di luar card → reset
     const dismiss = (ev) => {
-      if (!el.contains(ev.target)) {
+      if (!el.closest('.hrow-wrap').contains(ev.target)) {
         resetSwipe(el);
-        document.removeEventListener('touchstart', dismiss);
-        document.removeEventListener('mousedown', dismiss);
+        document.removeEventListener('touchstart', dismiss, true);
+        document.removeEventListener('mousedown', dismiss, true);
       }
     };
     setTimeout(() => {
-      document.addEventListener('touchstart', dismiss, { once:false, passive:true });
-      document.addEventListener('mousedown', dismiss, { once:false });
+      document.addEventListener('touchstart', dismiss, { capture:true, passive:true });
+      document.addEventListener('mousedown', dismiss, { capture:true });
     }, 50);
   } else {
     resetSwipe(el);
@@ -1000,22 +1089,33 @@ function swipeEnd(e, el) {
 
 function swipeCancel(el) {
   if (!_sw || _sw.el !== el) return;
-  _sw = null;
-  resetSwipe(el);
+  _sw = null; resetSwipe(el);
 }
-
 function resetSwipe(el) {
-  el.style.transition = 'transform .25s cubic-bezier(.25,.46,.45,.94)';
+  el.style.transition = 'transform .22s cubic-bezier(.25,.46,.45,.94)';
   el.style.transform = 'translateX(0)';
   el._swiped = false;
 }
-
-/* Override toggleRow agar tap pada card yang sedang di-peek akan reset dulu */
 function toggleRow(id) {
   const el = document.getElementById('row-' + id);
   if (el && el._swiped) { resetSwipe(el); return; }
   if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
   renderMain();
+}
+
+function confirmArchive(id) {
+  const h = habits.find(x => x.id === id);
+  if (!h) return;
+  showConfirm('Arsipkan Target?',
+    `"${h.name}" akan dipindahkan ke Arsip. Data dan riwayat tetap tersimpan. Untuk menghapus permanen, gunakan tombol Hapus di Arsip.`,
+    [
+      { label:'Batal', cls:'cf-cancel' },
+      { label:'Arsipkan', cls:'cf-ok', action:() => {
+        h.archived = true; h.active = false;
+        if (!h.stoppedAt) h.stoppedAt = Date.now();
+        persist(); renderMain();
+      }}
+    ]);
 }
 
 /* ════════════════════════════════════════
@@ -1179,7 +1279,7 @@ function statsHTML() {
     <div class="scard"><div class="scard-num" style="color:#3dd68c">${completed}</div><div class="scard-lab">Target Tercapai</div></div>
     <div class="scard"><div class="scard-num" style="color:#60a5fa">${avgPct}%</div><div class="scard-lab">Avg Progress</div></div>
   </div>
-  <div class="sec-label" style="margin-top:4px">Per Target</div>
+  <div class="sec-label" style="margin-top:4px"></div>
   ${perTargetBlocks}`;
 }
 
@@ -1304,11 +1404,13 @@ function toggleStats(id) {
 ════════════════════════════════════════ */
 function settingsHTML() {
   const total = habits.length, active = habits.filter(h=>h.active).length;
+  const SVG_PROFILE = `<svg viewBox="0 0 256 256" fill="var(--lime)" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"/></svg>`;
   return `
   <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
-    <div style="width:50px;height:50px;border-radius:50%;background:var(--lime-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">${iSvg('social',22,'var(--lime)')}</div>
+    <div style="width:50px;height:50px;border-radius:50%;background:var(--lime-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>
     <div><div style="font-size:15px;font-weight:800">Kamu</div><div style="font-size:12px;color:var(--text2);font-weight:500;margin-top:2px">${total} tracker · ${active} aktif</div></div>
   </div>
+
   <div class="sec-label">Data</div>
   <div class="settings-card" style="margin-bottom:16px">
     <button class="srow" onclick="doExport()">
@@ -1322,6 +1424,7 @@ function settingsHTML() {
       <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
     </button>
   </div>
+
   <div class="sec-label">Kategori</div>
   <div class="settings-card" style="margin-bottom:16px">
     <button class="srow" onclick="openCatModal()">
@@ -1330,6 +1433,7 @@ function settingsHTML() {
       <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
     </button>
   </div>
+
   <div class="sec-label">Akun</div>
   <div class="settings-card" style="margin-bottom:16px;opacity:.3;pointer-events:none">
     <div class="srow">
@@ -1338,13 +1442,59 @@ function settingsHTML() {
       <span class="sbadge">Segera</span>
     </div>
   </div>
+
   <div class="sec-label">Tentang</div>
-  <div class="settings-card" style="margin-bottom:24px">
-    <div class="srow" style="cursor:default">
-      <div class="srow-icon" style="background:var(--lime-dim)"><svg viewBox="0 0 24 24" stroke="var(--lime)"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-      <div class="srow-txt"><div class="srow-title">Targetin</div><div class="srow-sub">Versi 2.0 · Local-first · Data tidak dikirim ke mana-mana</div></div>
-    </div>
-  </div>`;
+  <div class="settings-card" style="margin-bottom:16px">
+    <button class="srow" onclick="openInfoModal('privasi')">
+      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Kebijakan Privasi</div></div>
+      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="srow" onclick="openInfoModal('syarat')">
+      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Syarat &amp; Ketentuan</div></div>
+      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="srow" onclick="openMasukanModal()">
+      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Kirim Masukan</div><div class="srow-sub">Bantu kami menjadi lebih baik</div></div>
+      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+
+  <div style="text-align:center;padding:8px 0 28px;font-size:11px;color:var(--text3);font-weight:600">Targetin · Versi 1.2.0</div>`;
+}
+
+/* ════════════════════════════════════════
+   INFO MODAL (Privasi & Syarat)
+════════════════════════════════════════ */
+function openInfoModal(type) {
+  const titles = { privasi:'Kebijakan Privasi', syarat:'Syarat & Ketentuan' };
+  document.getElementById('info-modal-title').textContent = titles[type] || '';
+  document.getElementById('info-modal-body').innerHTML =
+    `<div style="padding:24px 0;text-align:center;color:var(--text3)">Konten akan segera tersedia.</div>`;
+  document.getElementById('info-modal-bg').classList.add('open');
+}
+function closeInfoModal() {
+  document.getElementById('info-modal-bg').classList.remove('open');
+}
+
+/* ════════════════════════════════════════
+   MASUKAN MODAL
+════════════════════════════════════════ */
+function openMasukanModal() {
+  document.getElementById('masukan-text').value = '';
+  document.getElementById('masukan-modal-bg').classList.add('open');
+  setTimeout(() => document.getElementById('masukan-text').focus(), 260);
+}
+function closeMasukanModal() {
+  document.getElementById('masukan-modal-bg').classList.remove('open');
+}
+function submitMasukan() {
+  const val = document.getElementById('masukan-text').value.trim();
+  if (!val) { document.getElementById('masukan-text').focus(); return; }
+  closeMasukanModal();
+  showToast('Terima kasih atas masukanmu! 🙏');
 }
 
 /* ════════════════════════════════════════
@@ -1440,7 +1590,7 @@ function doRestartConfirm() {
     if (val) ts = new Date(val).getTime();
   }
   const h = habits.find(x => x.id === restartHabitId);
-  h.start = ts; h.active = true; h.stoppedAt = null;
+  h.start = ts; h.active = true; h.stoppedAt = null; h.archived = false;
   persist(); closeRestartModal();
   switchTab('target', document.getElementById('bnav-target'));
 }
