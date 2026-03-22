@@ -26,7 +26,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .topbar{padding:48px 16px 0;flex-shrink:0}
 .topbar-brand{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px}
 .topbar-brand h1{font-size:24px;font-weight:800;letter-spacing:-0.8px;line-height:1}
-.topbar-sub{font-size:13px;font-weight:600;color:var(--text);text-align:left;padding-bottom:10px;letter-spacing:0}
+.topbar-sub{font-size:20px;font-weight:700;color:var(--text);text-align:left;padding-bottom:10px;letter-spacing:-0.4px}
 .topbar-filter{display:flex;align-items:center;gap:6px;padding:4px 0 10px}
 .topbar-filter-pills{display:flex;gap:6px;flex:1}
 .topbar-fab{height:32px;padding:0 14px;border-radius:var(--r99);background:var(--lime);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;box-shadow:0 2px 10px rgba(200,241,53,.3);transition:transform .12s;flex-shrink:0}
@@ -333,9 +333,55 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .cat-add-input::placeholder{color:var(--text3)}
 .cat-add-btn{padding:10px 16px;border-radius:var(--r12);background:var(--lime-dim);color:var(--lime);border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 .cat-add-btn:hover{background:#253a06}
+/* ── AUTH SCREEN ── */
+.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;max-width:430px;margin:0 auto}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.auth-logo h1{font-size:32px;font-weight:800;letter-spacing:-1px}
+.auth-tagline{font-size:14px;color:var(--text2);font-weight:500;margin-bottom:48px;text-align:center;line-height:1.6}
+.auth-btn-google{width:100%;padding:15px 20px;border-radius:var(--r16);background:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:#111;transition:opacity .15s;margin-bottom:12px}
+.auth-btn-google:active{opacity:.8}
+.auth-btn-google img{width:20px;height:20px}
+.auth-btn-guest{width:100%;padding:15px 20px;border-radius:var(--r16);background:var(--bg3);border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text2);transition:background .15s;margin-bottom:20px}
+.auth-btn-guest:active{background:var(--bg4)}
+.auth-guest-info{background:var(--bg2);border-radius:var(--r12);padding:14px 16px;font-size:12px;color:var(--text2);font-weight:500;line-height:1.65;margin-bottom:24px;width:100%}
+.auth-guest-info strong{color:var(--text);font-weight:700}
+.auth-tos{font-size:11px;color:var(--text3);text-align:center;line-height:1.7;width:100%}
+.auth-tos a{color:var(--text2);text-decoration:underline;cursor:pointer}
+/* sync badge */
+.sync-badge{display:none;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--text3);padding:3px 8px;border-radius:var(--r99);background:var(--bg3);cursor:pointer}
+.sync-badge.visible{display:flex}
+.sync-badge svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sync-badge.syncing{color:var(--lime);background:var(--lime-dim)}
+.sync-badge.error{color:var(--red);background:var(--red-dim)}
 </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-logo">
+    <svg width="32" height="32" viewBox="0 0 256 256" fill="var(--lime)" xmlns="http://www.w3.org/2000/svg">
+      <path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12ZM74.36,80h42.33L77.16,119.52,40,114.34Zm74.41-9.45a76.65,76.65,0,0,1,59.11-22.47,76.46,76.46,0,0,1-22.42,59.16L128,164.68,91.32,128ZM176,181.64,141.67,216l-5.19-37.17L176,139.31Zm-74.16,9.5C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Z"/>
+    </svg>
+    <h1>Targetin</h1>
+  </div>
+  <p class="auth-tagline">Pantau kebiasaanmu,<br>capai targetmu.</p>
+
+  <button class="auth-btn-guest" onclick="continueAsGuest()">
+    Masuk tanpa Akun
+  </button>
+
+  <button class="auth-btn-google" onclick="signInGoogle()">
+    <img src="https://www.google.com/favicon.ico" alt="Google">
+    Masuk dengan Google
+  </button>
+
+  <div class="auth-tos">
+    Dengan masuk ke Targetin, kamu menyetujui<br>
+    <a onclick="openInfoModal('privasi')">Kebijakan Privasi</a> dan <a onclick="openInfoModal('syarat')">Syarat &amp; Ketentuan</a> kami.
+  </div>
+</div>
 <div class="app">
 
   <!-- TOPBAR -->
@@ -345,6 +391,10 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
         <path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12ZM74.36,80h42.33L77.16,119.52,40,114.34Zm74.41-9.45a76.65,76.65,0,0,1,59.11-22.47,76.46,76.46,0,0,1-22.42,59.16L128,164.68,91.32,128ZM176,181.64,141.67,216l-5.19-37.17L176,139.31Zm-74.16,9.5C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Z"/>
       </svg>
       <h1>Targetin</h1>
+      <div class="sync-badge" id="sync-badge" onclick="showSyncInfo()">
+        <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        <span id="sync-lbl">Tersimpan</span>
+      </div>
     </div>
     <div class="topbar-sub" id="topbar-sub">Target</div>
     <div class="topbar-filter" id="filter-row">
@@ -458,7 +508,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 <div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="mpull"><div class="mpull-bar"></div></div>
-    <h2 id="modal-h2">Tambah Tracker</h2>
+    <h2 id="modal-h2">Tambah Target</h2>
 
     <div class="fg"><label class="flbl">Nama</label><input class="finput" id="f-name" placeholder="cth. Ngga Marah" maxlength="44"></div>
     <div class="fg"><label class="flbl">Ikon</label><div class="igrid" id="igrid"></div></div>
@@ -870,6 +920,8 @@ function renderMain() {
   if (currentTab === 'riwayat')  { el.innerHTML = riwayatHTML();  return; }
   if (currentTab === 'settings') { el.innerHTML = settingsHTML(); return; }
   renderTarget(el);
+  // Pasang ulang swipe listeners setiap kali tab target dirender
+  requestAnimationFrame(initSwipeListeners);
 }
 
 /* ════════════════════════════════════════
@@ -973,9 +1025,7 @@ function rowHTML(h) {
       <span class="swipe-lbl">${swipeLabel}</span>
     </div>
     <div class="hrow${exp?' expanded':''}${!ia?' inactive':''}" id="row-${h.id}"
-         data-id="${h.id}" data-active="${ia}" data-archived="${isArchived}"
-         ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)"
-         onmousedown="swipeStart(event,this)" onmousemove="swipeMove(event,this)" onmouseup="swipeEnd(event,this)" onmouseleave="swipeCancel(this)">
+         data-id="${h.id}" data-active="${ia}" data-archived="${isArchived}">
     <div class="hrow-head" onclick="toggleRow('${h.id}')">
       <div class="hrow-icon" style="background:${ia ? h.color+'18' : 'var(--bg3)'}">${iSvg(h.icon,18,iconCol)}</div>
       <div class="hrow-info">
@@ -1019,44 +1069,62 @@ function rowHTML(h) {
   </div>`;
 }
 /* ════════════════════════════════════════
-   SWIPE ACTION
+   SWIPE ACTION — event delegation, passive:false
 ════════════════════════════════════════ */
-const SWIPE_REVEAL = 90;
-const SWIPE_COMMIT = 150;
+const SWIPE_REVEAL = 88;
+const SWIPE_COMMIT = 148;
 let _sw = null;
 
-function swipeStart(e, el) {
-  if (el.classList.contains('expanded')) return;
-  if (e.touches && e.touches.length > 1) return;
-  const pt = e.touches ? e.touches[0] : e;
-  _sw = { el, id: el.dataset.id, active: el.dataset.active === 'true',
-          startX: pt.clientX, startY: pt.clientY, dx: 0, dir: null };
+function getHrowTarget(el) {
+  let cur = el;
+  while (cur) {
+    if (cur.classList && cur.classList.contains('hrow') && cur.dataset.id) return cur;
+    cur = cur.parentElement;
+  }
+  return null;
 }
 
-function swipeMove(e, el) {
-  if (!_sw || _sw.el !== el) return;
-  const pt = e.touches ? e.touches[0] : e;
+function onTouchStart(e) {
+  if (e.touches.length > 1) return;
+  const target = getHrowTarget(e.target);
+  if (!target || target.classList.contains('expanded')) return;
+  const pt = e.touches[0];
+  _sw = {
+    el: target,
+    id: target.dataset.id,
+    active: target.dataset.active === 'true',
+    archived: target.dataset.archived === 'true',
+    startX: pt.clientX,
+    startY: pt.clientY,
+    dx: 0,
+    dir: null,
+  };
+}
+
+function onTouchMove(e) {
+  if (!_sw) return;
+  const pt = e.touches[0];
   const dx = pt.clientX - _sw.startX;
   const dy = pt.clientY - _sw.startY;
 
   if (!_sw.dir) {
-    if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
-    _sw.dir = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
+    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+    _sw.dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
   }
   if (_sw.dir === 'v') { _sw = null; return; }
 
-  if (e.cancelable) e.preventDefault();
+  e.preventDefault();
   const rawDx = Math.min(0, dx);
   let tx = rawDx;
-  if (tx < -SWIPE_COMMIT) tx = -SWIPE_COMMIT - (Math.abs(rawDx) - SWIPE_COMMIT) * 0.25;
+  if (tx < -SWIPE_COMMIT) tx = -SWIPE_COMMIT - (Math.abs(rawDx) - SWIPE_COMMIT) * 0.22;
   _sw.dx = rawDx;
-  el.style.transition = 'none';
-  el.style.transform = `translateX(${tx}px)`;
+  _sw.el.style.transition = 'none';
+  _sw.el.style.transform = `translateX(${tx}px)`;
 }
 
-function swipeEnd(e, el) {
-  if (!_sw || _sw.el !== el || _sw.dir !== 'h') { _sw = null; return; }
-  const dx = _sw.dx, id = _sw.id, isActive = _sw.active;
+function onTouchEnd(e) {
+  if (!_sw || _sw.dir !== 'h') { _sw = null; return; }
+  const { el, dx, id, active, archived } = _sw;
   _sw = null;
   el.style.transition = 'transform .22s cubic-bezier(.25,.46,.45,.94)';
 
@@ -1064,43 +1132,58 @@ function swipeEnd(e, el) {
     el.style.transform = `translateX(-${SWIPE_COMMIT}px)`;
     setTimeout(() => {
       resetSwipe(el);
-      if (isActive) openStopModal(id);
-      else if (el.dataset.archived === 'true') confirmDelete(id);
+      if (active) openStopModal(id);
+      else if (archived) confirmDelete(id);
       else confirmArchive(id);
-    }, 180);
+    }, 160);
   } else if (dx <= -SWIPE_REVEAL) {
     el.style.transform = `translateX(-${SWIPE_REVEAL}px)`;
     el._swiped = true;
     const dismiss = (ev) => {
-      if (!el.closest('.hrow-wrap').contains(ev.target)) {
+      const wrap = el.closest('.hrow-wrap');
+      if (wrap && !wrap.contains(ev.target)) {
         resetSwipe(el);
         document.removeEventListener('touchstart', dismiss, true);
         document.removeEventListener('mousedown', dismiss, true);
       }
     };
     setTimeout(() => {
-      document.addEventListener('touchstart', dismiss, { capture:true, passive:true });
-      document.addEventListener('mousedown', dismiss, { capture:true });
-    }, 50);
+      document.addEventListener('touchstart', dismiss, { capture: true, passive: true });
+      document.addEventListener('mousedown', dismiss, { capture: true });
+    }, 60);
   } else {
     resetSwipe(el);
   }
 }
 
-function swipeCancel(el) {
-  if (!_sw || _sw.el !== el) return;
-  _sw = null; resetSwipe(el);
-}
 function resetSwipe(el) {
   el.style.transition = 'transform .22s cubic-bezier(.25,.46,.45,.94)';
   el.style.transform = 'translateX(0)';
   el._swiped = false;
 }
+
+// Stub — tidak dipakai lagi dari inline handler
+function swipeStart(){}
+function swipeMove(){}
+function swipeEnd(){}
+function swipeCancel(el){ if(_sw&&_sw.el===el){_sw=null;resetSwipe(el);} }
+
 function toggleRow(id) {
   const el = document.getElementById('row-' + id);
   if (el && el._swiped) { resetSwipe(el); return; }
   if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
   renderMain();
+}
+
+function initSwipeListeners() {
+  const scroll = document.getElementById('main-scroll');
+  if (!scroll) return;
+  scroll.removeEventListener('touchstart', onTouchStart);
+  scroll.removeEventListener('touchmove', onTouchMove);
+  scroll.removeEventListener('touchend', onTouchEnd);
+  scroll.addEventListener('touchstart', onTouchStart, { passive: true });
+  scroll.addEventListener('touchmove',  onTouchMove,  { passive: false }); // passive:false agar preventDefault() bekerja
+  scroll.addEventListener('touchend',   onTouchEnd,   { passive: true });
 }
 
 function confirmArchive(id) {
@@ -1403,12 +1486,46 @@ function toggleStats(id) {
    TAB: PENGATURAN
 ════════════════════════════════════════ */
 function settingsHTML() {
-  const total = habits.length, active = habits.filter(h=>h.active).length;
   const SVG_PROFILE = `<svg viewBox="0 0 256 256" fill="var(--lime)" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"/></svg>`;
-  return `
+  const SVG_WARN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+  const SVG_GOOGLE = `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
+
+  const isLoggedIn = !!currentUser;
+  const profileName = isLoggedIn ? (currentUser.user_metadata?.full_name || currentUser.email || 'Pengguna') : 'Pengguna';
+  const profileEmail = isLoggedIn ? currentUser.email : '';
+
+  // ── Bagian profil ──
+  const profileSection = isLoggedIn ? `
   <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
-    <div style="width:50px;height:50px;border-radius:50%;background:var(--lime-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>
-    <div><div style="font-size:15px;font-weight:800">Kamu</div><div style="font-size:12px;color:var(--text2);font-weight:500;margin-top:2px">${total} tracker · ${active} aktif</div></div>
+    <div style="width:48px;height:48px;border-radius:50%;background:var(--lime-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${profileName}</div>
+      <div style="font-size:11px;color:var(--text2);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${profileEmail}</div>
+    </div>
+  </div>` : `
+  <div style="background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:800">Pengguna</div>
+        <div style="font-size:11px;color:var(--text2);font-weight:500;margin-top:2px">Masuk tanpa akun</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);font-weight:500;line-height:1.65;margin-bottom:14px;padding:0 2px">Data hanya tersimpan di perangkat ini dan akan hilang jika cache dihapus atau kamu pindah perangkat. Gunakan Export/Import untuk mengamankan data, atau masuk dengan Google agar data tersimpan di akunmu.</div>
+    <button onclick="signInGoogle()" style="width:100%;padding:13px 16px;border-radius:var(--r12);background:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#111;transition:opacity .15s">
+      ${SVG_GOOGLE}
+      Masuk dengan Google
+    </button>
+  </div>`;
+
+  return profileSection + `
+  <div class="sec-label">Kategori</div>
+  <div class="settings-card" style="margin-bottom:16px">
+    <button class="srow" onclick="openCatModal()">
+      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Kelola Kategori</div><div class="srow-sub">Tambah atau hapus kategori kustom</div></div>
+      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
   </div>
 
   <div class="sec-label">Data</div>
@@ -1423,24 +1540,6 @@ function settingsHTML() {
       <div class="srow-txt"><div class="srow-title">Import Data</div><div class="srow-sub">Gabungkan dari file JSON</div></div>
       <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
     </button>
-  </div>
-
-  <div class="sec-label">Kategori</div>
-  <div class="settings-card" style="margin-bottom:16px">
-    <button class="srow" onclick="openCatModal()">
-      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
-      <div class="srow-txt"><div class="srow-title">Kelola Kategori</div><div class="srow-sub">Tambah atau hapus kategori kustom</div></div>
-      <svg class="srow-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-    </button>
-  </div>
-
-  <div class="sec-label">Akun</div>
-  <div class="settings-card" style="margin-bottom:16px;opacity:.3;pointer-events:none">
-    <div class="srow">
-      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div>
-      <div class="srow-txt"><div class="srow-title">Login / Daftar</div><div class="srow-sub">Sync antar perangkat</div></div>
-      <span class="sbadge">Segera</span>
-    </div>
   </div>
 
   <div class="sec-label">Tentang</div>
@@ -1462,7 +1561,25 @@ function settingsHTML() {
     </button>
   </div>
 
-  <div style="text-align:center;padding:8px 0 28px;font-size:11px;color:var(--text3);font-weight:600">Targetin · Versi 1.2.0</div>`;
+  <div class="settings-card" style="margin-bottom:8px">
+    <button class="srow" onclick="${isLoggedIn ? 'signOut()' : 'signOut()'}">
+      <div class="srow-icon" style="background:var(--red-dim)"><svg viewBox="0 0 24 24" stroke="var(--red)"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
+      <div class="srow-txt"><div class="srow-title" style="color:var(--red)">Keluar</div></div>
+    </button>
+  </div>
+
+  <div class="settings-card" style="margin-bottom:8px">
+    <button class="srow" onclick="confirmDeleteAccount()">
+      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
+      <div class="srow-txt"><div class="srow-title">Hapus Akun dan Semua Data</div></div>
+    </button>
+  </div>
+
+  <div style="font-size:11px;color:var(--text3);font-weight:500;line-height:1.6;padding:6px 4px 4px;text-align:center">
+    Menghapus akun akan menghapus semua data secara permanen dan tidak bisa dibatalkan.
+  </div>
+
+  <div style="text-align:center;padding:16px 0 28px;font-size:11px;color:var(--text3);font-weight:600">Targetin · Versi 2.0.0</div>`;
 }
 
 /* ════════════════════════════════════════
@@ -1703,7 +1820,7 @@ function setTargetUI(goalMs, goalUntil) {
 
 function openAddModal() {
   editingId = null; fmIcon = ICON_KEYS[0]; fmColor = COLORS[0]; fmCat = '';
-  document.getElementById('modal-h2').textContent = 'Tambah Tracker';
+  document.getElementById('modal-h2').textContent = 'Tambah Target';
   document.getElementById('f-name').value = '';
   const now = toInputDT(Date.now() - new Date().getSeconds()*1000);
   document.getElementById('f-start').value = now;
@@ -1893,10 +2010,239 @@ document.getElementById('cf-bg').addEventListener('click', e => {
 });
 
 /* ════════════════════════════════════════
+   SUPABASE — AUTH & SYNC
+════════════════════════════════════════ */
+const SUPA_URL  = 'https://waesrqcmwucuihmyhkbd.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZXNycWNtd3VjdWlobXloa2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODIwMjYsImV4cCI6MjA4OTc1ODAyNn0.xsL-YdPxnqiLrhjmD1attWydgkLgWDpo5bEd34aKKLI';
+const supa      = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;   // null = tamu
+let isGuest     = false;
+let _syncTimer  = null;
+
+/* ── Auth screen ── */
+async function initAuth() {
+  // Cek session aktif (OAuth redirect kembali ke sini)
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    hideAuthScreen();
+    await loadFromSupabase();
+    return;
+  }
+  // Cek apakah user sudah pilih Guest sebelumnya
+  if (localStorage.getItem('targetin_guest') === '1') {
+    isGuest = true;
+    hideAuthScreen();
+    hydrate();
+    return;
+  }
+  // Tampilkan auth screen
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+function hideAuthScreen() {
+  const el = document.getElementById('auth-screen');
+  if (el) el.style.display = 'none';
+  updateSyncBadge('ok');
+}
+
+async function signInGoogle() {
+  const { error } = await supa.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://arsoagung.github.io/app/targetin' }
+  });
+  if (error) showToast('Gagal login: ' + error.message);
+}
+
+function continueAsGuest() {
+  isGuest = true;
+  localStorage.setItem('targetin_guest', '1');
+  hideAuthScreen();
+  hydrate();
+}
+
+/* ── Load dari Supabase ── */
+async function loadFromSupabase() {
+  try {
+    const { data, error } = await supa
+      .from('habits')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      habits = data.map(dbToHabit);
+      // load customCats dari localStorage (nanti bisa juga disimpan di DB)
+      try {
+        const d = JSON.parse(localStorage.getItem('targetin1') || '{}');
+        customCats = d.customCats || [];
+      } catch(e) { customCats = []; }
+    } else {
+      // Akun baru — seed data atau coba ambil dari localStorage
+      try {
+        const d = JSON.parse(localStorage.getItem('targetin1') || '{}');
+        habits = d.habits || [];
+        customCats = d.customCats || [];
+      } catch(e) {}
+      if (!habits.length) seed();
+      // Upload ke Supabase
+      await pushAllToSupabase();
+    }
+
+    renderMain();
+    startTicker();
+    updateSyncBadge('ok');
+  } catch(e) {
+    console.error('Load error:', e);
+    showToast('Gagal memuat data dari cloud.');
+    updateSyncBadge('error');
+    // Fallback ke lokal
+    hydrate();
+  }
+}
+
+/* ── Mapping DB ↔ habit object ── */
+function habitToDb(h) {
+  return {
+    id:         h.id,
+    user_id:    currentUser.id,
+    name:       h.name,
+    icon:       h.icon || 'target',
+    color:      h.color || '#c8f135',
+    cat:        h.cat || 'Umum',
+    start:      h.start,
+    goal_ms:    h.goalMs || 0,
+    goal_until: h.goalUntil || 0,
+    active:     h.active,
+    archived:   h.archived || false,
+    record:     h.record || 0,
+    stopped_at: h.stoppedAt || null,
+    history:    h.history || [],
+    updated_at: new Date().toISOString(),
+  };
+}
+function dbToHabit(row) {
+  return {
+    id:        row.id,
+    name:      row.name,
+    icon:      row.icon,
+    color:     row.color,
+    cat:       row.cat,
+    start:     row.start,
+    goalMs:    row.goal_ms,
+    goalUntil: row.goal_until,
+    active:    row.active,
+    archived:  row.archived,
+    record:    row.record,
+    stoppedAt: row.stopped_at,
+    history:   row.history || [],
+  };
+}
+
+/* ── Push semua ke Supabase (pertama kali) ── */
+async function pushAllToSupabase() {
+  if (!currentUser || !habits.length) return;
+  const rows = habits.map(habitToDb);
+  const { error } = await supa.from('habits').upsert(rows);
+  if (error) console.error('Push all error:', error);
+}
+
+/* ── Persist — override fungsi lama ── */
+function persist() {
+  // Selalu simpan lokal
+  try { localStorage.setItem('targetin1', JSON.stringify({ habits, customCats })); } catch(e) {}
+  // Kalau login, sync ke Supabase (debounce 800ms)
+  if (currentUser) {
+    updateSyncBadge('syncing');
+    if (_syncTimer) clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(syncToSupabase, 800);
+  }
+}
+
+async function syncToSupabase() {
+  if (!currentUser) return;
+  try {
+    const rows = habits.map(habitToDb);
+    const { error } = await supa.from('habits').upsert(rows, { onConflict: 'id' });
+    if (error) throw error;
+    updateSyncBadge('ok');
+  } catch(e) {
+    console.error('Sync error:', e);
+    updateSyncBadge('error');
+  }
+}
+
+/* ── Sync badge ── */
+function updateSyncBadge(state) {
+  const badge = document.getElementById('sync-badge');
+  const lbl   = document.getElementById('sync-lbl');
+  if (!badge || !lbl) return;
+  if (!currentUser) { badge.classList.remove('visible'); return; }
+  badge.classList.add('visible');
+  badge.className = 'sync-badge visible';
+  if (state === 'syncing') { badge.classList.add('syncing'); lbl.textContent = 'Menyimpan...'; }
+  else if (state === 'error') { badge.classList.add('error'); lbl.textContent = 'Gagal sync'; }
+  else { lbl.textContent = 'Tersimpan'; }
+}
+
+function showSyncInfo() {
+  if (!currentUser) return;
+  const email = currentUser.email || 'Akun Google';
+  showConfirm('Sinkronisasi Aktif', `Login sebagai ${email}. Data tersimpan otomatis ke cloud.`, [
+    { label:'Keluar', cls:'cf-ok', action: signOut },
+    { label:'Tutup', cls:'cf-cancel' },
+  ]);
+}
+
+async function signOut() {
+  if (currentUser) await supa.auth.signOut();
+  currentUser = null;
+  isGuest = false;
+  localStorage.removeItem('targetin_guest');
+  // Tampilkan auth screen langsung tanpa reload
+  habits = []; customCats = [];
+  document.getElementById('auth-screen').style.display = 'flex';
+  updateSyncBadge('ok');
+  if (ticker) clearInterval(ticker);
+}
+
+function confirmDeleteAccount() {
+  showConfirm(
+    'Hapus Akun dan Semua Data?',
+    'Semua data target dan riwayatmu akan dihapus permanen dari server dan tidak dapat dikembalikan.',
+    [
+      { label:'Batal', cls:'cf-cancel' },
+      { label:'Hapus Permanen', cls:'cf-ok', action: async () => {
+        try {
+          if (currentUser) {
+            // Hapus semua habit dari Supabase
+            await supa.from('habits').delete().eq('user_id', currentUser.id);
+            // Hapus akun user
+            await supa.rpc('delete_user');
+            await supa.auth.signOut();
+          }
+          // Hapus lokal
+          localStorage.clear();
+          location.reload();
+        } catch(e) {
+          showToast('Gagal menghapus akun. Coba lagi.');
+        }
+      }}
+    ]
+  );
+}
+
+/* ════════════════════════════════════════
    BOOT
 ════════════════════════════════════════ */
-hydrate();
+// Auth screen tersembunyi dulu (ditampilkan oleh initAuth jika perlu)
+document.getElementById('auth-screen').style.display = 'none';
+initAuth();
 requestAnimationFrame(initIndicator);
+requestAnimationFrame(initSwipeListeners);
 window.addEventListener('resize', () => {
   const a = document.querySelector('.bnav-item.active');
   if (a) moveIndicator(a);
