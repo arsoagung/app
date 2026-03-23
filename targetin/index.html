@@ -378,7 +378,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
   </button>
 
   <div class="auth-tos">
-    Dengan masuk via Google, kamu menyetujui<br>
+    Dengan menggunakan Targetin, kamu menyetujui<br>
     <a onclick="openInfoModal('privasi')">Kebijakan Privasi</a> dan <a onclick="openInfoModal('syarat')">Syarat &amp; Ketentuan</a> kami.
   </div>
 </div>
@@ -583,7 +583,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 </div>
 
 <!-- INFO MODAL (privasi & syarat) -->
-<div class="modal-bg" id="info-modal-bg" onclick="if(event.target===this)closeInfoModal()">
+<div class="modal-bg" id="info-modal-bg" style="z-index:600" onclick="if(event.target===this)closeInfoModal()">
   <div class="modal">
     <div class="mpull"><div class="mpull-bar"></div></div>
     <h2 id="info-modal-title"></h2>
@@ -1533,9 +1533,55 @@ function settingsHTML() {
 ════════════════════════════════════════ */
 function openInfoModal(type) {
   const titles = { privasi:'Kebijakan Privasi', syarat:'Syarat & Ketentuan' };
+
+  const PRIVASI_HTML = `
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">I. Pendahuluan dan Cakupan Filosofis</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Selamat datang di Targetin. Kami sangat menghargai privasi Anda sebagaimana kami menghargai ketepatan waktu dalam melacak setiap detik progres kebiasaan yang Anda bangun melalui antarmuka digital kami. Kebijakan Privasi ini merupakan instrumen hukum yang mengikat dan komprehensif, yang dirancang sedemikian rupa untuk menjabarkan secara eksklusif mengenai bagaimana protokol sistem kami mengidentifikasi, memproses, mengklasifikasi, dan mengarsipkan setiap fragmen data yang dihasilkan dari interaksi Anda dengan skrip-skrip yang berjalan pada peramban Anda. Dengan terus mengeksekusi aplikasi ini pada perangkat elektronik Anda, maka secara otomatis, tanpa paksaan, dan dalam kesadaran penuh, Anda dianggap telah menyetujui setiap klausa yang kami susun dalam narasi panjang ini.</p>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">II. Metodologi Pengumpulan Data dan Diferensiasi Pengguna</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8;margin-bottom:10px">Sistem kami beroperasi dalam dua moda operasional utama yang masing-masing memiliki implikasi data yang berbeda namun tetap berada dalam koridor pengembangan yang terintegrasi.</p>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">1. Moda Anonimitas (Guest)</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8;margin-bottom:10px">Apabila Anda memilih untuk berinteraksi tanpa melakukan autentikasi formal, sistem kami tetap akan mengalokasikan pengidentifikasi unik berbasis sesi yang disimpan secara lokal pada LocalStorage perangkat Anda. Data ini bersifat efemer namun esensial untuk menjaga persistensi data tracker Anda dalam satu lingkungan peramban yang sama tanpa adanya sinkronisasi lintas perangkat.</p>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">2. Moda Autentikasi Terintegrasi (Google SSO)</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Bagi pengguna yang menginginkan sinkronisasi data lintas platform melalui penyedia identitas pihak ketiga, yaitu Google, kami akan menerima token otorisasi yang mencakup namun tidak terbatas pada informasi identitas dasar yang telah Anda setujui pada dialog otorisasi Google. Hal ini diperlukan semata-mata untuk memetakan kepemilikan data pada baris-baris tabel di infrastruktur basis data kami.</p>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">III. Infrastruktur Penyimpanan dan Lokasi Data Global</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Penting untuk dipahami bahwa data Anda tidak mengendap dalam ruang hampa udara digital. Seluruh entri data, mulai dari judul habit, durasi since when, hingga catatan riwayat, disimpan dan dikelola pada infrastruktur cloud yang disediakan oleh Supabase. Perlu kami informasikan dengan bahasa yang sangat formal bahwa server Supabase ini dapat berlokasi di berbagai yurisdiksi geografis di luar wilayah negara Republik Indonesia. Dengan menggunakan layanan ini, Anda memberikan izin eksplisit bagi kami untuk melakukan transfer data lintas batas negara demi menjamin ketersediaan layanan (high availability) dan performa akses yang optimal. Kami menjamin bahwa data ini digunakan hanya untuk kepentingan pengembangan internal dan tidak akan diserahkan kepada entitas asing mana pun untuk kepentingan yang tidak relevan dengan fungsionalitas aplikasi.</p>
+    </div>
+
+    <div>
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">IV. Retensi, Persistensi, dan Penghapusan Permanen Data</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Data Anda memiliki masa hidup yang bergantung sepenuhnya pada status akun Anda. Selama akun Anda dianggap aktif dalam sistem kami, data akan tetap tersimpan dalam basis data produksi kami. Namun, sesuai dengan komitmen kami terhadap hak pengguna untuk dilupakan, kami menyediakan prosedur de-provisioning akun secara mandiri. Melalui menu pengaturan, Anda dapat memicu fungsi penghapusan akun yang akan mengeksekusi perintah penghapusan secara rekursif pada tabel-tabel terkait di server Supabase dan membersihkan seluruh residu data pada penyimpanan lokal (localStorage) perangkat Anda. Setelah prosedur ini diselesaikan, data tersebut akan hilang secara permanen dan tidak dapat dipulihkan melalui metode forensik digital apa pun yang kami miliki.</p>
+    </div>`;
+
+  const SYARAT_HTML = `
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">1. Definisi Operasional dan Ketentuan Umum</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Penggunaan istilah "Kami", "Aplikasi", atau "Targetin" merujuk pada entitas pengembang layanan ini. Layanan ini disediakan sebagai alat bantu pelacakan kebiasaan personal yang bersifat opsional. Anda dilarang menggunakan aplikasi ini untuk tujuan yang melanggar hukum, melakukan eksploitasi pada API Supabase kami, atau mencoba melakukan injeksi skrip berbahaya melalui kolom input yang tersedia.</p>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">2. Batasan Tanggung Jawab dan Disclaimer Medis</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Aplikasi ini menyediakan fitur pelacakan waktu, termasuk namun tidak terbatas pada Intermittent Fasting atau pantangan konsumsi tertentu (seperti no ice). Anda dengan ini memahami dan setuju bahwa Targetin bukanlah aplikasi medis, klinis, atau kesehatan profesional. Segala kalkulasi durasi dan indikator progres adalah murni hasil komputasi matematis berdasarkan input manual Anda. Kami tidak bertanggung jawab atas kondisi kesehatan, dampak fisik, atau konsekuensi biologis lainnya yang timbul dari aktivitas yang Anda lacak. Selalu konsultasikan dengan ahli medis sebelum memulai rutinitas fisik atau pola makan yang ekstrem.</p>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">3. Perlindungan Anak dan Kelayakan Pengguna</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Meskipun antarmuka kami dirancang secara universal, aplikasi ini tidak ditujukan secara spesifik untuk audiens di bawah usia dewasa menurut hukum yang berlaku di wilayah Anda. Segala bentuk data anak-anak yang mungkin masuk ke dalam sistem kami hanya dapat dilakukan melalui input manual dari orang tua atau wali yang sah yang memiliki akses terhadap perangkat tersebut. Kami tidak melakukan verifikasi usia secara aktif, namun kami berhak menghapus data yang terindikasi melanggar ketentuan ini.</p>
+    </div>
+
+    <div>
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px">4. Perubahan Ketentuan secara Unilateral</div>
+      <p style="color:var(--text2);font-size:12px;font-weight:500;line-height:1.8">Kami berhak, atas kebijakan tunggal kami, untuk mengubah, memodifikasi, menambah, atau menghapus bagian-bagian dari dokumen ini kapan saja tanpa pemberitahuan tertulis sebelumnya kepada Anda. Adalah tanggung jawab Anda untuk secara berkala meninjau halaman kebijakan ini guna memastikan bahwa Anda tetap berada dalam kesepahaman dengan standar operasional terbaru kami. Kegagalan Anda untuk memahami atau membaca dokumen yang panjang ini tidak menghapuskan kewajiban Anda untuk tunduk pada aturan yang ada di dalamnya.</p>
+    </div>`;
+
   document.getElementById('info-modal-title').textContent = titles[type] || '';
-  document.getElementById('info-modal-body').innerHTML =
-    `<div style="padding:24px 0;text-align:center;color:var(--text3)">Konten akan segera tersedia.</div>`;
+  document.getElementById('info-modal-body').innerHTML = type === 'privasi' ? PRIVASI_HTML : SYARAT_HTML;
   document.getElementById('info-modal-bg').classList.add('open');
 }
 function closeInfoModal() {
