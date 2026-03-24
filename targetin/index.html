@@ -219,12 +219,15 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .st3-num{font-size:12px;font-weight:700}
 /* bar chart — lebih tinggi */
 .stchart{margin-bottom:14px}
-.stchart-title{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:8px}
-.stchart-outer{position:relative}
-.stchart-bars{display:flex;align-items:flex-end;gap:5px;height:100px;position:relative}
-.stchart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
-.stchart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px}
-.stchart-val{font-size:9px;font-weight:700;color:var(--text2);white-space:nowrap}
+.stchart-title{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.stchart-title-hint{font-size:9px;color:var(--text3);font-weight:500}
+.stchart-scroll{overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.stchart-scroll::-webkit-scrollbar{display:none}
+.stchart-outer{position:relative;height:100px}
+.stchart-bars{display:flex;align-items:flex-end;gap:6px;height:100%;min-width:100%}
+.stchart-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;flex-shrink:0;width:32px}
+.stchart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .3s}
+.stchart-val{font-size:8px;font-weight:700;color:var(--text2);white-space:nowrap;text-align:center}
 .stchart-tline{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.18);pointer-events:none}
 .stchart-tline-lbl{position:absolute;right:0;font-size:8px;font-weight:700;color:var(--text3);white-space:nowrap;transform:translateY(-11px)}
 
@@ -392,14 +395,15 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
       </svg>
       <h1>Targetin</h1>
       <div class="sync-badge" id="sync-badge" onclick="showSyncInfo()">
-        <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-        <span id="sync-lbl">Tersimpan</span>
+        <img id="sync-avatar" style="width:22px;height:22px;border-radius:50%;display:none;object-fit:cover">
+        <svg id="sync-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        <span id="sync-lbl"></span>
       </div>
     </div>
     <div class="topbar-sub" id="topbar-sub">Target</div>
     <div class="topbar-filter" id="filter-row">
       <div class="topbar-filter-pills">
-        <button class="fpill active" onclick="setFilter('active',this)">Target</button>
+        <button class="fpill active" onclick="setFilter('active',this)">Aktif</button>
         <button class="fpill" onclick="setFilter('inactive',this)">Arsip</button>
       </div>
       <button class="topbar-fab" id="fab-btn" onclick="openAddModal()">
@@ -1363,28 +1367,34 @@ function statsBlock(h) {
   const avgMs = hist.length ? Math.round(hist.reduce((s,r)=>s+r.dur,0)/hist.length) : 0;
   const totalSesi = hist.length;
 
-  // mini bar chart — 5 sesi terakhir (index 0 = terbaru, tampil kiri ke kanan = lama ke baru)
-  const chartSessions = hist.slice(0,5).reverse(); // tampilkan lama→baru
+  // Chart — semua sesi, lama→baru, scroll ke kanan untuk terbaru
+  const chartSessions = [...hist].reverse(); // lama→baru
+  const chartId = 'chart-' + h.id;
   const chartHTML = chartSessions.length >= 2 ? (() => {
     const maxDur = Math.max(...chartSessions.map(r=>r.dur), gms||1);
-    const targetLineY = gms ? (1 - gms/maxDur)*100 : null;
-    const bars = chartSessions.map((r,i) => {
+    const targetLineY = gms ? Math.max(0, Math.min(98, (1 - gms/maxDur)*100)) : null;
+    const bars = chartSessions.map((r, i) => {
       const heightPct = Math.max(5, Math.round(r.dur/maxDur*100));
       const isLatest = i === chartSessions.length - 1;
-      const barColor = isLatest ? ac : ac + '55';
+      const barColor = isLatest ? ac : ac + '66';
+      const dateStr = new Date(r.stoppedAt).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
       return `<div class="stchart-col">
         <div class="stchart-val">${fmtBadge(r.dur)}</div>
         <div class="stchart-bar" style="height:${heightPct}%;background:${barColor}"></div>
+        <div class="stchart-val" style="color:var(--text3)">${dateStr}</div>
       </div>`;
     }).join('');
     const tline = targetLineY !== null
       ? `<div class="stchart-tline" style="top:${targetLineY}%"><span class="stchart-tline-lbl">Target ${fmtBadge(gms)}</span></div>`
       : '';
+    const hint = chartSessions.length > 5 ? `<span class="stchart-title-hint">← geser</span>` : '';
     return `<div class="stchart">
-      <div class="stchart-title">5 Sesi Terakhir${gms?' (-- = target)':''}</div>
-      <div class="stchart-outer">
-        <div class="stchart-bars">${bars}</div>
-        ${tline}
+      <div class="stchart-title"><span>${chartSessions.length} Sesi${gms?' · -- = target':''}</span>${hint}</div>
+      <div class="stchart-scroll" id="${chartId}">
+        <div class="stchart-outer">
+          <div class="stchart-bars" style="width:${Math.max(100, chartSessions.length*38)}px">${bars}</div>
+          ${tline}
+        </div>
       </div>
     </div>`;
   })() : '';
@@ -1426,6 +1436,13 @@ function toggleStats(id) {
   if (expandedStats.has(id)) expandedStats.delete(id);
   else expandedStats.add(id);
   renderMain();
+  // Auto-scroll chart ke kanan (sesi terbaru) setelah render
+  if (expandedStats.has(id)) {
+    requestAnimationFrame(() => {
+      const chart = document.getElementById('chart-' + id);
+      if (chart) chart.scrollLeft = chart.scrollWidth;
+    });
+  }
 }
 
 /* ════════════════════════════════════════
@@ -2051,7 +2068,17 @@ function continueAsGuest() {
   isGuest = true;
   localStorage.setItem('targetin_guest', '1');
   hideAuthScreen();
-  hydrate();
+  // Cek apakah ada data lokal dari sesi sebelumnya
+  try {
+    const d = JSON.parse(localStorage.getItem('targetin1') || '{}');
+    const hasData = (d.habits || []).length > 0;
+    hydrate();
+    if (hasData) {
+      setTimeout(() => showToast('Ditemukan data lokal dari sesi sebelumnya.'), 400);
+    }
+  } catch(e) {
+    hydrate();
+  }
 }
 
 /* ── Load dari Supabase ── */
@@ -2169,15 +2196,43 @@ async function syncToSupabase() {
 
 /* ── Sync badge ── */
 function updateSyncBadge(state) {
-  const badge = document.getElementById('sync-badge');
-  const lbl   = document.getElementById('sync-lbl');
-  if (!badge || !lbl) return;
-  if (!currentUser) { badge.classList.remove('visible'); return; }
-  badge.classList.add('visible');
+  const badge  = document.getElementById('sync-badge');
+  const lbl    = document.getElementById('sync-lbl');
+  const icon   = document.getElementById('sync-icon');
+  const avatar = document.getElementById('sync-avatar');
+  if (!badge) return;
+
+  if (!currentUser) {
+    badge.classList.remove('visible');
+    return;
+  }
+
   badge.className = 'sync-badge visible';
-  if (state === 'syncing') { badge.classList.add('syncing'); lbl.textContent = 'Menyimpan...'; }
-  else if (state === 'error') { badge.classList.add('error'); lbl.textContent = 'Gagal sync'; }
-  else { lbl.textContent = 'Tersimpan'; }
+  const avatarUrl = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || '';
+
+  if (state === 'syncing') {
+    // Tunjukkan ikon sync berputar + teks
+    if (avatar) avatar.style.display = 'none';
+    if (icon)   icon.style.display = 'block';
+    badge.classList.add('syncing');
+    if (lbl) lbl.textContent = 'Menyimpan...';
+  } else if (state === 'error') {
+    if (avatar) avatar.style.display = 'none';
+    if (icon)   icon.style.display = 'block';
+    badge.classList.add('error');
+    if (lbl) lbl.textContent = 'Gagal sync';
+  } else {
+    // Idle — tampilkan foto profil saja, tanpa teks, tanpa ikon
+    if (avatarUrl && avatar) {
+      avatar.src = avatarUrl;
+      avatar.style.display = 'block';
+      if (icon) icon.style.display = 'none';
+    } else {
+      if (avatar) avatar.style.display = 'none';
+      if (icon)   icon.style.display = 'block';
+    }
+    if (lbl) lbl.textContent = '';
+  }
 }
 
 function showSyncInfo() {
@@ -2190,15 +2245,21 @@ function showSyncInfo() {
 }
 
 async function signOut() {
+  const wasLoggedIn = !!currentUser;
   if (currentUser) await supa.auth.signOut();
   currentUser = null;
   isGuest = false;
   localStorage.removeItem('targetin_guest');
-  // Tampilkan auth screen langsung tanpa reload
+  // Hapus localStorage HANYA kalau keluar dari akun Google
+  // supaya data akun tidak bocor ke sesi Tamu berikutnya.
+  // Kalau keluar dari Tamu, data lokal tetap ada — masuk Tamu lagi = data masih ada.
+  if (wasLoggedIn) {
+    localStorage.removeItem('targetin1');
+  }
   habits = []; customCats = [];
-  document.getElementById('auth-screen').style.display = 'flex';
-  updateSyncBadge('ok');
   if (ticker) clearInterval(ticker);
+  updateSyncBadge('ok');
+  document.getElementById('auth-screen').style.display = 'flex';
 }
 
 function confirmDeleteAccount() {
