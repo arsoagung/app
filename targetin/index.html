@@ -351,11 +351,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .auth-tos{font-size:11px;color:var(--text3);text-align:center;line-height:1.7;width:100%}
 .auth-tos a{color:var(--text2);text-decoration:underline;cursor:pointer}
 /* sync badge */
-.sync-badge{display:none;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--text3);padding:3px 8px;border-radius:var(--r99);background:var(--bg3);cursor:pointer}
-.sync-badge.visible{display:flex}
-.sync-badge svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.sync-badge.syncing{color:var(--lime);background:var(--lime-dim)}
-.sync-badge.error{color:var(--red);background:var(--red-dim)}
+.sync-badge{display:none !important}
 </style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1288,9 +1284,11 @@ function statsHTML() {
   const completed = wg.filter(h=>(pct(h)||0)>=100).length;
   const avgPct = wg.length ? Math.round(wg.reduce((s,h)=>s+(pct(h)||0),0)/wg.length) : 0;
 
-  // per kategori, abjad
+  // per kategori, abjad — hanya tampilkan habit yang aktif ATAU punya riwayat
   const catMap = {};
   habits.forEach(h => {
+    const hasHistory = (h.history||[]).length > 0;
+    if (!h.active && !hasHistory) return; // skip: tidak aktif dan kosong riwayat
     const k = h.cat || 'Umum';
     if (!catMap[k]) catMap[k] = [];
     catMap[k].push(h);
@@ -1456,11 +1454,17 @@ function settingsHTML() {
   const isLoggedIn = !!currentUser;
   const profileName = isLoggedIn ? (currentUser.user_metadata?.full_name || currentUser.email || 'Pengguna') : 'Pengguna';
   const profileEmail = isLoggedIn ? currentUser.email : '';
+  const avatarUrl = isLoggedIn ? (currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || '') : '';
 
   // ── Bagian profil ──
+  const profileAvatarEl = isLoggedIn && avatarUrl
+    ? `<img src="${avatarUrl}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      + `<div style="display:none;width:48px;height:48px;border-radius:50%;background:var(--lime-dim);align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>`
+    : `<div style="width:48px;height:48px;border-radius:50%;background:${isLoggedIn?'var(--lime-dim)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>`;
+
   const profileSection = isLoggedIn ? `
   <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
-    <div style="width:48px;height:48px;border-radius:50%;background:var(--lime-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>
+    ${profileAvatarEl}
     <div style="flex:1;min-width:0">
       <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${profileName}</div>
       <div style="font-size:11px;color:var(--text2);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${profileEmail}</div>
@@ -1468,7 +1472,7 @@ function settingsHTML() {
   </div>` : `
   <div style="background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>
+      ${profileAvatarEl}
       <div style="flex:1;min-width:0">
         <div style="font-size:15px;font-weight:800">Pengguna</div>
         <div style="font-size:11px;color:var(--text2);font-weight:500;margin-top:2px">Masuk tanpa akun</div>
@@ -2100,15 +2104,18 @@ async function loadFromSupabase() {
         customCats = d.customCats || [];
       } catch(e) { customCats = []; }
     } else {
-      // Akun baru — seed data atau coba ambil dari localStorage
-      try {
-        const d = JSON.parse(localStorage.getItem('targetin1') || '{}');
-        habits = d.habits || [];
-        customCats = d.customCats || [];
-      } catch(e) {}
-      if (!habits.length) seed();
-      // Upload ke Supabase
-      await pushAllToSupabase();
+      // DB kosong — bisa akun baru atau user sudah hapus semua data.
+      // Jangan seed otomatis agar tidak memunculkan sampel ke user yang
+      // sengaja mengosongkan datanya.
+      habits = [];
+      customCats = [];
+      // Hanya push ke Supabase kalau ini akun baru (belum pernah punya data),
+      // ditandai dengan tidak adanya flag 'targetin_seeded_<uid>' di localStorage.
+      const seededKey = 'targetin_seeded_' + currentUser.id;
+      if (!localStorage.getItem(seededKey)) {
+        // Akun benar-benar baru — tidak perlu seed, biarkan kosong
+        localStorage.setItem(seededKey, '1');
+      }
     }
 
     renderMain();
