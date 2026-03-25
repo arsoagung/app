@@ -578,6 +578,29 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 <div class="riw-modal-bg" id="riw-modal-bg" onclick="if(event.target===this)closeRiwayatModal()">
   <div class="riw-modal" id="riw-modal-content">
     <div class="mpull"><div class="mpull-bar"></div></div>
+
+<!-- TAMBAH RIWAYAT MANUAL MODAL -->
+<div class="modal-bg" id="add-riw-modal" onclick="if(event.target===this)closeAddRiwayatModal()">
+  <div class="modal">
+    <div class="mpull"><div class="mpull-bar"></div></div>
+    <h2>Tambah Riwayat Manual</h2>
+    <div class="fg">
+      <label class="flbl">Mulai</label>
+      <input class="finput" id="riw-start" type="datetime-local">
+      <div class="fwarn" id="riw-start-warn">Waktu mulai tidak valid</div>
+    </div>
+    <div class="fg">
+      <label class="flbl">Berhenti</label>
+      <input class="finput" id="riw-stop" type="datetime-local">
+      <div class="fwarn" id="riw-stop-warn">Waktu berhenti harus setelah waktu mulai</div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);font-weight:500;padding:0 2px;margin-top:-8px;margin-bottom:8px" id="riw-dur-preview"></div>
+    <div class="fbtns">
+      <button class="fbtn-cancel" onclick="closeAddRiwayatModal()">Batal</button>
+      <button class="fbtn-save" onclick="saveAddRiwayat()">Simpan</button>
+    </div>
+  </div>
+</div>
     <!-- content injected by JS -->
   </div>
 </div>
@@ -1202,6 +1225,9 @@ function riwayatHabitBlock(h) {
       <div class="riw-habit-info">
         <div class="riw-habit-name">${h.name}</div>
       </div>
+      <button onclick="openAddRiwayatModal('${h.id}')" style="width:28px;height:28px;border-radius:8px;background:var(--bg3);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--text2);transition:background .12s" title="Tambah riwayat manual">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4"/></svg>
+      </button>
     </div>
     <div class="riw-rows">${rows}${seeAllBtn}</div>
   </div>`;
@@ -1257,6 +1283,62 @@ function toggleRiwayatCat(c) {
   if (openRiwayatCats.has(c)) openRiwayatCats.delete(c); else openRiwayatCats.add(c);
   renderMain();
 }
+
+/* ── Tambah Riwayat Manual ── */
+let _addRiwHabitId = null;
+function openAddRiwayatModal(hId) {
+  _addRiwHabitId = hId;
+  const now = toInputDT(Date.now() - new Date().getSeconds()*1000);
+  document.getElementById('riw-start').value = now;
+  document.getElementById('riw-stop').value = now;
+  document.getElementById('riw-start-warn').style.display = 'none';
+  document.getElementById('riw-stop-warn').style.display = 'none';
+  document.getElementById('riw-dur-preview').textContent = '';
+  document.getElementById('riw-start').oninput = updateRiwDurPreview;
+  document.getElementById('riw-stop').oninput = updateRiwDurPreview;
+  document.getElementById('add-riw-modal').classList.add('open');
+}
+function closeAddRiwayatModal() {
+  document.getElementById('add-riw-modal').classList.remove('open');
+  _addRiwHabitId = null;
+}
+function updateRiwDurPreview() {
+  const startTs = new Date(document.getElementById('riw-start').value).getTime();
+  const stopTs  = new Date(document.getElementById('riw-stop').value).getTime();
+  const el = document.getElementById('riw-dur-preview');
+  if (startTs && stopTs && stopTs > startTs) {
+    el.textContent = 'Durasi: ' + fmtFull(stopTs - startTs);
+  } else {
+    el.textContent = '';
+  }
+}
+function saveAddRiwayat() {
+  const startVal = document.getElementById('riw-start').value;
+  const stopVal  = document.getElementById('riw-stop').value;
+  const startWarn = document.getElementById('riw-start-warn');
+  const stopWarn  = document.getElementById('riw-stop-warn');
+  startWarn.style.display = 'none';
+  stopWarn.style.display  = 'none';
+
+  if (!startVal) { startWarn.style.display = 'block'; return; }
+  const startTs = new Date(startVal).getTime();
+  const stopTs  = new Date(stopVal).getTime();
+  if (!stopVal || stopTs <= startTs) { stopWarn.style.display = 'block'; return; }
+
+  const h = habits.find(x => x.id === _addRiwHabitId);
+  if (!h) return;
+  const dur = stopTs - startTs;
+  const rec = { id: uid(), stoppedAt: stopTs, dur };
+  if (!h.history) h.history = [];
+  h.history.push(rec);
+  // update rekor jika ini yang terlama
+  if (dur > (h.record || 0)) h.record = dur;
+  persist();
+  closeAddRiwayatModal();
+  if (riwayatModalHabitId === h.id) renderRiwayatModal();
+  renderMain();
+  showToast('Riwayat manual berhasil ditambahkan.');
+}
 function deleteRiwayat(hId, recId) {
   showConfirm('Hapus Entri?', 'Entri riwayat ini akan dihapus permanen.', [
     { label:'Batal', cls:'cf-cancel' },
@@ -1280,9 +1362,11 @@ function deleteRiwayat(hId, recId) {
 function statsHTML() {
   const total = habits.length;
   const active = habits.filter(h=>h.active).length;
-  const wg = habits.filter(h=>effectiveGoalMs(h)>0);
-  const completed = wg.filter(h=>(pct(h)||0)>=100).length;
-  const avgPct = wg.length ? Math.round(wg.reduce((s,h)=>s+(pct(h)||0),0)/wg.length) : 0;
+  // Total sesi = jumlah semua entri riwayat dari semua target
+  const totalSesi = habits.reduce((s,h) => s + (h.history||[]).length, 0);
+  // Rekor terpanjang dari semua sesi
+  const allDurs = habits.flatMap(h => (h.history||[]).map(r => r.dur));
+  const bestRecord = allDurs.length ? Math.max(...allDurs) : 0;
 
   // per kategori, abjad — hanya tampilkan habit yang aktif ATAU punya riwayat
   const catMap = {};
@@ -1305,10 +1389,10 @@ function statsHTML() {
 
   return `
   <div class="stats-grid">
-    <div class="scard"><div class="scard-num" style="color:var(--lime)">${total}</div><div class="scard-lab">Total</div></div>
+    <div class="scard"><div class="scard-num" style="color:var(--lime)">${total}</div><div class="scard-lab">Total Target</div></div>
     <div class="scard"><div class="scard-num" style="color:var(--purple)">${active}</div><div class="scard-lab">Aktif</div></div>
-    <div class="scard"><div class="scard-num" style="color:#3dd68c">${completed}</div><div class="scard-lab">Target Tercapai</div></div>
-    <div class="scard"><div class="scard-num" style="color:#60a5fa">${avgPct}%</div><div class="scard-lab">Avg Progress</div></div>
+    <div class="scard"><div class="scard-num" style="color:#3dd68c">${totalSesi}</div><div class="scard-lab">Total Sesi</div></div>
+    <div class="scard"><div class="scard-num" style="color:#60a5fa;font-size:${bestRecord?'22px':'34px'}">${bestRecord ? fmtBadge(bestRecord) : '—'}</div><div class="scard-lab">Rekor Terbaik</div></div>
   </div>
   <div class="sec-label" style="margin-top:4px"></div>
   ${perTargetBlocks}`;
@@ -1325,10 +1409,10 @@ function statsBlock(h) {
   /* ── krusial: 1 angka di kanan ── */
   let krusialVal = '', krusialColor = ac;
   if (h.active) {
-    krusialVal = fmtBadge(ms); // durasi berjalan
+    krusialVal = fmtBadge(ms);
   } else if (hist.length) {
-    krusialVal = fmtBadge(hist[0].dur); // durasi sesi terakhir
-    krusialColor = 'var(--text2)';
+    krusialVal = fmtBadge(hist[0].dur);
+    krusialColor = ac; // pakai warna asli, bukan redup
   }
 
   /* ── 1 baris snapshot ── */
@@ -1346,7 +1430,7 @@ function statsBlock(h) {
   if (!isOpen) {
     return `<div class="stblock" id="stb-${h.id}" onclick="toggleStats('${h.id}')">
       <div class="stblock-head">
-        <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,h.active?ac:'var(--text2)')}</div>
+        <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,ac)}</div>
         <div class="stblock-info">
           <div class="stblock-name">${h.name}</div>
           <div class="stblock-snap">${snap}</div>
@@ -1399,7 +1483,7 @@ function statsBlock(h) {
 
   return `<div class="stblock open" id="stb-${h.id}">
     <div class="stblock-head" onclick="toggleStats('${h.id}')">
-      <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,h.active?ac:'var(--text2)')}</div>
+      <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,ac)}</div>
       <div class="stblock-info">
         <div class="stblock-name">${h.name}</div>
         <div class="stblock-snap">${snap}</div>
@@ -1995,6 +2079,7 @@ function confirmDelete(id) {
   showConfirm('Hapus Tracker?', sub, [
     { label:'Batal', cls:'cf-cancel' },
     { label:'Hapus', cls:'cf-ok', action:() => {
+      _deletedIds.push(id); // tandai untuk dihapus dari Supabase
       habits = habits.filter(x=>x.id!==id);
       expandedIds.delete(id);
       persist(); renderMain();
@@ -2176,6 +2261,9 @@ async function pushAllToSupabase() {
   if (error) console.error('Push all error:', error);
 }
 
+// Track IDs yang dihapus selama sesi ini agar bisa didelete dari Supabase
+let _deletedIds = [];
+
 /* ── Persist — override fungsi lama ── */
 function persist() {
   // Selalu simpan lokal
@@ -2191,9 +2279,22 @@ function persist() {
 async function syncToSupabase() {
   if (!currentUser) return;
   try {
-    const rows = habits.map(habitToDb);
-    const { error } = await supa.from('habits').upsert(rows, { onConflict: 'id' });
-    if (error) throw error;
+    // Hapus dari Supabase dulu jika ada yang didelete
+    if (_deletedIds.length) {
+      const { error: delError } = await supa
+        .from('habits')
+        .delete()
+        .in('id', _deletedIds)
+        .eq('user_id', currentUser.id);
+      if (delError) throw delError;
+      _deletedIds = [];
+    }
+    // Upsert yang masih ada
+    if (habits.length) {
+      const rows = habits.map(habitToDb);
+      const { error } = await supa.from('habits').upsert(rows, { onConflict: 'id' });
+      if (error) throw error;
+    }
     updateSyncBadge('ok');
   } catch(e) {
     console.error('Sync error:', e);
