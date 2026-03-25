@@ -574,11 +574,6 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
   </div>
 </div>
 
-<!-- RIWAYAT DETAIL MODAL -->
-<div class="riw-modal-bg" id="riw-modal-bg" onclick="if(event.target===this)closeRiwayatModal()">
-  <div class="riw-modal" id="riw-modal-content">
-    <div class="mpull"><div class="mpull-bar"></div></div>
-
 <!-- TAMBAH RIWAYAT MANUAL MODAL -->
 <div class="modal-bg" id="add-riw-modal" onclick="if(event.target===this)closeAddRiwayatModal()">
   <div class="modal">
@@ -586,21 +581,25 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
     <h2>Tambah Riwayat Manual</h2>
     <div class="fg">
       <label class="flbl">Mulai</label>
-      <input class="finput" id="riw-start" type="datetime-local">
-      <div class="fwarn" id="riw-start-warn">Waktu mulai tidak valid</div>
+      <input class="finput" id="riw-start" type="datetime-local" oninput="onRiwStartInput()">
+      <div class="fwarn" id="riw-start-warn">Waktu mulai tidak boleh melebihi saat ini</div>
     </div>
     <div class="fg">
       <label class="flbl">Berhenti</label>
-      <input class="finput" id="riw-stop" type="datetime-local">
-      <div class="fwarn" id="riw-stop-warn">Waktu berhenti harus setelah waktu mulai</div>
+      <input class="finput" id="riw-stop" type="datetime-local" oninput="onRiwStopInput()">
+      <div class="fwarn" id="riw-stop-warn">Waktu berhenti harus setelah mulai dan tidak boleh melebihi saat ini</div>
     </div>
-    <div style="font-size:12px;color:var(--text2);font-weight:500;padding:0 2px;margin-top:-8px;margin-bottom:8px" id="riw-dur-preview"></div>
+    <div style="background:var(--bg3);border-radius:var(--r12);padding:11px 14px;font-size:13px;font-weight:700;color:var(--text);min-height:40px;margin-bottom:8px" id="riw-dur-preview">—</div>
     <div class="fbtns">
       <button class="fbtn-cancel" onclick="closeAddRiwayatModal()">Batal</button>
       <button class="fbtn-save" onclick="saveAddRiwayat()">Simpan</button>
     </div>
   </div>
 </div>
+
+<!-- RIWAYAT DETAIL MODAL -->
+<div class="riw-modal-bg" id="riw-modal-bg" onclick="if(event.target===this)closeRiwayatModal()">
+  <div class="riw-modal" id="riw-modal-content">
     <!-- content injected by JS -->
   </div>
 </div>
@@ -1288,42 +1287,78 @@ function toggleRiwayatCat(c) {
 let _addRiwHabitId = null;
 function openAddRiwayatModal(hId) {
   _addRiwHabitId = hId;
-  const now = toInputDT(Date.now() - new Date().getSeconds()*1000);
-  document.getElementById('riw-start').value = now;
-  document.getElementById('riw-stop').value = now;
+  const nowDt = toInputDT(Date.now() - new Date().getSeconds()*1000);
+  const startEl = document.getElementById('riw-start');
+  const stopEl  = document.getElementById('riw-stop');
+  // Set max ke sekarang agar tidak bisa pilih masa depan
+  startEl.max = toInputDT(Date.now());
+  stopEl.max  = toInputDT(Date.now());
+  startEl.value = '';
+  stopEl.value  = '';
   document.getElementById('riw-start-warn').style.display = 'none';
-  document.getElementById('riw-stop-warn').style.display = 'none';
-  document.getElementById('riw-dur-preview').textContent = '';
-  document.getElementById('riw-start').oninput = updateRiwDurPreview;
-  document.getElementById('riw-stop').oninput = updateRiwDurPreview;
+  document.getElementById('riw-stop-warn').style.display  = 'none';
+  document.getElementById('riw-dur-preview').textContent = '—';
   document.getElementById('add-riw-modal').classList.add('open');
 }
 function closeAddRiwayatModal() {
   document.getElementById('add-riw-modal').classList.remove('open');
   _addRiwHabitId = null;
 }
-function updateRiwDurPreview() {
+function onRiwStartInput() {
+  const now = Date.now();
+  const startEl = document.getElementById('riw-start');
+  const warn    = document.getElementById('riw-start-warn');
+  const startTs = new Date(startEl.value).getTime();
+  const isFuture = startTs > now;
+  warn.style.display = isFuture ? 'block' : 'none';
+  startEl.style.outline = isFuture ? '2px solid var(--red)' : 'none';
+  // update max on stop to now (prevent future) and must be after start
+  const stopEl = document.getElementById('riw-stop');
+  stopEl.min = startEl.value;
+  stopEl.max = toInputDT(now);
+  _updateRiwDurPreview();
+}
+function onRiwStopInput() {
+  const now = Date.now();
+  const startTs = new Date(document.getElementById('riw-start').value).getTime();
+  const stopEl  = document.getElementById('riw-stop');
+  const warn    = document.getElementById('riw-stop-warn');
+  const stopTs  = new Date(stopEl.value).getTime();
+  const bad = !stopTs || stopTs > now || stopTs <= startTs;
+  warn.style.display = bad ? 'block' : 'none';
+  stopEl.style.outline = bad ? '2px solid var(--red)' : 'none';
+  _updateRiwDurPreview();
+}
+function _updateRiwDurPreview() {
   const startTs = new Date(document.getElementById('riw-start').value).getTime();
   const stopTs  = new Date(document.getElementById('riw-stop').value).getTime();
   const el = document.getElementById('riw-dur-preview');
-  if (startTs && stopTs && stopTs > startTs) {
+  if (startTs && stopTs && stopTs > startTs && stopTs <= Date.now()) {
     el.textContent = 'Durasi: ' + fmtFull(stopTs - startTs);
+    el.style.color = 'var(--lime)';
   } else {
-    el.textContent = '';
+    el.textContent = '—';
+    el.style.color = 'var(--text2)';
   }
 }
 function saveAddRiwayat() {
-  const startVal = document.getElementById('riw-start').value;
-  const stopVal  = document.getElementById('riw-stop').value;
+  const now = Date.now();
   const startWarn = document.getElementById('riw-start-warn');
   const stopWarn  = document.getElementById('riw-stop-warn');
   startWarn.style.display = 'none';
   stopWarn.style.display  = 'none';
 
-  if (!startVal) { startWarn.style.display = 'block'; return; }
+  const startVal = document.getElementById('riw-start').value;
+  const stopVal  = document.getElementById('riw-stop').value;
+
+  if (!startVal) { startWarn.textContent = 'Isi waktu mulai'; startWarn.style.display = 'block'; return; }
   const startTs = new Date(startVal).getTime();
-  const stopTs  = new Date(stopVal).getTime();
-  if (!stopVal || stopTs <= startTs) { stopWarn.style.display = 'block'; return; }
+  if (startTs > now) { startWarn.style.display = 'block'; return; }
+
+  if (!stopVal) { stopWarn.textContent = 'Isi waktu berhenti'; stopWarn.style.display = 'block'; return; }
+  const stopTs = new Date(stopVal).getTime();
+  if (stopTs > now) { stopWarn.textContent = 'Waktu berhenti tidak boleh melebihi saat ini'; stopWarn.style.display = 'block'; return; }
+  if (stopTs <= startTs) { stopWarn.textContent = 'Waktu berhenti harus setelah waktu mulai'; stopWarn.style.display = 'block'; return; }
 
   const h = habits.find(x => x.id === _addRiwHabitId);
   if (!h) return;
@@ -1331,13 +1366,12 @@ function saveAddRiwayat() {
   const rec = { id: uid(), stoppedAt: stopTs, dur };
   if (!h.history) h.history = [];
   h.history.push(rec);
-  // update rekor jika ini yang terlama
   if (dur > (h.record || 0)) h.record = dur;
   persist();
   closeAddRiwayatModal();
   if (riwayatModalHabitId === h.id) renderRiwayatModal();
   renderMain();
-  showToast('Riwayat manual berhasil ditambahkan.');
+  showToast('Riwayat berhasil ditambahkan.');
 }
 function deleteRiwayat(hId, recId) {
   showConfirm('Hapus Entri?', 'Entri riwayat ini akan dihapus permanen.', [
@@ -1630,7 +1664,7 @@ function settingsHTML() {
     Menghapus akun akan menghapus semua data secara permanen dan tidak bisa dibatalkan.
   </div>
 
-  <div style="text-align:center;padding:16px 0 28px;font-size:11px;color:var(--text3);font-weight:600">Targetin · Versi 2.0.0</div>`;
+  <div style="text-align:center;padding:16px 0 28px;font-size:11px;color:var(--text3);font-weight:600">Targetin · Versi 2.2.0</div>`;
 }
 
 /* ════════════════════════════════════════
