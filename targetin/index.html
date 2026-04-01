@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+<!-- Targetin v2.2.0 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -278,8 +279,8 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .igrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .iopt{padding:10px 6px;border-radius:var(--r12);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;transition:background .1s}
 .iopt svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.iopt.sel{background:var(--purple-dim)}
-.iopt.sel svg{stroke:var(--purple)}
+.iopt.sel{background:var(--lime-dim)}
+.iopt.sel svg{stroke:var(--lime)}
 .cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .copt{height:32px;border-radius:var(--r8);cursor:pointer;border:none;transition:transform .1s}
 .copt.sel{transform:scale(1.12);box-shadow:0 0 0 2px rgba(255,255,255,.35)}
@@ -287,12 +288,12 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 /* ── CATEGORY CHIPS ── */
 .kchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .kchip{padding:7px 13px;border-radius:var(--r99);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .12s}
-.kchip.sel{background:var(--purple-dim);color:var(--purple)}
+.kchip.sel{background:var(--lime-dim);color:var(--lime-muted)}
 
 /* ── TARGET MODE SELECTOR ── */
 .tmode-row{display:flex;gap:6px;margin-bottom:4px}
 .tmode-opt{flex:1;padding:10px 6px;border-radius:var(--r12);background:var(--bg3);border:none;color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .14s,color .14s;text-align:center}
-.tmode-opt.active{background:var(--purple-dim);color:var(--purple)}
+.tmode-opt.active{background:var(--lime-dim);color:var(--lime-muted)}
 .tmode-opt:not(.active):hover{background:var(--bg4);color:var(--text)}
 
 /* ── TARGET INPUTS ── */
@@ -965,15 +966,21 @@ function rowHTML(h) {
   const ms = elapsed(h), ia = h.active, p = pct(h), exp = expandedIds.has(h.id);
   const { d, h:hr, m, s } = decompose(ms);
   const ac = ia ? (h.color || 'var(--lime)') : 'var(--text3)';
-  const iconCol = ia ? (h.color || 'var(--lime)') : 'var(--text2)';
+  // Bug fix 3: icon redup untuk tidak aktif, tapi nama tetap terang
+  const iconCol = ia ? (h.color || 'var(--lime)') : 'var(--text3)';
   const gms = effectiveGoalMs(h);
-
-  const mulaiLabel = ia ? 'Mulai' : 'Terakhir Mulai';
 
   const isArchived = !!h.archived;
   const swipeBgClass = ia ? 'stop-bg' : isArchived ? 'del-bg' : 'arc-bg';
   const swipeIcon    = ia ? SVG_STOP : isArchived ? SVG_TRASH : SVG_ARCHIVE;
   const swipeLabel   = ia ? 'Berhenti' : isArchived ? 'Hapus' : 'Arsipkan';
+
+  // Bug fix 2: untuk tidak aktif, ambil waktu dari entry history terakhir (bukan h.start)
+  const hist = [...(h.history||[])].sort((a,b) => b.stoppedAt - a.stoppedAt);
+  const lastEntry = hist[0] || null;
+  // Waktu mulai sesi terakhir: stoppedAt - dur (jika ada history), fallback ke h.start
+  const lastStartTs = lastEntry ? (lastEntry.stoppedAt - lastEntry.dur) : h.start;
+  const lastStopTs  = lastEntry ? lastEntry.stoppedAt : (h.stoppedAt || null);
 
   // card-acts per state
   let cardActs = '';
@@ -996,6 +1003,65 @@ function rowHTML(h) {
     </div>`;
   }
 
+  // Fix: collapsed sub — inactive hanya "Tidak aktif", tanpa detail
+  let collapsedSub = '';
+  if (ia) {
+    collapsedSub = `${new Date(h.start).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})} · ${new Date(h.start).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}`;
+  } else {
+    collapsedSub = 'Tidak aktif';
+  }
+
+  // Bug fix 1 & 2: expanded body untuk tidak aktif — tampilkan info sesi, bukan timer 0
+  let expandedBody = '';
+  if (ia) {
+    // Aktif: tampilkan timer berjalan seperti biasa
+    // Hitung estimasi selesai untuk target aktif dengan target waktu
+    const deadlineTs = h.goalUntil
+      ? h.goalUntil
+      : (gms ? h.start + gms : 0);
+    const deadlineStr = deadlineTs ? fmtDateShort(deadlineTs) : '';
+
+    expandedBody = `
+      <div class="big-time" style="color:${ac}">
+        <span class="big-num">${d}</span><span class="big-unit">hari</span>
+        <span class="big-num">${hr}</span><span class="big-unit">jam</span>
+        <span class="big-num">${m}</span><span class="big-unit">menit</span>
+      </div>
+      <div class="big-sec">${s} detik</div>
+      ${p !== null ? `<div class="cpbar">
+        <div class="cpbar-labels" style="color:var(--text2)">
+          <span>${fmtGoal(gms)}</span><span>${p}%</span>
+        </div>
+        <div class="cpbar-track"><div class="cpbar-fill" style="width:${p}%;background:${ac}"></div></div>
+      </div>` : ''}
+      ${gms ? `<div class="chips">
+        <div class="chip"><div class="chip-lbl">Mulai</div><div class="chip-val">${fmtDateShort(h.start)}</div></div>
+        ${h.record > 0 ? `<div class="chip"><div class="chip-lbl">Rekor</div><div class="chip-val">${fmtFull(h.record)}</div></div>` : ''}
+        <div class="chip"><div class="chip-lbl">Target</div><div class="chip-val">${fmtGoal(gms)}</div></div>
+        ${deadlineStr ? `<div class="chip"><div class="chip-lbl">Selesai</div><div class="chip-val" style="color:${ac}">${deadlineStr}</div></div>` : ''}
+      </div>` : `<div style="margin-bottom:12px">
+        <div class="irow"><span class="irow-lab">Mulai</span><span class="irow-val">${fmtDate(h.start)}</span></div>
+        ${h.record > 0 ? `<div class="irow"><span class="irow-lab">Rekor</span><span class="irow-val">${fmtFull(h.record)}</span></div>` : ''}
+      </div>`}`;
+  } else {
+    // Tidak aktif: tampilkan info sesi terakhir dari history (bukan timer 0)
+    const infoRows = [];
+    if (lastEntry) {
+      infoRows.push(`<div class="irow"><span class="irow-lab">Terakhir Mulai</span><span class="irow-val">${fmtDate(lastStartTs)}</span></div>`);
+      infoRows.push(`<div class="irow"><span class="irow-lab">Terakhir Berhenti</span><span class="irow-val">${fmtDate(lastStopTs)}</span></div>`);
+      infoRows.push(`<div class="irow"><span class="irow-lab">Durasi Terakhir</span><span class="irow-val">${fmtFull(lastEntry.dur)}</span></div>`);
+    } else {
+      infoRows.push(`<div class="irow"><span class="irow-lab">Mulai</span><span class="irow-val">${fmtDate(h.start)}</span></div>`);
+    }
+    if (h.record > 0) {
+      infoRows.push(`<div class="irow"><span class="irow-lab">Rekor Terbaik</span><span class="irow-val" style="color:${h.color||'var(--lime)'}">${fmtFull(h.record)}</span></div>`);
+    }
+    if (gms) {
+      infoRows.push(`<div class="irow"><span class="irow-lab">Target</span><span class="irow-val">${fmtGoal(gms)}</span></div>`);
+    }
+    expandedBody = `<div style="margin-bottom:12px">${infoRows.join('')}</div>`;
+  }
+
   return `<div class="hrow-wrap" id="wrap-${h.id}">
     <div class="swipe-bg ${swipeBgClass}">
       <div class="swipe-icon">${swipeIcon}</div>
@@ -1006,9 +1072,9 @@ function rowHTML(h) {
     <div class="hrow-head" onclick="toggleRow('${h.id}')">
       <div class="hrow-icon" style="background:${ia ? h.color+'18' : 'var(--bg3)'}">${iSvg(h.icon,18,iconCol)}</div>
       <div class="hrow-info">
-        <div class="hrow-name">${h.name}</div>
+        <div class="hrow-name" style="color:var(--text)">${h.name}</div>
         ${!exp ? `<div class="hrow-sub" style="color:${ia?'var(--text2)':'var(--text3)'}">
-          ${ia ? `${new Date(h.start).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})} · ${new Date(h.start).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}` : 'Tidak aktif'}
+          ${collapsedSub}
         </div>` : ''}
       </div>
       <div class="hrow-right">
@@ -1016,30 +1082,10 @@ function rowHTML(h) {
         <div class="chevron"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div>
     </div>
-    ${gms && p !== null ? `<div class="hrow-mini-bar"><div class="hrow-mini-fill" style="width:${p}%;background:${ia ? ac : 'var(--text3)'}"></div></div>` : ''}
+    ${gms && p !== null && ia ? `<div class="hrow-mini-bar"><div class="hrow-mini-fill" style="width:${p}%;background:${ac}"></div></div>` : ''}
     <div class="hrow-body">
       <div class="hrow-sep"></div>
-      <div class="big-time" style="color:${ia ? ac : 'var(--text2)'}">
-        <span class="big-num">${d}</span><span class="big-unit">hari</span>
-        <span class="big-num">${hr}</span><span class="big-unit">jam</span>
-        <span class="big-num">${m}</span><span class="big-unit">menit</span>
-      </div>
-      <div class="big-sec">${s} detik</div>
-      ${p !== null ? `<div class="cpbar">
-        <div class="cpbar-labels" style="color:${ia?'var(--text2)':'var(--text3)'}">
-          <span>${fmtGoal(gms)}</span><span>${p}%</span>
-        </div>
-        <div class="cpbar-track"><div class="cpbar-fill" style="width:${p}%;background:${ia ? ac : 'var(--text3)'}"></div></div>
-      </div>` : ''}
-      ${gms ? `<div class="chips">
-        <div class="chip"><div class="chip-lbl">${mulaiLabel}</div><div class="chip-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtDateShort(h.start)}</div></div>
-        ${h.record > 0 ? `<div class="chip"><div class="chip-lbl">Rekor</div><div class="chip-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtFull(h.record)}</div></div>` : ''}
-        <div class="chip"><div class="chip-lbl">Target</div><div class="chip-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtGoal(gms)}</div></div>
-      </div>` : `<div style="margin-bottom:12px">
-        <div class="irow"><span class="irow-lab">${mulaiLabel}</span><span class="irow-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtDate(h.start)}</span></div>
-        ${!ia && h.stoppedAt ? `<div class="irow"><span class="irow-lab">Berhenti</span><span class="irow-val" style="color:var(--text2)">${fmtDate(h.stoppedAt)}</span></div>` : ''}
-        ${h.record > 0 ? `<div class="irow"><span class="irow-lab">Rekor</span><span class="irow-val" style="color:${ia?'var(--text)':'var(--text2)'}">${fmtFull(h.record)}</span></div>` : ''}
-      </div>`}
+      ${expandedBody}
       ${cardActs}
     </div>
     </div>
