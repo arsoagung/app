@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KarNote</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --bg:#0f1117;--card:#1a1d25;--card2:#1e2130;
+  --lime:#9de041;--text:#fff;--text2:#8a8f9e;--text3:#4a4f60;
+  --orange:#fb923c;--red:#f87171;--blue:#60a5fa;--r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
+.app{padding-bottom:110px;}
+.header{padding:52px 24px 16px;}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;}
+.greeting{font-size:25px;font-weight:800;letter-spacing:-.5px;}
+.greeting-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+.avatar{width:42px;height:42px;border-radius:14px;background:var(--lime);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.avatar svg{width:22px;height:22px;color:#0f1117;}
+.page-header{padding:52px 24px 16px;}
+.page-title{font-size:25px;font-weight:800;letter-spacing:-.5px;}
+.page-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+main{padding:20px 24px;}
+
+/* VEHICLE SCROLL */
+.vehicle-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:18px;}
+.vehicle-scroll::-webkit-scrollbar{display:none;}
+.vehicle-card{min-width:108px;background:var(--card);border-radius:16px;padding:13px 12px 11px;cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px;position:relative;overflow:hidden;}
+.vehicle-card.active{background:#1c2110;}
+.vc-color-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:2px 2px 0 0;}
+.vehicle-icon{width:26px;height:26px;}
+/* inactive: icon redup, name tetap terang */
+.vehicle-card:not(.active) .vehicle-icon{opacity:.3;filter:grayscale(1);}
+.vehicle-name{font-size:12px;font-weight:700;line-height:1.2;}
+.vehicle-plate{font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.07);color:var(--text2);}
+.vehicle-card.active .vehicle-plate{background:rgba(157,224,65,.12);color:var(--lime);}
+.vehicle-add{min-width:66px;align-items:center;justify-content:center;gap:5px;color:var(--text3);border:2px dashed #2a2e3a;}
+.vehicle-add svg{width:20px;height:20px;}
+.vehicle-add p{font-size:10px;font-weight:600;}
+
+/* BANNER — always lime */
+.banner-card{background:var(--card);border-radius:var(--r);padding:18px 18px 0;margin-bottom:14px;overflow:hidden;cursor:pointer;position:relative;}
+.banner-accent-bar{position:absolute;top:0;left:0;right:0;height:3px;background:var(--lime);}
+.banner-top{display:flex;align-items:flex-start;justify-content:space-between;}
+.banner-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.banner-value{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--lime);}
+.banner-sub{font-size:12px;color:var(--text2);margin-top:4px;}
+.banner-icon{width:32px;height:32px;opacity:.4;color:var(--lime);}
+.wave{display:block;width:110%;margin-left:-5%;margin-top:14px;height:36px;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.stat-card{background:var(--card);border-radius:var(--r);padding:14px;}
+.stat-icon{width:19px;height:19px;color:var(--lime);margin-bottom:8px;opacity:.8;}
+.stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.stat-value{font-size:21px;font-weight:800;letter-spacing:-.5px;}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+
+/* ALERT STACK */
+.alert-stack{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.alert-banner{background:var(--card);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:11px;cursor:pointer;}
+.alert-icon{width:18px;height:18px;flex-shrink:0;color:var(--orange);}
+.alert-title{font-size:12px;font-weight:700;color:var(--orange);margin-bottom:1px;}
+.alert-desc{font-size:11px;color:var(--text2);}
+.alert-arr{color:var(--text3);font-size:15px;margin-left:auto;}
+
+/* SECTION */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-title{font-size:15px;font-weight:700;}
+.section-link{font-size:12px;font-weight:600;color:var(--lime);cursor:pointer;}
+
+/* LOG LIST */
+.log-list{display:flex;flex-direction:column;gap:8px;}
+.log-item{background:var(--card);border-radius:var(--r);padding:12px 13px;display:flex;gap:12px;align-items:center;}
+.log-dot{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.log-dot svg{width:17px;height:17px;}
+.log-dot.lime{background:rgba(157,224,65,.1);} .log-dot.lime svg{color:var(--lime);}
+.log-dot.orange{background:rgba(251,146,60,.1);} .log-dot.orange svg{color:var(--orange);}
+.log-dot.red{background:rgba(248,113,113,.1);} .log-dot.red svg{color:var(--red);}
+.log-dot.blue{background:rgba(96,165,250,.1);} .log-dot.blue svg{color:var(--blue);}
+.log-content{flex:1;min-width:0;}
+.log-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+.log-detail{font-size:11px;color:var(--text2);}
+.log-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.bd{font-size:11px;color:var(--lime);}
+.bc{font-size:11px;color:var(--orange);}
+.bf{font-size:11px;color:var(--blue);}
+.log-km-r{font-size:11px;color:var(--text3);flex-shrink:0;}
+.log-del{width:28px;height:28px;border-radius:8px;background:rgba(248,113,113,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;border:none;}
+.log-del svg{width:13px;height:13px;color:var(--red);}
+
+/* RIWAYAT FILTERS */
+.riwayat-filters{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.riwayat-filter-row{display:flex;gap:8px;align-items:center;}
+.riwayat-filter-sel{flex:1;background:var(--card);border:none;border-radius:11px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8f9e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.riwayat-filter-sel:focus{outline:2px solid var(--lime);}
+.riwayat-reset-btn{width:38px;height:38px;border-radius:11px;background:var(--card);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;color:var(--text2);}
+.riwayat-filter-type{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.riwayat-filter-type::-webkit-scrollbar{display:none;}
+.fpill{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);background:var(--card);white-space:nowrap;flex-shrink:0;}
+.fpill.active{background:rgba(157,224,65,.12);color:var(--lime);}
+
+/* REMINDER CARDS */
+.rem-card{background:var(--card);border-radius:var(--r);padding:13px 14px;margin-bottom:8px;cursor:pointer;}
+.rem-card:active{background:var(--card2);}
+.rem-card-top{display:flex;align-items:center;gap:11px;margin-bottom:8px;}
+.rem-dot{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rem-dot svg{width:17px;height:17px;}
+.rem-dot.lime{background:rgba(157,224,65,.1);} .rem-dot.lime svg{color:var(--lime);}
+.rem-dot.orange{background:rgba(251,146,60,.1);} .rem-dot.orange svg{color:var(--orange);}
+.rem-dot.red{background:rgba(248,113,113,.1);} .rem-dot.red svg{color:var(--red);}
+.rem-card-info{flex:1;}
+.rem-name{font-size:13px;font-weight:700;}
+.rem-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.rem-badge.ok{background:rgba(157,224,65,.1);color:var(--lime);}
+.rem-badge.warn{background:rgba(251,146,60,.1);color:var(--orange);}
+.rem-badge.bad{background:rgba(248,113,113,.1);color:var(--red);}
+.rem-bars{display:flex;flex-direction:column;gap:5px;}
+.rem-bar-row{display:flex;align-items:center;gap:8px;}
+.rem-bar-label{font-size:10px;color:var(--text3);width:16px;flex-shrink:0;text-align:right;}
+.rem-bar-wrap{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.rem-bar{height:100%;border-radius:2px;}
+.rem-bar.ok{background:var(--lime);}
+.rem-bar.warn{background:var(--orange);}
+.rem-bar.bad{background:var(--red);}
+.rem-bar-val{font-size:10px;color:var(--text3);min-width:48px;text-align:right;flex-shrink:0;}
+.rem-goto-settings{background:var(--card);border-radius:var(--r);padding:13px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.rem-goto-settings svg{width:17px;height:17px;color:var(--text3);}
+.rem-goto-settings span{font-size:12px;color:var(--text2);}
+.rem-goto-settings b{color:var(--lime);}
+
+/* REMINDER POPUP */
+.rem-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.rem-popup-overlay.open{opacity:1;pointer-events:all;}
+.rem-popup{background:#1a1d25;border-radius:22px;padding:22px;width:100%;max-width:380px;transform:scale(.95);transition:transform .2s;}
+.rem-popup-overlay.open .rem-popup{transform:scale(1);}
+.rp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.rp-title{font-size:17px;font-weight:800;}
+.rp-close{width:30px;height:30px;border-radius:9px;background:#0f1117;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;}
+.rp-close svg{width:15px;height:15px;color:var(--text2);}
+.rp-tiles{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+.rp-tile{background:#0f1117;border-radius:14px;padding:12px;}
+.rp-tile-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.rp-tile-val{font-size:16px;font-weight:800;letter-spacing:-.3px;}
+.rp-tile-sub{font-size:10px;color:var(--text2);margin-top:2px;}
+.rp-tile.accent .rp-tile-val{color:var(--lime);}
+.rp-tile.warn-t .rp-tile-val{color:var(--orange);}
+.rp-tile.bad-t .rp-tile-val{color:var(--red);}
+.rp-bar-section{background:#0f1117;border-radius:14px;padding:12px;}
+.rp-bar-section-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:9px;}
+.rp-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.rp-bar-row:last-child{margin-bottom:0;}
+.rp-bar-type{font-size:11px;font-weight:600;color:var(--text2);width:36px;flex-shrink:0;}
+.rp-bar-bg{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.rp-bar-fill{height:100%;border-radius:3px;}
+.rp-bar-pct{font-size:10px;font-weight:700;min-width:32px;text-align:right;flex-shrink:0;}
+
+/* ODO CHART CARD with toggle */
+.chart-card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:3px;}
+.chart-title{font-size:13px;font-weight:700;}
+.chart-period-tabs{display:flex;gap:3px;background:#0f1117;border-radius:10px;padding:3px;}
+.cpt{font-size:10px;font-weight:700;padding:4px 9px;border-radius:7px;cursor:pointer;color:var(--text3);}
+.cpt.active{background:var(--card);color:var(--lime);}
+.chart-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.chart-nav-btn{width:28px;height:28px;border-radius:8px;background:#0f1117;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.chart-nav-btn svg{width:14px;height:14px;color:var(--text2);}
+.chart-nav-label{font-size:12px;font-weight:700;color:var(--text);}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:14px;}
+.chart-wrap{width:100%;height:175px;}
+canvas{display:block;}
+
+/* STAT TILES */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.stat-tile{background:var(--card);border-radius:var(--r);padding:14px;}
+.st-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.st-val{font-size:18px;font-weight:800;letter-spacing:-.3px;}
+.st-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+
+/* STAT FILTERS — below odo chart */
+.stat-filter-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.stat-filter-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;}
+.stat-filter-row{display:flex;gap:8px;align-items:center;}
+.stat-filter-sel{flex:1;background:#0f1117;border:none;border-radius:10px;padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;outline:none;-webkit-appearance:none;}
+.stat-filter-sel:focus{outline:2px solid var(--lime);}
+.stat-reset-btn{width:36px;height:36px;border-radius:10px;background:#0f1117;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text2);}
+
+.cost-bar-list{display:flex;flex-direction:column;gap:10px;}
+.cbi{display:flex;align-items:center;gap:10px;}
+.cbi-dot{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cbi-dot svg{width:14px;height:14px;}
+.cbi-info{flex:1;min-width:0;}
+.cbi-name{font-size:12px;font-weight:700;margin-bottom:3px;}
+.cbi-bar-bg{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.cbi-bar{height:100%;border-radius:2px;}
+.cbi-val{font-size:11px;font-weight:600;color:var(--text2);flex-shrink:0;}
+
+/* SETTINGS PAGE */
+.settings-section{margin-bottom:24px;}
+.settings-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;padding:0 4px;}
+.settings-group{background:var(--card);border-radius:var(--r);overflow:hidden;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer;transition:background .15s;}
+.settings-row:not(:last-child){border-bottom:1px solid rgba(255,255,255,.04);}
+.settings-row:active{background:var(--card2);}
+.settings-row-left{display:flex;align-items:center;gap:12px;}
+.settings-row-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.settings-row-icon svg{width:16px;height:16px;}
+.settings-row-label{font-size:13px;font-weight:600;}
+.settings-row-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.settings-row-arr{color:var(--text3);font-size:16px;margin-left:8px;}
+.svr-name{font-size:13px;font-weight:600;}
+.svr-meta{font-size:11px;color:var(--text3);}
+/* old compat */
+.pv-item{background:var(--card);border-radius:var(--r);padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:8px;position:relative;overflow:hidden;}
+.pv-color-bar{position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:2px 0 0 2px;}
+.pv-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pv-icon svg{width:18px;height:18px;}
+.pv-info{flex:1;}
+.pv-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+.pv-meta{font-size:11px;color:var(--text2);}
+.pv-arr{color:var(--text3);}
+
+/* ENTRY DETAIL POPUP */
+.entry-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .22s;}
+.entry-popup-overlay.open{opacity:1;pointer-events:all;}
+.entry-popup{background:#1a1d25;border-radius:22px 22px 0 0;padding:18px 22px 44px;width:100%;max-width:430px;margin:0 auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);max-height:85vh;overflow-y:auto;}
+.entry-popup-overlay.open .entry-popup{transform:translateY(0);}
+.entry-popup::-webkit-scrollbar{display:none;}
+.ep-handle{width:32px;height:4px;border-radius:2px;background:#2a2e3a;margin:0 auto 18px;}
+.ep-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.ep-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ep-icon svg{width:20px;height:20px;}
+.ep-title{font-size:18px;font-weight:800;}
+.ep-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.ep-rows{background:#0f1117;border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.ep-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.04);}
+.ep-row:last-child{border-bottom:none;}
+.ep-row-label{font-size:12px;color:var(--text2);}
+.ep-row-val{font-size:13px;font-weight:700;text-align:right;max-width:60%;}
+.ep-note{background:#0f1117;border-radius:12px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:16px;}
+.ep-actions{display:flex;gap:10px;}
+.ep-btn-edit{flex:1;padding:12px;background:rgba(157,224,65,.12);border:none;border-radius:13px;color:var(--lime);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.ep-btn-del{flex:1;padding:12px;background:rgba(248,113,113,.1);border:none;border-radius:13px;color:var(--red);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.profile-add-btn{background:var(--card);border-radius:var(--r);padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:2px dashed #2a2e3a;width:100%;margin-bottom:8px;}
+.profile-add-btn svg{width:18px;height:18px;color:var(--text3);}
+.profile-add-btn span{font-size:13px;font-weight:600;color:var(--text3);}
+
+/* COMP SETTINGS */
+.comp-card{background:var(--card);border-radius:var(--r);margin-bottom:8px;overflow:hidden;}
+.comp-card-header{padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.comp-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.comp-icon svg{width:15px;height:15px;}
+.comp-name{font-size:13px;font-weight:700;flex:1;}
+.comp-toggle{position:relative;width:38px;height:21px;flex-shrink:0;cursor:pointer;}
+.comp-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.comp-slider{position:absolute;inset:0;background:#2a2e3a;border-radius:11px;transition:background .2s;}
+.comp-slider::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;}
+.comp-toggle input:checked+.comp-slider{background:var(--lime);}
+.comp-toggle input:checked+.comp-slider::after{transform:translateX(17px);}
+.comp-edit-btn{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;margin-left:4px;}
+.comp-edit-btn svg{width:12px;height:12px;color:var(--text2);}
+.comp-detail{padding:0 14px 12px;display:none;border-top:1px solid #1e2130;margin-top:0;}
+.comp-detail.open{display:block;padding-top:12px;}
+.comp-detail-row{display:flex;gap:8px;}
+.comp-detail-field{flex:1;}
+.comp-detail-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
+.comp-detail-input{width:100%;background:#0f1117;border:none;border-radius:9px;padding:8px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;outline:none;}
+.comp-detail-input:focus{outline:2px solid var(--lime);}
+.comp-detail-save{width:100%;padding:9px;background:var(--lime);border:none;border-radius:9px;color:#0f1117;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;margin-top:8px;}
+.comp-add-btn{background:var(--card);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;border:2px dashed #2a2e3a;width:100%;margin-bottom:8px;}
+.comp-add-btn svg{width:17px;height:17px;color:var(--text3);}
+.comp-add-btn span{font-size:13px;font-weight:600;color:var(--text3);}
+
+/* COLOR GRID */
+.color-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;margin-bottom:12px;}
+.color-swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#0f1117;border-top:1px solid #1e2130;padding:10px 4px 28px;display:flex;align-items:center;justify-content:space-around;z-index:200;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:5px 8px;color:var(--text3);transition:color .15s;}
+.nav-item.active{color:var(--lime);}
+.nav-item svg{width:21px;height:21px;}
+.nav-item span{font-size:9px;font-weight:600;}
+.nav-fab{width:48px;height:48px;border-radius:15px;background:var(--lime);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;}
+.nav-fab:active{opacity:.85;}
+.nav-fab svg{width:21px;height:21px;color:#0f1117;transition:transform .2s;}
+.nav-fab.open svg{transform:rotate(45deg);}
+
+/* ADD POPUP */
+.add-popup-overlay{position:fixed;inset:0;z-index:190;pointer-events:none;}
+.add-popup-overlay.open{pointer-events:all;}
+.add-popup-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.65);opacity:0;transition:opacity .2s;}
+.add-popup-overlay.open .add-popup-backdrop{opacity:1;}
+.add-popup{position:absolute;bottom:88px;left:50%;transform:translateX(-50%) translateY(10px);width:calc(100% - 40px);max-width:390px;background:var(--card);border-radius:18px;padding:6px;opacity:0;transition:opacity .2s,transform .2s;}
+.add-popup-overlay.open .add-popup{opacity:1;transform:translateX(-50%) translateY(0);}
+.add-choice{display:flex;align-items:center;gap:12px;padding:11px;border-radius:13px;cursor:pointer;}
+.add-choice:active{background:var(--card2);}
+.add-ci{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.add-ci svg{width:17px;height:17px;}
+.ac-lime{background:rgba(157,224,65,.1);} .ac-lime svg{color:var(--lime);}
+.ac-blue{background:rgba(96,165,250,.1);} .ac-blue svg{color:var(--blue);}
+.ac-orange{background:rgba(251,146,60,.1);} .ac-orange svg{color:var(--orange);}
+.add-choice-label{font-size:13px;font-weight:700;}
+.add-choice-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+.add-divider{height:1px;background:#252830;margin:2px 0;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .22s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{width:100%;max-width:430px;margin:0 auto;background:#1a1d25;border-radius:22px 22px 0 0;padding:18px 22px 44px;transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);max-height:92vh;overflow-y:auto;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal::-webkit-scrollbar{display:none;}
+.modal-handle{width:32px;height:4px;border-radius:2px;background:#2a2e3a;margin:0 auto 18px;}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:18px;}
+.modal-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-title-row .modal-title{margin-bottom:0;}
+.btn-delete{font-size:11px;font-weight:700;color:var(--red);cursor:pointer;padding:6px 11px;background:rgba(248,113,113,.08);border-radius:9px;border:none;}
+.form-group{margin-bottom:12px;}
+.form-label{display:block;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.form-input,.form-select,.form-textarea{width:100%;background:#0f1117;border:none;border-radius:12px;padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;outline:none;-webkit-appearance:none;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:2px solid var(--lime);}
+.form-select{cursor:pointer;}
+.form-textarea{resize:none;min-height:68px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+
+/* TYPE CHIPS — multi select */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px;}
+.type-chip{padding:10px 4px;background:#0f1117;border-radius:12px;cursor:pointer;font-size:10px;font-weight:700;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:5px;}
+.type-chip svg{width:20px;height:20px;}
+.type-chip.selected{background:rgba(157,224,65,.1);color:var(--lime);}
+.type-chip.selected svg{color:var(--lime);}
+
+/* Custom type input */
+.custom-type-area{margin-bottom:12px;}
+.custom-type-input-row{display:flex;gap:8px;}
+.custom-type-input-row .form-input{flex:1;margin:0;}
+.custom-type-add-btn{padding:11px 14px;background:var(--lime);border:none;border-radius:12px;color:#0f1117;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.custom-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.custom-tag{padding:4px 10px;background:rgba(157,224,65,.1);color:var(--lime);border-radius:8px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;cursor:pointer;}
+.custom-tag-x{font-size:13px;line-height:1;}
+
+.vtype-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.vtype-btn{padding:14px;background:#0f1117;border-radius:14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:8px;}
+.vtype-btn svg{width:28px;height:28px;}
+.vtype-btn.selected{background:rgba(157,224,65,.1);color:var(--lime);}
+.vtype-btn.selected svg{color:var(--lime);}
+.btn-primary{width:100%;padding:13px;background:var(--lime);border:none;border-radius:14px;color:#0f1117;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:6px;}
+.btn-primary:active{opacity:.85;}
+
+/* SVG PICKER */
+.svg-picker{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-bottom:12px;}
+.svg-chip{width:44px;height:44px;border-radius:12px;background:#0f1117;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.svg-chip svg{width:20px;height:20px;color:var(--text3);}
+.svg-chip.selected{background:rgba(157,224,65,.1);}
+.svg-chip.selected svg{color:var(--lime);}
+
+/* TOAST */
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:#1a1d25;border-radius:12px;padding:11px 18px;font-size:12px;font-weight:600;color:var(--text);z-index:700;opacity:0;transition:opacity .3s;pointer-events:none;max-width:340px;text-align:center;border:1px solid rgba(157,224,65,.2);}
+.toast.show{opacity:1;}
+
+.page{display:none;}
+.page.active{display:block;}
+.empty-state{text-align:center;padding:32px 20px;color:var(--text3);}
+.empty-state svg{width:40px;height:40px;margin-bottom:10px;opacity:.3;}
+.empty-state p{font-size:13px;font-weight:500;line-height:1.6;}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.log-item,.stat-card,.vehicle-card,.rem-card,.stat-tile,.chart-card,.pv-item{animation:up .28s ease both;}
+.log-item:nth-child(2){animation-delay:.04s}.log-item:nth-child(3){animation-delay:.08s}
+.log-item:nth-child(4){animation-delay:.12s}.log-item:nth-child(5){animation-delay:.16s}
+</style>
+<style>
+/* LOGIN SCREEN */
+.login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px 40px;max-width:430px;margin:0 auto;}
+.login-screen.hidden{display:none;}
+.login-logo{width:72px;height:72px;border-radius:22px;background:var(--lime);display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+.login-logo svg{width:38px;height:38px;color:#0f1117;}
+.login-appname{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;}
+.login-tagline{font-size:13px;color:var(--text2);margin-bottom:48px;text-align:center;line-height:1.5;}
+.login-btns{width:100%;display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+.btn-google{width:100%;padding:14px 16px;background:#fff;border:none;border-radius:14px;color:#1a1a1a;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-google:active{opacity:.88;}
+.btn-google svg{width:20px;height:20px;flex-shrink:0;}
+.btn-guest{width:100%;padding:14px 16px;background:var(--card);border:none;border-radius:14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-guest:active{opacity:.85;}
+.login-tos{font-size:11px;color:var(--text3);text-align:center;line-height:1.7;max-width:300px;}
+.login-tos a{color:var(--lime);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07C81.29,97.72,31.13,77.33,26.71,75.6L21,73.36A17.74,17.74,0,0,0,16,72a8,8,0,0,0-2.87,15.46h0c.46.18,47.19,18.3,72.13,29.63a32.15,32.15,0,0,0,33.56-4.29c4.86-4,14.57-8.8,33.19-8.8h18.82a71.74,71.74,0,0,0-24.17,36.59A15.86,15.86,0,0,1,131.32,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>
+  </div>
+  <div class="login-appname">KarNote</div>
+  <div class="login-tagline">Catat servis, bensin, dan kondisi<br>kendaraanmu dengan mudah.</div>
+  <div class="login-btns">
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Masuk dengan Google
+    </button>
+    <button class="btn-guest" onclick="loginAsGuest()">Masuk Tanpa Akun</button>
+  </div>
+  <div class="login-tos">Dengan menggunakan KarNote, kamu menyetujui <a href="#" onclick="openModal('privacyModal');return false;">Kebijakan Privasi</a> dan <a href="#" onclick="openModal('tosModal');return false;">Syarat &amp; Ketentuan</a> kami.</div>
+</div>
+
+<div class="app" id="mainApp" style="display:none">
+<div id="headerBeranda" class="header">
+  <div class="header-top">
+    <div><div class="greeting" id="greetingText">Selamat Pagi</div><div class="greeting-sub">Pantau kondisi kendaraanmu · KarNote</div></div>
+    <div class="avatar" onclick="showTab('pengaturan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+  </div>
+</div>
+<div id="headerStatistik"  class="page-header" style="display:none">
+  <div class="header-top"><div><div class="page-title">Statistik</div><div class="page-sub">Analisis servis &amp; biaya</div></div><div class="avatar" onclick="showTab('pengaturan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div></div>
+</div>
+<div id="headerRiwayat"    class="page-header" style="display:none">
+  <div class="header-top"><div><div class="page-title">Riwayat</div><div class="page-sub">Semua catatan kendaraan</div></div><div class="avatar" onclick="showTab('pengaturan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div></div>
+</div>
+<div id="headerPengingat"  class="page-header" style="display:none">
+  <div class="header-top"><div><div class="page-title">Pengingat</div><div class="page-sub">Status komponen otomatis</div></div><div class="avatar" onclick="showTab('pengaturan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div></div>
+</div>
+<div id="headerPengaturan" class="page-header" style="display:none"><div class="page-title">Pengaturan</div><div class="page-sub">Profil &amp; preferensi aplikasi</div></div>
+
+<main>
+  <!-- BERANDA -->
+  <div class="page active" id="page-beranda">
+    <div id="vehicleScroll" class="vehicle-scroll"></div>
+    <div class="banner-card" onclick="showTab('statistik')">
+      <div class="banner-accent-bar"></div>
+      <div class="banner-top">
+        <div><div class="banner-label">Odometer Terakhir</div><div class="banner-value" id="bannerKm">— km</div><div class="banner-sub" id="bannerSub">Ketuk untuk statistik</div></div>
+        <svg class="banner-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="fill:currentColor"><path d="M128,152a12,12,0,1,1,12-12A12,12,0,0,1,128,152Zm104-24A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128ZM40,128v.33a135.93,135.93,0,0,1,176,0V128a88,88,0,0,0-176,0Zm67.5,85.58L90.45,168H49.63A88.35,88.35,0,0,0,107.5,213.58ZM128,216c.83,0,1.66,0,2.49,0l20.07-53.57a16.07,16.07,0,0,1,15-10.39h47.12c.38-1.31.72-2.64,1-4a120,120,0,0,0-171.4,0c.31,1.34.65,2.67,1,4H90.45a16.08,16.08,0,0,1,15,10.4l20,53.56C126.31,216,127.15,216,128,216Zm78.37-48H165.55l-17.09,45.59A88.34,88.34,0,0,0,206.37,168Z"/></svg>
+      </div>
+      <svg class="wave" viewBox="0 0 400 36" fill="none" preserveAspectRatio="none">
+        <path d="M0 20 C60 4,120 34,200 20 S340 4,400 20 L400 36 L0 36 Z" fill="rgba(157,224,65,0.06)"/>
+        <path d="M0 28 C80 10,160 36,240 28 S360 10,400 28 L400 36 L0 36 Z" fill="rgba(157,224,65,0.04)"/>
+      </svg>
+    </div>
+    <div class="alert-stack" id="alertStack" style="display:none"></div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <div class="stat-label">Total Servis</div><div class="stat-value" id="statTotal">0</div><div class="stat-sub">catatan</div>
+      </div>
+      <div class="stat-card">
+        <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="fill:currentColor"><path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm0,128H56a8,8,0,0,1-8-8V78.63A23.84,23.84,0,0,0,56,80H216Zm-48-60a12,12,0,1,1,12,12A12,12,0,0,1,168,132Z"/></svg>
+        <div class="stat-label">Total Biaya</div><div class="stat-value" id="statCost">—</div><div class="stat-sub">keseluruhan</div>
+      </div>
+    </div>
+    <div class="section-header"><div class="section-title">Aktivitas Terakhir</div><div class="section-link" onclick="showTab('riwayat')">Lihat semua →</div></div>
+    <div class="log-list" id="recentList"></div>
+  </div>
+
+  <!-- STATISTIK -->
+  <div class="page" id="page-statistik">
+    <div id="vehicleScrollStat" class="vehicle-scroll"></div>
+    <div class="stat-grid" id="statGrid"></div>
+    <!-- ODO CHART with Apple-Health-style period toggle + nav -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Odometer</div>
+        <div class="chart-period-tabs">
+          <div class="cpt active" data-p="year" onclick="setOdoPeriod(this,'year')">Tahunan</div>
+          <div class="cpt" data-p="month" onclick="setOdoPeriod(this,'month')">Bulanan</div>
+          <div class="cpt" data-p="week" onclick="setOdoPeriod(this,'week')">Mingguan</div>
+        </div>
+      </div>
+      <div class="chart-nav">
+        <button class="chart-nav-btn" onclick="odoNavPrev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="chart-nav-label" id="odoNavLabel">—</div>
+        <button class="chart-nav-btn" onclick="odoNavNext()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="chart-wrap"><canvas id="odoChart"></canvas></div>
+    </div>
+    <!-- STAT FILTERS below odo chart -->
+    <div class="stat-filter-card">
+      <div class="stat-filter-title">Filter Biaya</div>
+      <div class="stat-filter-row">
+        <select class="stat-filter-sel" id="sfYear" onchange="renderBiayaCharts()"><option value="">Semua Tahun</option></select>
+        <select class="stat-filter-sel" id="sfMonth" onchange="renderBiayaCharts()">
+          <option value="">Semua Bulan</option>
+          <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
+          <option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
+          <option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
+          <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+        </select>
+        <button class="stat-reset-btn" onclick="resetStatFilter()" title="Reset">↺</button>
+      </div>
+    </div>
+    <div class="chart-card"><div class="chart-title" style="margin-bottom:14px">Biaya Servis per Bulan</div><div class="chart-wrap"><canvas id="svcChart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title" style="margin-bottom:14px">Biaya Bensin per Bulan</div><div class="chart-wrap"><canvas id="fuelChart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title" style="margin-bottom:14px">Biaya per Kategori</div><div class="cost-bar-list" id="costBarList"></div></div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="page" id="page-riwayat">
+    <div id="vehicleScrollRiwayat" class="vehicle-scroll"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+      <select class="riwayat-filter-sel" id="riwayatFilterType" onchange="setRiwayatFilter(this.value)">
+        <option value="Semua">Semua Catatan</option>
+        <option value="Servis">Servis</option>
+        <option value="Bensin">Bensin</option>
+        <option value="Odometer">Odometer</option>
+      </select>
+      <button class="riwayat-reset-btn" onclick="setRiwayatFilter('Semua')" title="Reset filter">↺</button>
+    </div>
+    <div class="log-list" id="allList"></div>
+  </div>
+
+  <!-- PENGINGAT -->
+  <div class="page" id="page-pengingat">
+    <div id="vehicleScrollPengingat" class="vehicle-scroll"></div>
+    <div class="rem-goto-settings" onclick="showTab('pengaturan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Atur komponen yang aktif di <b>Pengaturan</b> →</span>
+    </div>
+    <div id="reminderList"></div>
+  </div>
+
+  <!-- PENGATURAN -->
+  <div class="page" id="page-pengaturan">
+    <!-- PROFIL SECTION -->
+    <div class="settings-section">
+      <div class="settings-section-label">Profil</div>
+      <div class="settings-group">
+        <div class="settings-row" id="profileRow" onclick="openProfilePopup()">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(157,224,65,.1)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#9de041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="settings-row-text">
+              <div class="settings-row-label" id="profileNameDisplay">Atur Nama Profil</div>
+              <div class="settings-row-sub" id="profileEmailDisplay">Ketuk untuk mengatur</div>
+            </div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KENDARAAN SECTION -->
+    <div class="settings-section">
+      <div class="settings-section-label">Kendaraan</div>
+      <div class="settings-group">
+        <div class="settings-row" onclick="openVehicleModal()">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(157,224,65,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#9de041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+            <div class="settings-row-text"><div class="settings-row-label">Tambah Kendaraan</div></div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
+        <div id="settingsVehicleList"></div>
+      </div>
+    </div>
+
+    <!-- PENGINGAT SECTION -->
+    <div class="settings-section">
+      <div class="settings-section-label">Pengingat</div>
+      <div class="settings-group">
+        <div class="settings-row" onclick="openKomponenModal()">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(96,165,250,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+            <div class="settings-row-text">
+              <div class="settings-row-label">Kelola Komponen</div>
+              <div class="settings-row-sub">Atur interval &amp; aktifkan pengingat</div>
+            </div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA SECTION -->
+    <div class="settings-section">
+      <div class="settings-section-label">Data</div>
+      <div class="settings-group">
+        <div class="settings-row" onclick="exportData()">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(157,224,65,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#9de041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+            <div class="settings-row-text">
+              <div class="settings-row-label">Ekspor Data</div>
+              <div class="settings-row-sub">Unduh semua data sebagai JSON</div>
+            </div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
+        <div class="settings-row" onclick="document.getElementById('importFile').click()">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(251,146,60,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+            <div class="settings-row-text">
+              <div class="settings-row-label">Impor Data</div>
+              <div class="settings-row-sub">Pulihkan dari file JSON</div>
+            </div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+      </div>
+    </div>
+
+    <!-- LAINNYA -->
+    <div class="settings-section">
+      <div class="settings-section-label">Lainnya</div>
+      <div class="settings-group">
+        <div class="settings-row" onclick="openModal('privacyModal')">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(138,143,158,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#8a8f9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="settings-row-text"><div class="settings-row-label">Kebijakan Privasi</div></div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
+        <div class="settings-row" onclick="openModal('tosModal')">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(138,143,158,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#8a8f9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="settings-row-text"><div class="settings-row-label">Ketentuan Penggunaan</div></div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
+      </div>
+    </div>
+    <!-- BAHAYA -->
+    <div class="settings-section">
+      <div class="settings-section-label">Zona Bahaya</div>
+      <div class="settings-group">
+        <div class="settings-row" onclick="confirmClearAllData()">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(248,113,113,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
+            <div class="settings-row-text">
+              <div class="settings-row-label" style="color:var(--red)">Hapus Semua Data</div>
+              <div class="settings-row-sub">Hapus seluruh kendaraan &amp; riwayat</div>
+            </div>
+          </div>
+          <div class="settings-row-arr" style="color:var(--red)">›</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:var(--text3)">KarNote v1.0 · Dibuat dengan ❤️</div>
+  </div>
+</main>
+</div>
+</div><!-- end mainApp -->
+
+<!-- CONFIRM CLEAR MODAL -->
+<div class="modal-overlay" id="clearDataModal"><div class="modal">
+  <div class="modal-handle"></div>
+  <div style="text-align:center;padding:8px 0 4px">
+    <div style="width:52px;height:52px;border-radius:16px;background:rgba(248,113,113,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:8px">Hapus Semua Data?</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">Tindakan ini akan menghapus seluruh data kendaraan, riwayat servis, bensin, dan odometer secara permanen. Tidak bisa dibatalkan.</div>
+    <div style="display:flex;gap:10px">
+      <button style="flex:1;padding:13px;background:var(--card);border:none;border-radius:14px;color:var(--text2);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer" onclick="closeModal('clearDataModal')">Batal</button>
+      <button style="flex:1;padding:13px;background:rgba(248,113,113,.15);border:2px solid rgba(248,113,113,.3);border-radius:14px;color:var(--red);font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer" onclick="clearAllData()">Ya, Hapus Semua</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- REMINDER POPUP -->
+<div class="rem-popup-overlay" id="remPopup">
+  <div class="rem-popup">
+    <div class="rp-header"><div class="rp-title" id="rpTitle">Ganti Oli</div>
+      <button class="rp-close" onclick="closeRemPopup()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div id="rpBody"></div>
+  </div>
+</div>
+
+<!-- ADD POPUP -->
+<div class="add-popup-overlay" id="addPopup">
+  <div class="add-popup-backdrop" onclick="closeAddPopup()"></div>
+  <div class="add-popup">
+    <div class="add-choice" onclick="closeAddPopup();openFuelModal()"><div class="add-ci ac-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8l9-4 9 4v14"/><path d="M10 22V12h4v10"/><rect x="10" y="2" width="4" height="4" rx="1"/></svg></div><div><div class="add-choice-label">Catat Bensin</div><div class="add-choice-sub">Isi bahan bakar &amp; konsumsi</div></div></div>
+    <div class="add-divider"></div>
+    <div class="add-choice" onclick="closeAddPopup();openOdoModal()"><div class="add-ci ac-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="add-choice-label">Update Odometer</div><div class="add-choice-sub">Catat KM tanpa servis</div></div></div>
+    <div class="add-divider"></div>
+    <div class="add-choice" onclick="closeAddPopup();openServiceModal()"><div class="add-ci ac-lime"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div><div class="add-choice-label">Catat Servis</div><div class="add-choice-sub">Ganti oli, rem, aki, dll</div></div></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-beranda" onclick="showTab('beranda')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Beranda</span>
+  </div>
+  <div class="nav-item" id="nav-statistik" onclick="showTab('statistik')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Statistik</span>
+  </div>
+  <button class="nav-fab" id="navFab" onclick="toggleAddPopup()">
+    <svg id="fabIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+  <div class="nav-item" id="nav-riwayat" onclick="showTab('riwayat')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Riwayat</span>
+  </div>
+  <div class="nav-item" id="nav-pengingat" onclick="showTab('pengingat')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Pengingat</span>
+  </div>
+</div>
+
+<!-- MODAL SERVIS -->
+<div class="modal-overlay" id="serviceModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Catat Servis</div>
+  <div class="form-group"><label class="form-label">Kendaraan</label><select class="form-select" id="svcVehicle"></select></div>
+  <div class="form-group"><label class="form-label">Jenis Servis (bisa pilih lebih dari satu)</label>
+    <div class="type-grid" id="svcTypeGrid"></div>
+    <div class="custom-type-area">
+      <div class="form-label" style="margin-bottom:6px">Tambah jenis lainnya</div>
+      <div class="custom-type-input-row">
+        <input type="text" class="form-input" id="customTypeInput" placeholder="mis. Timing Belt, Wiper...">
+        <button class="custom-type-add-btn" onclick="addCustomType()">Tambah</button>
+      </div>
+      <div class="custom-tags" id="customTypeTags"></div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="svcDate"></div>
+    <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="svcKm" placeholder="15000"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="svcCost" placeholder="150000"></div>
+    <div class="form-group"><label class="form-label">Tempat Servis</label><input type="text" class="form-input" id="svcPlace" placeholder="Bengkel ABC"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="svcNote" placeholder="Detail pekerjaan..."></textarea></div>
+  <button class="btn-primary" onclick="saveService()">Simpan</button>
+</div></div>
+
+<!-- MODAL BENSIN -->
+<div class="modal-overlay" id="fuelModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Catat Bensin</div>
+  <div class="form-group"><label class="form-label">Kendaraan</label><select class="form-select" id="fuelVehicle"></select></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="fuelDate"></div>
+    <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="fuelKm"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Volume (Liter)</label><input type="number" class="form-input" id="fuelLiter" placeholder="5.0" step="0.1"></div>
+    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="fuelCost" placeholder="80000"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Jenis BBM</label><select class="form-select" id="fuelType"><option>Pertalite</option><option>Pertamax</option><option>Pertamax Turbo</option><option>Dexlite</option><option>Pertamina Dex</option><option>Solar</option></select></div>
+  <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="fuelNote" style="min-height:60px" placeholder="SPBU, full tank..."></textarea></div>
+  <button class="btn-primary" onclick="saveFuel()">Simpan</button>
+</div></div>
+
+<!-- MODAL ODO -->
+<div class="modal-overlay" id="odoModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Update Odometer</div>
+  <div class="form-group"><label class="form-label">Kendaraan</label><select class="form-select" id="odoVehicle"></select></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="odoDate"></div>
+    <div class="form-group"><label class="form-label">KM Saat Ini</label><input type="number" class="form-input" id="odoKm"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="odoNote" style="min-height:60px" placeholder="Pulang mudik, dll..."></textarea></div>
+  <button class="btn-primary" onclick="saveOdo()">Simpan</button>
+</div></div>
+
+<!-- MODAL TAMBAH KENDARAAN -->
+<div class="modal-overlay" id="vehicleModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Tambah Kendaraan</div>
+  <div class="form-group"><label class="form-label">Tipe</label>
+    <div class="vtype-row">
+      <div class="vtype-btn" id="vtype-motor" onclick="selectVType('motor')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:28px;height:28px;fill:currentColor"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07c-10.58-4.81-73.29-30.12-73.8-30.26a8,8,0,0,0-5,15.19S68.57,109.4,79.6,120.4A55.67,55.67,0,0,1,95.43,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>Motor</div>
+      <div class="vtype-btn" id="vtype-mobil" onclick="selectVType('mobil')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:28px;height:28px;fill:currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>Mobil</div>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">Nama / Merek &amp; Model</label><input type="text" class="form-input" id="vName" placeholder="Honda Beat, Toyota Avanza..."></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Plat Nomor</label><input type="text" class="form-input" id="vPlate" placeholder="B 1234 ABC" style="text-transform:uppercase"></div>
+    <div class="form-group"><label class="form-label">Tahun</label><select class="form-select" id="vYear"></select></div>
+  </div>
+  <div class="form-group"><label class="form-label">KM Awal</label><input type="text" inputmode="numeric" pattern="[0-9]*" class="form-input" id="vKm" placeholder="0"></div>
+  <div class="form-group"><label class="form-label">Warna Kendaraan</label><div class="color-grid" id="vColorGrid"></div></div>
+  <button class="btn-primary" onclick="saveVehicle()">Tambah Kendaraan</button>
+</div></div>
+
+<!-- MODAL EDIT KENDARAAN -->
+<div class="modal-overlay" id="editVehicleModal"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title-row"><div class="modal-title">Edit Kendaraan</div><button class="btn-delete" onclick="deleteVehicle()">Hapus</button></div>
+  <div class="form-group"><label class="form-label">Tipe</label>
+    <div class="vtype-row">
+      <div class="vtype-btn" id="evtype-motor" onclick="selectEVType('motor')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:28px;height:28px;fill:currentColor"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07c-10.58-4.81-73.29-30.12-73.8-30.26a8,8,0,0,0-5,15.19S68.57,109.4,79.6,120.4A55.67,55.67,0,0,1,95.43,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>Motor</div>
+      <div class="vtype-btn" id="evtype-mobil" onclick="selectEVType('mobil')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:28px;height:28px;fill:currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>Mobil</div>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-input" id="evName"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Plat Nomor</label><input type="text" class="form-input" id="evPlate" style="text-transform:uppercase"></div>
+    <div class="form-group"><label class="form-label">Tahun</label><select class="form-select" id="evYear"></select></div>
+  </div>
+  <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="evKm"></div>
+  <div class="form-group"><label class="form-label">Warna Kendaraan</label><div class="color-grid" id="evColorGrid"></div></div>
+  <button class="btn-primary" onclick="saveEditVehicle()">Simpan Perubahan</button>
+</div></div>
+
+<!-- MODAL TAMBAH KOMPONEN -->
+<div class="modal-overlay" id="addCompModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Tambah Komponen</div>
+  <div class="form-group"><label class="form-label">Nama Komponen</label><input type="text" class="form-input" id="compName" placeholder="mis. Timing Belt, Wiper..."></div>
+  <div class="form-group"><label class="form-label">Pilih Ikon</label><div class="svg-picker" id="compSvgPicker"></div></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Interval KM</label><input type="number" class="form-input" id="compKm" placeholder="10000"></div>
+    <div class="form-group"><label class="form-label">Interval Bulan</label><input type="number" class="form-input" id="compMo" placeholder="12"></div>
+  </div>
+  <button class="btn-primary" onclick="saveCustomComp()">Tambah Komponen</button>
+</div></div>
+
+<!-- ENTRY DETAIL POPUP -->
+<div class="entry-popup-overlay" id="entryPopup">
+  <div class="entry-popup">
+    <div class="ep-handle"></div>
+    <div class="ep-header">
+      <div class="ep-icon" id="epIcon"></div>
+      <div><div class="ep-title" id="epTitle">Detail</div><div class="ep-sub" id="epSub"></div></div>
+    </div>
+    <div class="ep-rows" id="epRows"></div>
+    <div class="ep-note" id="epNote" style="display:none"></div>
+    <div class="ep-actions">
+      <button class="ep-btn-edit" onclick="editCurrentEntry()">✏️ Edit</button>
+      <button class="ep-btn-del" onclick="deleteCurrentEntry()">🗑️ Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE POPUP -->
+<div class="modal-overlay" id="profileModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Profil</div>
+  <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-input" id="profileName" placeholder="Nama kamu..."></div>
+  <div class="form-group"><label class="form-label">Catatan / Info tambahan</label><input type="text" class="form-input" id="profileEmail" placeholder="mis. No. HP, email..."></div>
+  <button class="btn-primary" onclick="saveProfile()">Simpan Profil</button>
+</div></div>
+
+<!-- KOMPONEN MODAL (from settings) -->
+<div class="modal-overlay" id="komponenModal"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title">Kelola Komponen</div>
+  <div id="komponenVehicleScroll" class="vehicle-scroll" style="margin-bottom:16px"></div>
+  <div id="compSettings"></div>
+  <button class="comp-add-btn" onclick="openAddCompModal()" style="margin-top:4px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span>Tambah Komponen Custom</span>
+  </button>
+</div></div>
+
+<!-- PRIVACY MODAL -->
+<div class="modal-overlay" id="privacyModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Kebijakan Privasi</div>
+  <div style="color:var(--text2);font-size:13px;line-height:1.7;background:#0f1117;border-radius:14px;padding:16px">
+    <p>Konten kebijakan privasi akan tersedia segera.</p>
+    <br><p style="color:var(--text3)">KarNote menyimpan semua data secara lokal di perangkatmu dan tidak mengirimkan data ke server mana pun.</p>
+  </div>
+</div></div>
+
+<!-- TOS MODAL -->
+<div class="modal-overlay" id="tosModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Ketentuan Penggunaan</div>
+  <div style="color:var(--text2);font-size:13px;line-height:1.7;background:#0f1117;border-radius:14px;padding:16px">
+    <p>Ketentuan penggunaan akan tersedia segera.</p>
+    <br><p style="color:var(--text3)">Dengan menggunakan KarNote, kamu setuju untuk menggunakan aplikasi ini hanya untuk keperluan pencatatan kendaraan pribadi.</p>
+  </div>
+</div></div>
+
+<script>
+var CAR_COLORS=[
+  {n:'Putih',h:'#f5f5f5'},{n:'Hitam',h:'#222'},{n:'Abu',h:'#9ca3af'},{n:'Silver',h:'#d1d5db'},
+  {n:'Merah',h:'#ef4444'},{n:'Biru',h:'#3b82f6'},{n:'Biru Tua',h:'#1d4ed8'},{n:'Hijau',h:'#22c55e'},
+  {n:'Kuning',h:'#eab308'},{n:'Orange',h:'#f97316'},{n:'Coklat',h:'#92400e'},{n:'Krem',h:'#d4b896'},
+  {n:'Ungu',h:'#8b5cf6'},{n:'Pink',h:'#ec4899'},{n:'Maroon',h:'#991b1b'},{n:'Hijau Tua',h:'#166534'}
+];
+var MO_NAMES=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+var SVG_PARTS={
+  'Ganti Oli':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14c0 4-3 6-8 6s-8-2-8-6V8l8-6 8 6v6z"/><path d="M12 2v18"/></svg>',
+  'Rem':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>',
+  'Ban':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>',
+  'Aki':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>',
+  'Filter':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>',
+  'Rantai':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+  'Busi':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  'Cuci':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>',
+  'Lainnya':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  'Wiper':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 A14 14 0 0 1 20 4"/><line x1="4" y1="20" x2="12" y2="12"/></svg>',
+  'Timing Belt':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 9h6v6H9z"/></svg>',
+  'Radiator':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="7" y1="4" x2="7" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/></svg>',
+  'Kopling':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="21"/><line x1="3" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="21" y2="12"/></svg>',
+  'Transmisi':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><line x1="5" y1="8" x2="12" y2="16"/><line x1="19" y1="8" x2="12" y2="16"/></svg>'
+};
+var SVG_EXTRA={
+  motor:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:100%;height:100%;fill:currentColor"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07C81.29,97.72,31.13,77.33,26.71,75.6L21,73.36A17.74,17.74,0,0,0,16,72a8,8,0,0,0-2.87,15.46h0c.46.18,47.19,18.3,72.13,29.63a32.15,32.15,0,0,0,33.56-4.29c4.86-4,14.57-8.8,33.19-8.8h18.82a71.74,71.74,0,0,0-24.17,36.59A15.86,15.86,0,0,1,131.32,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>',
+  mobil:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:100%;height:100%;fill:currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  fuel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8l9-4 9 4v14"/><path d="M10 22V12h4v10"/><rect x="10" y="2" width="4" height="4" rx="1"/></svg>',
+  odo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+  pencil:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+};
+var DEF_MOTOR={'Ganti Oli':{km:2500,mo:3},'Filter':{km:8000,mo:12},'Busi':{km:8000,mo:18},'Rantai':{km:5000,mo:6},'Rem':{km:15000,mo:24},'Ban':{km:20000,mo:36},'Aki':{km:50000,mo:24}};
+var DEF_MOBIL={'Ganti Oli':{km:5000,mo:6},'Filter':{km:10000,mo:12},'Busi':{km:20000,mo:24},'Rem':{km:15000,mo:24},'Ban':{km:30000,mo:48},'Aki':{km:50000,mo:36}};
+var COMP_COLORS={'Rem':'red','Ban':'orange','Aki':'orange','Busi':'orange'};
+
+var vehicles=JSON.parse(localStorage.getItem('sk9_v')||'[]');
+var services=JSON.parse(localStorage.getItem('sk9_s')||'[]');
+var fuels=JSON.parse(localStorage.getItem('sk9_f')||'[]');
+var odos=JSON.parse(localStorage.getItem('sk9_o')||'[]');
+var compSettings=JSON.parse(localStorage.getItem('sk9_cs')||'{}');
+var activeVehicleId=null,selectedType=[],selectedVType='',selectedEVType='',editingVehicleId=null;
+var selectedColor='#f5f5f5',selectedEColor='#f5f5f5',selectedCompSvg='Lainnya';
+var currentTab='beranda',riwayatFilter='Semua',riwayatVehicleFilter='';
+var odoPeriod='year',odoOffset=0;
+
+var hr=new Date().getHours();
+document.getElementById('greetingText').textContent=hr<12?'Selamat Pagi':hr<17?'Selamat Siang':hr<20?'Selamat Sore':'Selamat Malam';
+var todayStr=new Date().toISOString().split('T')[0];
+['svcDate','fuelDate','odoDate'].forEach(function(id){document.getElementById(id).value=todayStr;});
+
+// Build year dropdown
+(function(){
+  var yr=new Date().getFullYear(),opts='';
+  for(var y=yr;y>=1980;y--) opts+='<option value="'+y+'">'+y+'</option>';
+  document.getElementById('vYear').innerHTML=opts;
+  document.getElementById('evYear').innerHTML=opts;
+})();
+
+// Color grid helpers
+function buildColorGrid(gridId,cur,fn){
+  document.getElementById(gridId).innerHTML=CAR_COLORS.map(function(c){
+    var sel=c.h===cur;
+    var isDark=['#222','#1d4ed8','#991b1b','#166534','#8b5cf6'].indexOf(c.h)>=0;
+    return '<div class="color-swatch" style="background:'+c.h+';border:2px solid '+(sel?'#fff':'transparent')+';" onclick="'+fn+'(\''+c.h+'\',\''+gridId+'\')" title="'+c.n+'">'+(sel?'<span style="color:'+(isDark?'#fff':'#000')+'">✓</span>':'')+'</div>';
+  }).join('');
+}
+function pickColor(h,gid){
+  if(gid==='vColorGrid') selectedColor=h;
+  else selectedEColor=h;
+  buildColorGrid(gid,h,'pickColor');
+}
+
+// SVG picker
+function buildSvgPicker(){
+  document.getElementById('compSvgPicker').innerHTML=Object.keys(SVG_PARTS).map(function(k){
+    return '<div class="svg-chip'+(k===selectedCompSvg?' selected':'')+'" onclick="pickCompSvg(\''+k+'\')" title="'+k+'">'+SVG_PARTS[k]+'</div>';
+  }).join('');
+}
+function pickCompSvg(k){selectedCompSvg=k;buildSvgPicker();}
+
+// DEMO DATA with 2025 monthly odometer entries
+if(!vehicles.length){
+  vehicles=[{id:'v1',type:'motor',name:'Honda Beat',plate:'B 2345 XYZ',year:2021,km:24500,color:'#ef4444'},{id:'v2',type:'mobil',name:'Toyota Avanza',plate:'B 9876 ABC',year:2019,km:72000,color:'#3b82f6'}];
+  services=[
+    {id:'s1',vehicleId:'v1',type:'Ganti Oli',date:'2024-07-10',km:14000,cost:85000,place:'Bengkel Haji Udin',note:''},
+    {id:'s2',vehicleId:'v1',type:'Rem',date:'2024-10-15',km:16000,cost:120000,place:'Ahass Honda',note:''},
+    {id:'s3',vehicleId:'v1',type:'Ganti Oli',date:'2025-01-08',km:18000,cost:85000,place:'Bengkel Haji Udin',note:''},
+    {id:'s4',vehicleId:'v1',type:'Filter',date:'2025-03-12',km:20000,cost:45000,place:'Ahass Honda',note:''},
+    {id:'s5',vehicleId:'v1',type:'Ganti Oli',date:'2025-05-20',km:22000,cost:85000,place:'Bengkel Haji Udin',note:''},
+    {id:'s6',vehicleId:'v2',type:'Ganti Oli',date:'2024-08-10',km:60000,cost:250000,place:'Auto2000',note:''},
+    {id:'s7',vehicleId:'v2',type:'Rem',date:'2024-11-15',km:63000,cost:320000,place:'Bengkel Prima',note:''},
+    {id:'s8',vehicleId:'v2',type:'Ganti Oli',date:'2025-02-15',km:66000,cost:250000,place:'Auto2000',note:''},
+    {id:'s9',vehicleId:'v2',type:'Filter',date:'2025-04-10',km:68500,cost:75000,place:'Auto2000',note:''},
+  ];
+  fuels=[
+    {id:'f1',vehicleId:'v1',date:'2025-01-15',km:18300,liter:4.5,cost:36000,type:'Pertalite',note:''},
+    {id:'f2',vehicleId:'v1',date:'2025-02-03',km:18900,liter:4.5,cost:36000,type:'Pertalite',note:''},
+    {id:'f3',vehicleId:'v1',date:'2025-02-18',km:19400,liter:4.5,cost:36000,type:'Pertalite',note:''},
+    {id:'f4',vehicleId:'v1',date:'2025-03-05',km:19900,liter:5,cost:40000,type:'Pertalite',note:''},
+    {id:'f5',vehicleId:'v1',date:'2025-03-22',km:20500,liter:5,cost:40000,type:'Pertalite',note:''},
+    {id:'f6',vehicleId:'v1',date:'2025-04-08',km:21100,liter:4.5,cost:36000,type:'Pertalite',note:''},
+    {id:'f7',vehicleId:'v1',date:'2025-04-25',km:21700,liter:5,cost:40000,type:'Pertalite',note:''},
+    {id:'f8',vehicleId:'v1',date:'2025-05-10',km:22300,liter:4.5,cost:36000,type:'Pertalite',note:''},
+    {id:'f9',vehicleId:'v1',date:'2025-06-01',km:23100,liter:5,cost:40000,type:'Pertalite',note:''},
+    {id:'f10',vehicleId:'v1',date:'2025-06-20',km:23800,liter:5,cost:40000,type:'Pertalite',note:''},
+    {id:'f11',vehicleId:'v2',date:'2025-01-22',km:66500,liter:40,cost:480000,type:'Pertamax',note:'Full tank'},
+    {id:'f12',vehicleId:'v2',date:'2025-03-10',km:68000,liter:38,cost:456000,type:'Pertamax',note:''},
+    {id:'f13',vehicleId:'v2',date:'2025-05-05',km:70000,liter:40,cost:480000,type:'Pertamax',note:'Full tank'},
+    {id:'f14',vehicleId:'v2',date:'2025-06-15',km:72000,liter:38,cost:456000,type:'Pertamax',note:''},
+  ];
+  // monthly odometer updates
+  var odoData=[
+    ['v1','2025-01-31',18800],['v1','2025-02-28',19600],['v1','2025-03-31',20700],
+    ['v1','2025-04-30',21900],['v1','2025-05-31',22800],['v1','2025-06-30',24000],
+    ['v2','2025-01-31',67000],['v2','2025-02-28',68000],['v2','2025-03-31',69000],
+    ['v2','2025-04-30',70000],['v2','2025-05-31',71200],['v2','2025-06-30',72000]
+  ];
+  odoData.forEach(function(o,i){odos.push({id:'o'+i,vehicleId:o[0],date:o[1],km:o[2],note:'Update bulanan'});});
+  saveData();
+}
+activeVehicleId=vehicles[0]?vehicles[0].id:null;
+ensureCompSettings();
+// renderAll() dipanggil dari showApp() setelah login
+
+function saveData(){
+  localStorage.setItem('sk9_v',JSON.stringify(vehicles));
+  localStorage.setItem('sk9_s',JSON.stringify(services));
+  localStorage.setItem('sk9_f',JSON.stringify(fuels));
+  localStorage.setItem('sk9_o',JSON.stringify(odos));
+  localStorage.setItem('sk9_cs',JSON.stringify(compSettings));
+}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+
+function ensureCompSettings(){
+  vehicles.forEach(function(v){
+    if(!compSettings[v.id]){
+      var def=v.type==='motor'?DEF_MOTOR:DEF_MOBIL;
+      compSettings[v.id]=Object.keys(def).map(function(type){return{name:type,svgKey:type,km:def[type].km,mo:def[type].mo,active:true};});
+    }
+  });
+}
+function getComp(vid,name){var cs=compSettings[vid]||[];for(var i=0;i<cs.length;i++)if(cs[i].name===name)return cs[i];return null;}
+function getActiveComps(vid){return(compSettings[vid]||[]).filter(function(c){return c.active;});}
+
+function fKm(n){return Number(n).toLocaleString('id-ID')+' km';}
+function fRp(n){
+  n=Number(n);
+  if(!n) return '—';
+  if(n>=1000000) return 'Rp '+Math.round(n/100000)/10+'jt';
+  if(n>=1000) return 'Rp '+Math.round(n/1000)+'rb';
+  return 'Rp '+n.toLocaleString('id-ID');
+}
+function fDate(d){if(!d)return'—';var p=d.split('-');return parseInt(p[2])+' '+MO_NAMES[parseInt(p[1])-1]+' '+p[0];}
+function fDateShort(d){if(!d)return'';var p=d.split('-');return MO_NAMES[parseInt(p[1])-1]+' \''+p[0].slice(2);}
+function getV(id){for(var i=0;i<vehicles.length;i++)if(vehicles[i].id===id)return vehicles[i];return null;}
+function getCurKm(vid){
+  var v=getV(vid);if(!v)return 0;
+  var all=[];
+  services.forEach(function(s){if(s.vehicleId===vid&&s.km)all.push(+s.km);});
+  fuels.forEach(function(f){if(f.vehicleId===vid&&f.km)all.push(+f.km);});
+  odos.forEach(function(o){if(o.vehicleId===vid&&o.km)all.push(+o.km);});
+  return all.length?Math.max.apply(null,all):+v.km;
+}
+function nextMilestone(lastKm,interval){if(!interval)return 0;return Math.ceil((lastKm+1)/interval)*interval;}
+function getRemStatus(vid,comp){
+  var curKm=getCurKm(vid);
+  var hist=services.filter(function(s){return s.vehicleId===vid&&s.type===comp.name&&s.km;});
+  hist.sort(function(a,b){return+b.km-+a.km;});
+  var lastKm=hist.length?+hist[0].km:null,lastDate=hist.length?hist[0].date:null;
+  var kmPct=0,kmRem=null,kmNext=null;
+  if(comp.km&&lastKm!=null){var diff=curKm-lastKm;kmPct=diff/comp.km;kmNext=nextMilestone(lastKm,comp.km);kmRem=Math.max(0,kmNext-curKm);}
+  else if(comp.km&&lastKm==null){kmRem=comp.km;kmNext=comp.km;}
+  var moPct=0,moRem=null;
+  if(comp.mo&&lastDate){var now=new Date(),last=new Date(lastDate),moEl=(now.getFullYear()-last.getFullYear())*12+(now.getMonth()-last.getMonth());moPct=moEl/comp.mo;moRem=Math.max(0,comp.mo-moEl);}
+  var pct=Math.max(kmPct,moPct);
+  var cls=pct>=1?'bad':pct>=0.8?'warn':'ok',lbl=pct>=1?'Segera Ganti!':pct>=0.8?'Perlu Perhatian':'OK';
+  return{pct:pct,cls:cls,lbl:lbl,kmPct:kmPct,moPct:moPct,kmRem:kmRem,moRem:moRem,kmNext:kmNext,lastKm:lastKm,lastDate:lastDate,curKm:curKm};
+}
+
+// TABS
+var ALL_TABS=['beranda','statistik','riwayat','pengingat','pengaturan'];
+function showTab(tab){
+  currentTab=tab;
+  ALL_TABS.forEach(function(t){
+    var ni=document.getElementById('nav-'+t);if(ni)ni.classList.toggle('active',t===tab);
+    document.getElementById('page-'+t).classList.toggle('active',t===tab);
+    var hdr=document.getElementById('header'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(hdr)hdr.style.display=t===tab?'':'none';
+  });
+  document.getElementById('headerBeranda').style.display=tab==='beranda'?'':'none';
+  renderAll();
+}
+
+function renderAll(){
+  ['vehicleScroll','vehicleScrollStat','vehicleScrollRiwayat','vehicleScrollPengingat','vehicleScrollPengaturan'].forEach(renderVC);
+  renderBanner();renderStats();renderAlerts();renderRecent();
+  renderAllLogs();renderReminders();renderProfile();renderCompSettings();
+  if(currentTab==='statistik'){populateStatYears();renderStatistik();}
+}
+
+function renderVC(id){
+  var el=document.getElementById(id);if(!el)return;
+  var h='';
+  vehicles.forEach(function(v){
+    var a=v.id===activeVehicleId?'active':'',ac=v.color||'#9de041';
+    var barColor=a?ac:hexAlpha(ac,.25);
+    h+='<div class="vehicle-card '+a+'" onclick="selectVehicle(\''+v.id+'\')">';
+    h+='<div class="vc-color-bar" style="background:'+barColor+'"></div>';
+    h+='<div class="vehicle-icon" style="color:'+ac+'">'+SVG_EXTRA[v.type]+'</div>';
+    h+='<div class="vehicle-name">'+v.name+'</div>';
+    h+='<div class="vehicle-plate">'+v.plate+'</div></div>';
+  });
+  h+='<div class="vehicle-card vehicle-add" onclick="openVehicleModal()">'+SVG_EXTRA.plus+'<p>Tambah</p></div>';
+  el.innerHTML=h;
+}
+
+function renderBanner(){
+  var v=getV(activeVehicleId);
+  if(!v){
+    document.getElementById('bannerKm').textContent='— km';
+    document.getElementById('bannerSub').textContent='Ketuk untuk statistik';
+    return;
+  }
+  var curKm=getCurKm(activeVehicleId);
+  document.getElementById('bannerKm').textContent=Number(curKm).toLocaleString('id-ID')+' km';
+  var all=[];
+  services.forEach(function(s){if(s.vehicleId===activeVehicleId)all.push(s.date);});
+  fuels.forEach(function(f){if(f.vehicleId===activeVehicleId)all.push(f.date);});
+  odos.forEach(function(o){if(o.vehicleId===activeVehicleId)all.push(o.date);});
+  all.sort();
+  // Hanya tampil aktivitas terakhir jika ada data catatan (bukan hanya KM awal kendaraan)
+  var hasEntries=all.length>0;
+  document.getElementById('bannerSub').textContent=hasEntries?'Aktivitas terakhir '+fDate(all[all.length-1])+' · ketuk untuk statistik':'Ketuk untuk statistik';
+}
+
+function renderStats(){
+  var vS=services.filter(function(s){return s.vehicleId===activeVehicleId;});
+  document.getElementById('statTotal').textContent=vS.length;
+  var tot=0;vS.forEach(function(s){if(s.cost)tot+=+s.cost;});
+  var ft=0;fuels.filter(function(f){return f.vehicleId===activeVehicleId;}).forEach(function(f){if(f.cost)ft+=+f.cost;});
+  document.getElementById('statCost').textContent=fRp(tot+ft);
+}
+
+function renderAlerts(){
+  var stack=document.getElementById('alertStack');
+  if(!activeVehicleId){stack.style.display='none';return;}
+  var comps=getActiveComps(activeVehicleId),bad=[];
+  comps.forEach(function(comp){var st=getRemStatus(activeVehicleId,comp);if(st.pct>=0.8)bad.push({comp:comp,st:st});});
+  bad.sort(function(a,b){return b.st.pct-a.st.pct;});
+  if(!bad.length){stack.style.display='none';return;}
+  stack.style.display='flex';
+  stack.innerHTML=bad.map(function(item){
+    var st=item.st,comp=item.comp,isLate=st.pct>=1;
+    var desc='';
+    if(st.kmRem!=null&&st.moPct>st.kmPct) desc=st.moRem!=null&&st.moRem<=0?'Sudah lewat interval bulan':'Sisa '+st.moRem+' bulan lagi';
+    else if(st.kmRem!=null) desc=isLate?'Lewat target '+fKm(Math.abs(getCurKm(activeVehicleId)-st.kmNext)):'Sisa '+fKm(st.kmRem)+' lagi';
+    return '<div class="alert-banner" onclick="showTab(\'pengingat\')">'
+      +'<svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+      +'<div style="flex:1"><div class="alert-title">'+(isLate?'⚠️ '+comp.name+' Terlambat!':'🔔 Segera '+comp.name)+'</div><div class="alert-desc">'+desc+'</div></div>'
+      +'<div class="alert-arr">›</div></div>';
+  }).join('');
+}
+
+function getAllEntries(vid){
+  var all=[];
+  services.forEach(function(s){if(!vid||s.vehicleId===vid)all.push({kind:'service',date:s.date,data:s});});
+  fuels.forEach(function(f){if(!vid||f.vehicleId===vid)all.push({kind:'fuel',date:f.date,data:f});});
+  odos.forEach(function(o){if(!vid||o.vehicleId===vid)all.push({kind:'odo',date:o.date,data:o});});
+  all.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  return all;
+}
+
+function buildEntryHTML(entry,showDel){
+  var d=entry.data,v=getV(d.vehicleId),vname=v?v.name:'—';
+  var icon,col,name,detail,meta='';
+  if(entry.kind==='service'){
+    var comp=getComp(d.vehicleId,d.type);
+    icon=SVG_PARTS[(comp&&comp.svgKey)||d.type]||SVG_PARTS['Lainnya'];
+    col=COMP_COLORS[d.type]||'lime';name=d.type;detail=vname+(d.place?' · '+d.place:'');
+    meta='<span class="bd">'+fDate(d.date)+'</span>'+(d.cost?'<span class="bc">'+fRp(d.cost)+'</span>':'');
+  }else if(entry.kind==='fuel'){
+    icon=SVG_EXTRA.fuel;col='blue';name='Isi Bensin';detail=vname+' · '+d.type;
+    meta='<span class="bd">'+fDate(d.date)+'</span>'+(d.liter?'<span class="bf">'+d.liter+' L</span>':'')+(d.cost?'<span class="bc">'+fRp(d.cost)+'</span>':'');
+  }else{
+    icon=SVG_EXTRA.odo;col='orange';name='Update Odometer';detail=vname+(d.note?' · '+d.note:'');
+    meta='<span class="bd">'+fDate(d.date)+'</span>';
+  }
+  // always clickable → entry popup, no inline delete
+  var eid=entry.kind+'|'+d.id;
+  return '<div class="log-item" style="cursor:pointer" onclick="openEntryPopup(\''+eid+'\')">'
+    +'<div class="log-dot '+col+'">'+icon+'</div>'
+    +'<div class="log-content"><div class="log-name">'+name+'</div>'
+    +'<div class="log-detail">'+detail+'</div>'
+    +'<div class="log-meta">'+meta+'</div></div>'
+    +'<div class="log-km-r">'+(d.km?fKm(d.km):'')+'</div></div>';
+}
+function deleteEntry(kind,id){
+  if(!confirm('Hapus catatan ini?'))return;
+  if(kind==='service')services=services.filter(function(x){return x.id!==id;});
+  else if(kind==='fuel')fuels=fuels.filter(function(x){return x.id!==id;});
+  else odos=odos.filter(function(x){return x.id!==id;});
+  saveData();renderAll();
+}
+function renderRecent(){
+  var el=document.getElementById('recentList');
+  var entries=getAllEntries(activeVehicleId).slice(0,5);
+  if(!entries.length){el.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><p>Belum ada aktivitas.</p></div>';return;}
+  el.innerHTML=entries.map(function(e){return buildEntryHTML(e,false);}).join('');
+}
+function renderAllLogs(){
+  // populate dropdown with base options + any custom service types
+  var sel=document.getElementById('riwayatFilterType');
+  var svcTypes=[];
+  services.forEach(function(s){if((!activeVehicleId||s.vehicleId===activeVehicleId)&&svcTypes.indexOf(s.type)<0)svcTypes.push(s.type);});
+  var baseOpts='<option value="Semua">Semua Catatan</option><option value="Servis">Servis</option><option value="Bensin">Bensin</option><option value="Odometer">Odometer</option>';
+  var customOpts=svcTypes.map(function(t){return '<option value="svc:'+t+'">↳ '+t+'</option>';}).join('');
+  sel.innerHTML=baseOpts+customOpts;
+  sel.value=riwayatFilter;
+  if(sel.value!==riwayatFilter)sel.value='Semua';
+
+  var entries=getAllEntries(activeVehicleId);
+  if(riwayatFilter!=='Semua'){
+    entries=entries.filter(function(e){
+      if(riwayatFilter==='Servis')return e.kind==='service';
+      if(riwayatFilter==='Bensin')return e.kind==='fuel';
+      if(riwayatFilter==='Odometer')return e.kind==='odo';
+      if(riwayatFilter.indexOf('svc:')===0)return e.kind==='service'&&e.data.type===riwayatFilter.slice(4);
+      return true;
+    });
+  }
+  var el=document.getElementById('allList');
+  if(!entries.length){el.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><p>Tidak ada riwayat.</p></div>';return;}
+  el.innerHTML=entries.map(function(e){return buildEntryHTML(e,false);}).join('');
+}
+function setRiwayatFilter(f){riwayatFilter=f;renderAllLogs();}
+function resetRiwayatFilter(){riwayatFilter='Semua';renderAllLogs();}
+
+// PENGINGAT
+function renderReminders(){
+  var el=document.getElementById('reminderList');if(!el)return;
+  if(!activeVehicleId){el.innerHTML='<div class="empty-state"><p>Pilih kendaraan.</p></div>';return;}
+  var comps=getActiveComps(activeVehicleId);
+  if(!comps.length){el.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><p>Belum ada komponen aktif.<br>Aktifkan di Pengaturan.</p></div>';return;}
+  el.innerHTML=comps.map(function(comp){
+    var st=getRemStatus(activeVehicleId,comp);
+    var col=st.cls==='bad'?'red':st.cls==='warn'?'orange':'lime';
+    var svgIcon=SVG_PARTS[comp.svgKey]||SVG_PARTS['Lainnya'];
+    var bars='';
+    if(comp.km){var kp=Math.min(100,Math.round(st.kmPct*100));bars+='<div class="rem-bar-row"><span class="rem-bar-label">km</span><div class="rem-bar-wrap"><div class="rem-bar '+st.cls+'" style="width:'+kp+'%"></div></div><span class="rem-bar-val">'+(st.kmRem!=null?fKm(st.kmRem):'—')+'</span></div>';}
+    if(comp.mo){var mp=Math.min(100,Math.round(st.moPct*100)),mc=st.moPct>=1?'bad':st.moPct>=0.8?'warn':'ok';bars+='<div class="rem-bar-row"><span class="rem-bar-label">bln</span><div class="rem-bar-wrap"><div class="rem-bar '+mc+'" style="width:'+mp+'%"></div></div><span class="rem-bar-val">'+(st.moRem!=null?st.moRem+' bln':'—')+'</span></div>';}
+    return '<div class="rem-card" onclick="openRemPopup(\''+activeVehicleId+'\',\''+comp.name+'\')">'
+      +'<div class="rem-card-top"><div class="rem-dot '+col+'">'+svgIcon+'</div>'
+      +'<div class="rem-card-info"><div class="rem-name">'+comp.name+'</div></div>'
+      +'<span class="rem-badge '+st.cls+'">'+st.lbl+'</span></div>'
+      +'<div class="rem-bars">'+bars+'</div></div>';
+  }).join('');
+}
+
+function openRemPopup(vid,name){
+  var comp=getComp(vid,name);if(!comp)return;
+  var st=getRemStatus(vid,comp);
+  document.getElementById('rpTitle').textContent=name;
+  var ac=st.cls==='bad'?'#f87171':st.cls==='warn'?'#fb923c':'#9de041';
+  var acCls=st.cls==='bad'?'bad-t':st.cls==='warn'?'warn-t':'accent';
+  var tiles='<div class="rp-tiles">';
+  tiles+='<div class="rp-tile"><div class="rp-tile-label">KM Terakhir Ganti</div><div class="rp-tile-val" style="font-size:'+(st.lastKm?'16':'13')+'px'+(st.lastKm?'':';color:var(--text3)')+'">'+( st.lastKm?Number(st.lastKm).toLocaleString('id-ID'):'Belum ada')+'</div>'+(st.lastKm?'<div class="rp-tile-sub">km</div>':'')+'</div>';
+  tiles+='<div class="rp-tile"><div class="rp-tile-label">KM Saat Ini</div><div class="rp-tile-val">'+Number(st.curKm).toLocaleString('id-ID')+'</div><div class="rp-tile-sub">km</div></div>';
+  if(comp.km&&st.kmNext){tiles+='<div class="rp-tile '+acCls+'"><div class="rp-tile-label">Target KM</div><div class="rp-tile-val">'+Number(st.kmNext).toLocaleString('id-ID')+'</div><div class="rp-tile-sub">berikutnya</div></div>';tiles+='<div class="rp-tile '+acCls+'"><div class="rp-tile-label">Sisa KM</div><div class="rp-tile-val">'+fKm(st.kmRem)+'</div><div class="rp-tile-sub">'+(st.kmRem<=0?'Sudah lewat':'menuju target')+'</div></div>';}
+  if(st.lastDate) tiles+='<div class="rp-tile"><div class="rp-tile-label">Terakhir Ganti</div><div class="rp-tile-val" style="font-size:13px">'+fDate(st.lastDate)+'</div></div>';
+  if(comp.mo&&st.moRem!=null) tiles+='<div class="rp-tile '+acCls+'"><div class="rp-tile-label">Sisa Waktu</div><div class="rp-tile-val">'+Math.max(0,st.moRem)+'</div><div class="rp-tile-sub">bulan lagi</div></div>';
+  tiles+='</div>';
+  var bars='<div class="rp-bar-section"><div class="rp-bar-section-label">Progress Interval</div>';
+  if(comp.km){var kp=Math.min(100,Math.round(st.kmPct*100)),kc=st.kmPct>=1?'#f87171':st.kmPct>=0.8?'#fb923c':'#9de041';bars+='<div class="rp-bar-row"><span class="rp-bar-type">Jarak</span><div class="rp-bar-bg"><div class="rp-bar-fill" style="width:'+kp+'%;background:'+kc+'"></div></div><span class="rp-bar-pct" style="color:'+kc+'">'+kp+'%</span></div>';}
+  if(comp.mo){var mp=Math.min(100,Math.round(st.moPct*100)),mc=st.moPct>=1?'#f87171':st.moPct>=0.8?'#fb923c':'#9de041';bars+='<div class="rp-bar-row"><span class="rp-bar-type">Waktu</span><div class="rp-bar-bg"><div class="rp-bar-fill" style="width:'+mp+'%;background:'+mc+'"></div></div><span class="rp-bar-pct" style="color:'+mc+'">'+mp+'%</span></div>';}
+  bars+='</div>';
+  document.getElementById('rpBody').innerHTML=tiles+bars;
+  document.getElementById('remPopup').classList.add('open');
+}
+function closeRemPopup(){document.getElementById('remPopup').classList.remove('open');}
+
+// PROFILE / SETTINGS
+function renderProfile(){
+  // Settings vehicle list
+  var el=document.getElementById('settingsVehicleList');
+  if(!el)return;
+  if(!vehicles.length){el.innerHTML='';return;}
+  el.innerHTML=vehicles.map(function(v){
+    var cnt=0;services.forEach(function(s){if(s.vehicleId===v.id)cnt++;});
+    var ac=v.color||'#9de041';
+    return '<div class="settings-row" onclick="openEditVehicleModal(\''+v.id+'\')">'
+      +'<div class="settings-row-left">'
+      +'<div class="settings-row-icon" style="background:'+hexAlpha(ac,.15)+'">'+getVehicleIconColored(v.type,ac,16)+'</div>'
+      +'<div class="settings-row-text"><div class="settings-row-label">'+v.name+'</div><div class="settings-row-sub">'+v.plate+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
+      +'</div><div class="settings-row-arr">›</div></div>';
+  }).join('');
+  // also keep old profileVehicleList if exists
+  var el2=document.getElementById('profileVehicleList');if(!el2)return;
+  el2.innerHTML=vehicles.map(function(v){
+    var cnt=0;services.forEach(function(s){if(s.vehicleId===v.id)cnt++;});
+    var ac=v.color||'#9de041';
+    return '<div class="pv-item" onclick="openEditVehicleModal(\''+v.id+'\')">'
+      +'<div class="pv-color-bar" style="background:'+ac+'"></div>'
+      +'<div class="pv-icon" style="background:'+hexAlpha(ac,.12)+'">'+getVehicleIconColored(v.type,ac,18)+'</div>'
+      +'<div class="pv-info"><div class="pv-name">'+v.name+'</div><div class="pv-meta">'+v.plate+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
+      +'<svg class="pv-arr" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>';
+  }).join('');
+}
+
+// ENTRY DETAIL POPUP
+var currentEntryKind='',currentEntryId='';
+function openEntryPopup(eid){
+  var parts=eid.split('|');currentEntryKind=parts[0];currentEntryId=parts[1];
+  var entry=findEntry(currentEntryKind,currentEntryId);if(!entry)return;
+  var d=entry.data,v=getV(d.vehicleId);
+  var icon,col,title,sub,rows=[];
+  if(currentEntryKind==='service'){
+    var comp=getComp(d.vehicleId,d.type);
+    var svgK=(comp&&comp.svgKey)||d.type;
+    icon=SVG_PARTS[svgK]||SVG_PARTS['Lainnya'];col=COMP_COLORS[d.type]||'lime';
+    title=d.type;sub=(v?v.name:'—')+(d.place?' · '+d.place:'');
+    rows=[['Tanggal',fDate(d.date)],['Kendaraan',v?v.name:'—']];
+    if(d.km)rows.push(['Odometer',fKm(d.km)]);
+    if(d.cost)rows.push(['Biaya',fRp(d.cost)]);
+    if(d.place)rows.push(['Tempat',d.place]);
+  }else if(currentEntryKind==='fuel'){
+    icon=SVG_EXTRA.fuel;col='blue';title='Isi Bensin';sub=(v?v.name:'—')+' · '+d.type;
+    rows=[['Tanggal',fDate(d.date)],['Kendaraan',v?v.name:'—'],['Jenis BBM',d.type]];
+    if(d.km)rows.push(['Odometer',fKm(d.km)]);
+    if(d.liter)rows.push(['Volume',d.liter+' Liter']);
+    if(d.cost)rows.push(['Biaya',fRp(d.cost)]);
+  }else{
+    icon=SVG_EXTRA.odo;col='orange';title='Update Odometer';sub=v?v.name:'—';
+    rows=[['Tanggal',fDate(d.date)],['Kendaraan',v?v.name:'—']];
+    if(d.km)rows.push(['KM',fKm(d.km)]);
+  }
+  var dotBg={lime:'rgba(157,224,65,.1)',orange:'rgba(251,146,60,.1)',red:'rgba(248,113,113,.1)',blue:'rgba(96,165,250,.1)'}[col]||'rgba(157,224,65,.1)';
+  var dotCol={lime:'#9de041',orange:'#fb923c',red:'#f87171',blue:'#60a5fa'}[col]||'#9de041';
+  document.getElementById('epIcon').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="'+dotCol+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(icon)+'</svg>';
+  document.getElementById('epIcon').style.background=dotBg;
+  document.getElementById('epTitle').textContent=title;
+  document.getElementById('epSub').textContent=sub;
+  document.getElementById('epRows').innerHTML=rows.map(function(r){return '<div class="ep-row"><span class="ep-row-label">'+r[0]+'</span><span class="ep-row-val">'+r[1]+'</span></div>';}).join('');
+  var noteEl=document.getElementById('epNote');
+  if(d.note){noteEl.textContent=d.note;noteEl.style.display='';}else{noteEl.style.display='none';}
+  document.getElementById('entryPopup').classList.add('open');
+  document.getElementById('entryPopup').onclick=function(e){if(e.target===this)closeEntryPopup();};
+}
+function closeEntryPopup(){document.getElementById('entryPopup').classList.remove('open');}
+function findEntry(kind,id){
+  var arr=kind==='service'?services:kind==='fuel'?fuels:odos;
+  for(var i=0;i<arr.length;i++)if(arr[i].id===id)return{kind:kind,data:arr[i]};
+  return null;
+}
+function deleteCurrentEntry(){
+  if(!confirm('Hapus catatan ini?'))return;
+  if(currentEntryKind==='service')services=services.filter(function(x){return x.id!==currentEntryId;});
+  else if(currentEntryKind==='fuel')fuels=fuels.filter(function(x){return x.id!==currentEntryId;});
+  else odos=odos.filter(function(x){return x.id!==currentEntryId;});
+  saveData();closeEntryPopup();renderAll();
+}
+function editCurrentEntry(){
+  closeEntryPopup();
+  // open appropriate edit modal pre-filled
+  if(currentEntryKind==='service'){openServiceModal();}
+  else if(currentEntryKind==='fuel'){openFuelModal();}
+  else{openOdoModal();}
+}
+
+// KOMPONEN MODAL
+function openKomponenModal(){
+  renderVC('komponenVehicleScroll');
+  renderCompSettings();
+  openModal('komponenModal');
+}
+
+// EXPORT / IMPORT
+function exportData(){
+  var data={vehicles:vehicles,services:services,fuels:fuels,odos:odos,compSettings:compSettings,exported:new Date().toISOString()};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='autolog_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ Data berhasil diekspor!');
+}
+function importData(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.vehicles){alert('File tidak valid!');return;}
+      if(!confirm('Ini akan mengganti semua data yang ada. Lanjutkan?'))return;
+      vehicles=data.vehicles||[];services=data.services||[];fuels=data.fuels||[];
+      odos=data.odos||[];compSettings=data.compSettings||{};
+      activeVehicleId=vehicles.length?vehicles[0].id:null;
+      ensureCompSettings();saveData();renderAll();
+      showToast('✅ Data berhasil diimpor!');
+    }catch(err){alert('File tidak valid atau rusak.');}
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+function hexAlpha(h,a){var r=parseInt(h.slice(1,3),16)||0,g=parseInt(h.slice(3,5),16)||0,b=parseInt(h.slice(5,7),16)||0;return'rgba('+r+','+g+','+b+','+a+')';}
+function stripSvgTag(s){return s.replace(/<svg[^>]*>/,'').replace('</svg>','');}
+function getVehicleIconColored(type,color,size){
+  size=size||18;
+  if(type==='motor'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 256 256" style="fill:'+color+'"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07C81.29,97.72,31.13,77.33,26.71,75.6L21,73.36A17.74,17.74,0,0,0,16,72a8,8,0,0,0-2.87,15.46h0c.46.18,47.19,18.3,72.13,29.63a32.15,32.15,0,0,0,33.56-4.29c4.86-4,14.57-8.8,33.19-8.8h18.82a71.74,71.74,0,0,0-24.17,36.59A15.86,15.86,0,0,1,131.32,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>';
+  }
+  if(type==='mobil'){
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 256 256" style="fill:'+color+'"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>';
+  }
+  return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="'+color+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(SVG_EXTRA[type]||SVG_EXTRA.mobil)+'</svg>';
+}
+
+// COMP SETTINGS
+function renderCompSettings(){
+  var el=document.getElementById('compSettings');if(!el)return;
+  if(!activeVehicleId){el.innerHTML='<div style="font-size:12px;color:var(--text3)">Pilih kendaraan di atas.</div>';return;}
+  var comps=compSettings[activeVehicleId]||[];
+  el.innerHTML=comps.map(function(comp,idx){
+    var svgIcon=SVG_PARTS[comp.svgKey]||SVG_PARTS['Lainnya'];
+    var col=COMP_COLORS[comp.name]||'lime';
+    var dotBg={lime:'rgba(157,224,65,.1)',orange:'rgba(251,146,60,.1)',red:'rgba(248,113,113,.1)'}[col]||'rgba(157,224,65,.1)';
+    var dotCol={lime:'#9de041',orange:'#fb923c',red:'#f87171'}[col]||'#9de041';
+    return '<div class="comp-card">'
+      +'<div class="comp-card-header">'
+      +'<div class="comp-icon" style="background:'+dotBg+'"><svg viewBox="0 0 24 24" fill="none" stroke="'+dotCol+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(svgIcon)+'</svg></div>'
+      +'<div class="comp-name">'+comp.name+'</div>'
+      +'<label class="comp-toggle"><input type="checkbox"'+(comp.active?' checked':'')+' onchange="toggleComp(\''+activeVehicleId+'\','+idx+',this.checked)"><span class="comp-slider"></span></label>'
+      +'<button class="comp-edit-btn" onclick="toggleCompEdit(\'ccd'+idx+'\')">'+SVG_EXTRA.pencil+'</button>'
+      +'</div>'
+      +'<div class="comp-detail" id="ccd'+idx+'">'
+      +'<div class="comp-detail-row">'
+      +'<div class="comp-detail-field"><div class="comp-detail-label">Interval KM</div><input class="comp-detail-input" type="number" value="'+comp.km+'" min="100" step="100" id="ci_km_'+idx+'"></div>'
+      +'<div class="comp-detail-field"><div class="comp-detail-label">Interval Bulan</div><input class="comp-detail-input" type="number" value="'+comp.mo+'" min="1" id="ci_mo_'+idx+'"></div>'
+      +'</div>'
+      +'<button class="comp-detail-save" onclick="saveCompInterval(\''+activeVehicleId+'\','+idx+')">Simpan</button>'
+      +'</div></div>';
+  }).join('');
+}
+function toggleComp(vid,idx,val){compSettings[vid][idx].active=val;saveData();renderReminders();renderAlerts();}
+function toggleCompEdit(id){var d=document.getElementById(id);if(d)d.classList.toggle('open');}
+function saveCompInterval(vid,idx){
+  var km=document.getElementById('ci_km_'+idx).value,mo=document.getElementById('ci_mo_'+idx).value;
+  compSettings[vid][idx].km=+km;compSettings[vid][idx].mo=+mo;
+  saveData();renderReminders();renderAlerts();document.getElementById('ccd'+idx).classList.remove('open');
+}
+function openAddCompModal(){selectedCompSvg='Lainnya';document.getElementById('compName').value='';document.getElementById('compKm').value='';document.getElementById('compMo').value='';buildSvgPicker();openModal('addCompModal');}
+function saveCustomComp(){
+  var name=document.getElementById('compName').value.trim(),km=document.getElementById('compKm').value,mo=document.getElementById('compMo').value;
+  if(!name){alert('Isi nama komponen!');return;}
+  if(!activeVehicleId){alert('Pilih kendaraan!');return;}
+  if(!compSettings[activeVehicleId])compSettings[activeVehicleId]=[];
+  compSettings[activeVehicleId].push({name:name,svgKey:selectedCompSvg,km:+km||0,mo:+mo||0,active:true,custom:true});
+  saveData();closeModal('addCompModal');renderCompSettings();renderReminders();
+}
+
+// ODO CHART — Apple Health style
+function setOdoPeriod(el,p){
+  odoPeriod=p;odoOffset=0;
+  document.querySelectorAll('.cpt').forEach(function(c){c.classList.toggle('active',c.dataset.p===p);});
+  drawOdoChart();
+}
+function odoNavPrev(){odoOffset--;drawOdoChart();}
+function odoNavNext(){if(odoOffset<0){odoOffset++;drawOdoChart();}}
+
+function getOdoWindowLabel(){
+  var now=new Date();
+  if(odoPeriod==='year'){var yr=now.getFullYear()+odoOffset;document.getElementById('odoNavLabel').textContent=yr;return yr;}
+  if(odoPeriod==='month'){var d=new Date(now.getFullYear(),now.getMonth()+odoOffset,1);document.getElementById('odoNavLabel').textContent=MO_NAMES[d.getMonth()]+' '+d.getFullYear();return d;}
+  if(odoPeriod==='week'){
+    var wstart=new Date(now);wstart.setDate(wstart.getDate()+odoOffset*7-wstart.getDay()+1);
+    var wend=new Date(wstart);wend.setDate(wstart.getDate()+6);
+    document.getElementById('odoNavLabel').textContent=wstart.getDate()+' – '+wend.getDate()+' '+MO_NAMES[wend.getMonth()]+' '+wend.getFullYear();
+    return{start:wstart,end:wend};
+  }
+}
+
+function drawOdoChart(){
+  var canvas=document.getElementById('odoChart');if(!canvas)return;
+  canvas.width=canvas.parentElement.offsetWidth||340;canvas.height=175;
+  var ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+  var now=new Date();
+  var all=getAllEntries(activeVehicleId).filter(function(e){return e.data.km;});
+  all.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+
+  // Build aggregated data based on period
+  var labels=[],values=[];
+  if(odoPeriod==='year'){
+    var yr=now.getFullYear()+odoOffset;
+    document.getElementById('odoNavLabel').textContent=yr;
+    for(var m=0;m<12;m++){
+      labels.push(MO_NAMES[m]);
+      var pts=all.filter(function(e){var d=new Date(e.date);return d.getFullYear()===yr&&d.getMonth()===m;});
+      if(pts.length) values.push(Math.max.apply(null,pts.map(function(p){return+p.data.km;})));
+      else values.push(null);
+    }
+  } else if(odoPeriod==='month'){
+    var refDate=new Date(now.getFullYear(),now.getMonth()+odoOffset,1);
+    var yr2=refDate.getFullYear(),mo2=refDate.getMonth();
+    var daysInMonth=new Date(yr2,mo2+1,0).getDate();
+    document.getElementById('odoNavLabel').textContent=MO_NAMES[mo2]+' '+yr2;
+    for(var d=1;d<=daysInMonth;d++){
+      labels.push(d%5===1||d===daysInMonth?String(d):'');
+      var pts2=all.filter(function(e){var dd=new Date(e.date);return dd.getFullYear()===yr2&&dd.getMonth()===mo2&&dd.getDate()===d;});
+      if(pts2.length) values.push(Math.max.apply(null,pts2.map(function(p){return+p.data.km;})));
+      else values.push(null);
+    }
+  } else { // week
+    var ws=new Date(now);ws.setDate(ws.getDate()+odoOffset*7-(ws.getDay()||7)+1);
+    var we=new Date(ws);we.setDate(ws.getDate()+6);
+    document.getElementById('odoNavLabel').textContent=ws.getDate()+' – '+we.getDate()+' '+MO_NAMES[we.getMonth()]+' '+we.getFullYear();
+    var dayNames=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+    for(var di=0;di<7;di++){
+      var day=new Date(ws);day.setDate(ws.getDate()+di);
+      labels.push(dayNames[di]);
+      var pts3=all.filter(function(e){var dd=new Date(e.date);return dd.toDateString()===day.toDateString();});
+      if(pts3.length) values.push(Math.max.apply(null,pts3.map(function(p){return+p.data.km;})));
+      else values.push(null);
+    }
+  }
+
+  // Fill nulls with interpolation or nearest
+  var filled=values.slice();
+  var lastVal=null;
+  for(var i=0;i<filled.length;i++){if(filled[i]!==null)lastVal=filled[i];else if(lastVal!==null)filled[i]=lastVal;}
+  var hasData=filled.some(function(v){return v!==null;});
+
+  var W=canvas.width,H=canvas.height,pL=44,pR=12,pT=12,pB=26,cW=W-pL-pR,cH=H-pT-pB;
+  ctx.fillStyle='rgba(138,143,158,.5)';ctx.font='9px Inter';ctx.textAlign='right';
+  if(!hasData){ctx.textAlign='center';ctx.fillText('Belum ada data untuk periode ini',W/2,H/2);return;}
+  var validVals=filled.filter(function(v){return v!==null;});
+  var minK=Math.min.apply(null,validVals),maxK=Math.max.apply(null,validVals),rng=maxK-minK||1000;
+  var pad=rng*.1;minK-=pad;maxK+=pad;rng=maxK-minK;
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(var i=0;i<=3;i++){var gy=pT+cH-(i/3)*cH;ctx.beginPath();ctx.moveTo(pL,gy);ctx.lineTo(pL+cW,gy);ctx.stroke();ctx.fillStyle='rgba(138,143,158,.5)';ctx.font='9px Inter';ctx.textAlign='right';ctx.fillText(Math.round((minK+(i/3)*rng)/1000)+'k',pL-4,gy+3);}
+
+  // Line
+  var coords=[];
+  for(var i=0;i<filled.length;i++){
+    if(filled[i]===null)continue;
+    var cx=pL+(i/(filled.length-1||1))*cW,cy=pT+cH-((filled[i]-minK)/rng)*cH;
+    coords.push({x:cx,y:cy,i:i,v:filled[i],orig:values[i]!==null});
+  }
+  if(coords.length<2){ctx.beginPath();ctx.arc(coords[0].x,coords[0].y,4,0,Math.PI*2);ctx.fillStyle='#9de041';ctx.fill();return;}
+
+  // Fill
+  ctx.beginPath();ctx.moveTo(coords[0].x,pT+cH);
+  coords.forEach(function(c,k){if(k===0)ctx.lineTo(c.x,c.y);else{var cpx=(coords[k-1].x+c.x)/2;ctx.bezierCurveTo(cpx,coords[k-1].y,cpx,c.y,c.x,c.y);}});
+  ctx.lineTo(coords[coords.length-1].x,pT+cH);ctx.closePath();ctx.fillStyle='rgba(157,224,65,0.08)';ctx.fill();
+
+  // Stroke
+  ctx.beginPath();ctx.strokeStyle='#9de041';ctx.lineWidth=2;ctx.lineJoin='round';
+  coords.forEach(function(c,k){if(k===0)ctx.moveTo(c.x,c.y);else{var cpx=(coords[k-1].x+c.x)/2;ctx.bezierCurveTo(cpx,coords[k-1].y,cpx,c.y,c.x,c.y);}});
+  ctx.stroke();
+
+  // Dots (only original data points)
+  coords.forEach(function(c){
+    if(!c.orig)return;
+    ctx.beginPath();ctx.arc(c.x,c.y,3,0,Math.PI*2);ctx.fillStyle='#9de041';ctx.fill();
+    ctx.strokeStyle='#0f1117';ctx.lineWidth=1.5;ctx.stroke();
+  });
+
+  // X labels
+  ctx.fillStyle='rgba(138,143,158,.55)';ctx.font='8px Inter';ctx.textAlign='center';
+  for(var i=0;i<labels.length;i++){
+    if(!labels[i])continue;
+    var lx=pL+(i/(labels.length-1||1))*cW;
+    ctx.fillText(labels[i],lx,H-pB+12);
+  }
+}
+
+// STATISTIK
+function populateStatYears(){
+  var years=new Set([String(new Date().getFullYear())]);
+  services.forEach(function(s){if(s.vehicleId===activeVehicleId)years.add(s.date.split('-')[0]);});
+  fuels.forEach(function(f){if(f.vehicleId===activeVehicleId)years.add(f.date.split('-')[0]);});
+  var sel=document.getElementById('sfYear'),cur=sel.value||String(new Date().getFullYear());
+  sel.innerHTML='<option value="">Semua Tahun</option>';
+  Array.from(years).sort().reverse().forEach(function(y){sel.innerHTML+='<option value="'+y+'"'+(y===cur?' selected':'')+'>'+y+'</option>';});
+  if(!sel.value&&cur) sel.value=cur;
+}
+function resetStatFilter(){document.getElementById('sfYear').value=String(new Date().getFullYear());document.getElementById('sfMonth').value='';renderBiayaCharts();}
+function filterByStat(arr,df){
+  var yr=document.getElementById('sfYear').value,mo2=document.getElementById('sfMonth').value;
+  return arr.filter(function(item){var d=new Date(item[df]);if(yr&&d.getFullYear()!==+yr)return false;if(mo2&&d.getMonth()+1!==+mo2)return false;return true;});
+}
+function renderStatistik(){
+  populateStatYears();
+  var v=getV(activeVehicleId);if(!v)return;
+  var vS=filterByStat(services.filter(function(s){return s.vehicleId===activeVehicleId;}),'date');
+  var vF=filterByStat(fuels.filter(function(f){return f.vehicleId===activeVehicleId;}),'date');
+  var tot=0;vS.forEach(function(s){if(s.cost)tot+=+s.cost;});
+  var ft=0;vF.forEach(function(f){if(f.cost)ft+=+f.cost;});
+  document.getElementById('statGrid').innerHTML=
+    '<div class="stat-tile"><div class="st-label">Total Servis</div><div class="st-val">'+vS.length+'</div><div class="st-sub">catatan</div></div>'+
+    '<div class="stat-tile"><div class="st-label">Biaya Servis</div><div class="st-val">'+fRp(tot)+'</div></div>'+
+    '<div class="stat-tile"><div class="st-label">Biaya Bensin</div><div class="st-val">'+fRp(ft)+'</div></div>'+
+    '<div class="stat-tile"><div class="st-label">KM Saat Ini</div><div class="st-val">'+Number(getCurKm(activeVehicleId)).toLocaleString('id-ID')+'</div></div>';
+  drawOdoChart();
+  renderBiayaCharts();
+}
+function renderBiayaCharts(){
+  var vS=filterByStat(services.filter(function(s){return s.vehicleId===activeVehicleId;}),'date');
+  var vF=filterByStat(fuels.filter(function(f){return f.vehicleId===activeVehicleId;}),'date');
+  drawBarChart('svcChart',vS,'cost','#9de041');
+  drawBarChart('fuelChart',vF,'cost','#60a5fa');
+  drawCostBars(vS,vF);
+}
+function drawBarChart(canvasId,arr,cf,color){
+  var canvas=document.getElementById(canvasId);if(!canvas)return;
+  canvas.width=canvas.parentElement.offsetWidth||340;canvas.height=175;
+  var ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+  var mMap={};arr.forEach(function(s){if(!s[cf])return;var k=s.date.slice(0,7);mMap[k]=(mMap[k]||0)+(+s[cf]);});
+  var keys=Object.keys(mMap).sort();
+  if(!keys.length){ctx.fillStyle='rgba(255,255,255,.15)';ctx.font='12px Inter';ctx.textAlign='center';ctx.fillText('Belum ada data',canvas.width/2,87);return;}
+  var vals=keys.map(function(k){return mMap[k];}),maxV=Math.max.apply(null,vals)||1;
+  var W=canvas.width,H=canvas.height,pL=44,pR=12,pT=12,pB=26,cW=W-pL-pR,cH=H-pT-pB;
+  var bW=Math.min(22,(cW/keys.length)*.5);
+
+  // store bar hit areas
+  var bars=[];
+
+  function fChartVal(v){return v>=1000000?Math.round(v/100000)/10+'jt':Math.round(v/1000)+'rb';}
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(var i=0;i<=4;i++){var y=pT+cH-(i/4)*cH;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+cW,y);ctx.stroke();ctx.fillStyle='rgba(138,143,158,.5)';ctx.font='9px Inter';ctx.textAlign='right';ctx.fillText(fChartVal(maxV*(i/4)),pL-4,y+3);}
+  for(var j=0;j<keys.length;j++){
+    var x=keys.length===1?pL+cW/2:pL+(j/(keys.length-1))*cW;
+    var bH=(vals[j]/maxV)*cH,y2=pT+cH-bH,bx=x-bW/2,rx=3;
+    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(bx+rx,y2);ctx.lineTo(bx+bW-rx,y2);ctx.quadraticCurveTo(bx+bW,y2,bx+bW,y2+rx);ctx.lineTo(bx+bW,y2+bH);ctx.lineTo(bx,y2+bH);ctx.lineTo(bx,y2+rx);ctx.quadraticCurveTo(bx,y2,bx+rx,y2);ctx.closePath();ctx.fill();
+    var lk=keys[j].split('-');ctx.fillStyle='rgba(138,143,158,.5)';ctx.font='8px Inter';ctx.textAlign='center';ctx.fillText(MO_NAMES[parseInt(lk[1])-1]+'\''+lk[0].slice(2),x,H-pB+11);
+    bars.push({x:bx,y:y2,w:bW,h:bH,label:MO_NAMES[parseInt(lk[1])-1]+' '+keys[j].split('-')[0],val:vals[j]});
+  }
+
+  // click listener — show tooltip
+  canvas.onclick=function(e){
+    var rect=canvas.getBoundingClientRect();
+    var mx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    var my=(e.clientY-rect.top)*(canvas.height/rect.height);
+    ctx.clearRect(0,0,W,H);
+    // redraw
+    ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+    for(var i=0;i<=4;i++){var y=pT+cH-(i/4)*cH;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+cW,y);ctx.stroke();ctx.fillStyle='rgba(138,143,158,.5)';ctx.font='9px Inter';ctx.textAlign='right';ctx.fillText(fChartVal(maxV*(i/4)),pL-4,y+3);}
+    var hit=null;
+    for(var j=0;j<bars.length;j++){
+      var b=bars[j];
+      var isHit=mx>=b.x&&mx<=b.x+b.w&&my>=b.y&&my<=b.y+b.h;
+      ctx.fillStyle=isHit?'rgba(255,255,255,.9)':color;
+      ctx.beginPath();var rx2=3,bx2=b.x,y22=b.y;ctx.moveTo(bx2+rx2,y22);ctx.lineTo(bx2+b.w-rx2,y22);ctx.quadraticCurveTo(bx2+b.w,y22,bx2+b.w,y22+rx2);ctx.lineTo(bx2+b.w,y22+b.h);ctx.lineTo(bx2,y22+b.h);ctx.lineTo(bx2,y22+rx2);ctx.quadraticCurveTo(bx2,y22,bx2+rx2,y22);ctx.closePath();ctx.fill();
+      var lk2=keys[j].split('-');ctx.fillStyle='rgba(138,143,158,.5)';ctx.font='8px Inter';ctx.textAlign='center';ctx.fillText(MO_NAMES[parseInt(lk2[1])-1]+'\''+lk2[0].slice(2),b.x+b.w/2,H-pB+11);
+      if(isHit)hit=b;
+    }
+    if(hit){
+      // tooltip bubble — clamp so it never overflows canvas edges
+      ctx.font='bold 11px Inter';
+      var label=fRp(hit.val);
+      var tw=ctx.measureText(label).width+16;
+      var tx=hit.x+hit.w/2;
+      tx=Math.max(pL+tw/2, Math.min(W-pR-tw/2, tx));
+      var ty=Math.max(hit.y-10,18);
+      ctx.fillStyle='rgba(30,33,48,.95)';
+      ctx.beginPath();ctx.roundRect?ctx.roundRect(tx-tw/2,ty-20,tw,22,6):ctx.rect(tx-tw/2,ty-20,tw,22);ctx.fill();
+      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(label,tx,ty-4);
+      // sub label
+      ctx.font='9px Inter';
+      var sw=ctx.measureText(hit.label).width;
+      var sx=Math.max(pL+sw/2, Math.min(W-pR-sw/2, hit.x+hit.w/2));
+      ctx.fillStyle='rgba(138,143,158,.7)';ctx.fillText(hit.label,sx,ty+14);
+    }
+  };
+}
+function drawCostBars(vS,vF){
+  var el=document.getElementById('costBarList');if(!el)return;
+  var tMap={};
+  vS.forEach(function(s){if(!s.cost)return;tMap[s.type]=(tMap[s.type]||0)+(+s.cost);});
+  vF.forEach(function(f){if(!f.cost)return;var k='BBM: '+(f.type||'Bensin');tMap[k]=(tMap[k]||0)+(+f.cost);});
+  var types=Object.keys(tMap).sort(function(a,b){return tMap[b]-tMap[a];});
+  if(!types.length){el.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:12px">Belum ada data</div>';return;}
+  var maxC=tMap[types[0]];
+  var bgC={red:'rgba(248,113,113,.1)',orange:'rgba(251,146,60,.1)',blue:'rgba(96,165,250,.1)',lime:'rgba(157,224,65,.1)'};
+  var svgC={red:'#f87171',orange:'#fb923c',blue:'#60a5fa',lime:'#9de041'};
+  el.innerHTML=types.map(function(t){
+    var isFuel=t.indexOf('BBM:')===0,col=isFuel?'blue':(COMP_COLORS[t]?{red:'red',orange:'orange'}[COMP_COLORS[t]]||'lime':'lime');
+    var icon=isFuel?SVG_EXTRA.fuel:(SVG_PARTS[t]||SVG_PARTS['Lainnya']);
+    var pct=Math.round((tMap[t]/maxC)*100);
+    return '<div class="cbi"><div class="cbi-dot" style="background:'+bgC[col]+'"><svg viewBox="0 0 24 24" fill="none" stroke="'+svgC[col]+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(icon)+'</svg></div>'
+      +'<div class="cbi-info"><div class="cbi-name">'+t+'</div><div class="cbi-bar-bg"><div class="cbi-bar" style="width:'+pct+'%;background:'+svgC[col]+'"></div></div></div>'
+      +'<div class="cbi-val">'+fRp(tMap[t])+'</div></div>';
+  }).join('');
+}
+
+// SELECT
+function selectVehicle(id){activeVehicleId=id;ensureCompSettings();renderAll();}
+
+// ADD POPUP
+var popupOpen=false;
+function toggleAddPopup(){popupOpen=!popupOpen;document.getElementById('addPopup').classList.toggle('open',popupOpen);document.getElementById('navFab').classList.toggle('open',popupOpen);}
+function closeAddPopup(){popupOpen=false;document.getElementById('addPopup').classList.remove('open');document.getElementById('navFab').classList.remove('open');}
+
+// MODALS
+function popVehicleSel(id){var h='<option value="">— Pilih —</option>';vehicles.forEach(function(v){h+='<option value="'+v.id+'"'+(v.id===activeVehicleId?' selected':'')+'>'+v.name+' ('+v.plate+')</option>';});document.getElementById(id).innerHTML=h;}
+function openModal(id){var el=document.getElementById(id);el.classList.add('open');el.onclick=function(e){if(e.target===el)closeModal(id);};}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// SERVICE MODAL — multi type + custom
+var svcCustomTypes=[];
+function openServiceModal(){
+  popVehicleSel('svcVehicle');selectedType=[];svcCustomTypes=[];
+  // Build type grid
+  var stdTypes=['Ganti Oli','Rem','Ban','Aki','Filter','Rantai','Busi','Cuci'];
+  var comps=getActiveComps(activeVehicleId);
+  comps.forEach(function(c){if(stdTypes.indexOf(c.name)<0&&c.name!=='Lainnya')stdTypes.push(c.name);});
+  document.getElementById('svcTypeGrid').innerHTML=stdTypes.map(function(t){
+    var svgK=t;var comp=getComp(activeVehicleId,t);if(comp&&comp.svgKey)svgK=comp.svgKey;
+    return '<div class="type-chip" data-type="'+t+'" onclick="toggleType(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(SVG_PARTS[svgK]||SVG_PARTS['Lainnya'])+'</svg>'+t+'</div>';
+  }).join('');
+  document.getElementById('customTypeInput').value='';
+  document.getElementById('customTypeTags').innerHTML='';
+  ['svcKm','svcCost','svcPlace','svcNote'].forEach(function(i){document.getElementById(i).value='';});
+  document.getElementById('svcDate').value=todayStr;
+  openModal('serviceModal');
+}
+function toggleType(el){el.classList.toggle('selected');var t=el.dataset.type;var idx=selectedType.indexOf(t);if(idx>=0)selectedType.splice(idx,1);else selectedType.push(t);}
+function addCustomType(){
+  var val=document.getElementById('customTypeInput').value.trim();
+  if(!val)return;
+  if(svcCustomTypes.indexOf(val)<0){
+    svcCustomTypes.push(val);
+    var tag=document.createElement('div');tag.className='custom-tag';tag.innerHTML=val+'<span class="custom-tag-x" onclick="removeCustomType(this,\''+val+'\')">✕</span>';
+    document.getElementById('customTypeTags').appendChild(tag);
+  }
+  document.getElementById('customTypeInput').value='';
+}
+function removeCustomType(el,val){svcCustomTypes=svcCustomTypes.filter(function(t){return t!==val;});el.parentElement.remove();}
+
+function openFuelModal(){popVehicleSel('fuelVehicle');['fuelKm','fuelLiter','fuelCost','fuelNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('fuelDate').value=todayStr;openModal('fuelModal');}
+function openOdoModal(){popVehicleSel('odoVehicle');['odoKm','odoNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('odoDate').value=todayStr;openModal('odoModal');}
+function openVehicleModal(){selectedVType='';selectedColor='#f5f5f5';document.getElementById('vtype-motor').classList.remove('selected');document.getElementById('vtype-mobil').classList.remove('selected');['vName','vPlate'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('vKm').value='0';buildColorGrid('vColorGrid','#f5f5f5','pickColor');openModal('vehicleModal');}
+function openEditVehicleModal(id){
+  editingVehicleId=id;var v=getV(id);if(!v)return;
+  selectedEVType=v.type;selectedEColor=v.color||'#f5f5f5';
+  document.getElementById('evtype-motor').classList.toggle('selected',v.type==='motor');
+  document.getElementById('evtype-mobil').classList.toggle('selected',v.type==='mobil');
+  document.getElementById('evName').value=v.name;document.getElementById('evPlate').value=v.plate;
+  document.getElementById('evYear').value=v.year||new Date().getFullYear();
+  document.getElementById('evKm').value=v.km||0;
+  buildColorGrid('evColorGrid',selectedEColor,'pickColor');openModal('editVehicleModal');
+}
+function selectVType(t){selectedVType=t;document.getElementById('vtype-motor').classList.toggle('selected',t==='motor');document.getElementById('vtype-mobil').classList.toggle('selected',t==='mobil');}
+function selectEVType(t){selectedEVType=t;document.getElementById('evtype-motor').classList.toggle('selected',t==='motor');document.getElementById('evtype-mobil').classList.toggle('selected',t==='mobil');}
+
+// SAVES
+function saveService(){
+  var vid=document.getElementById('svcVehicle').value,date=document.getElementById('svcDate').value;
+  var km=document.getElementById('svcKm').value,cost=document.getElementById('svcCost').value;
+  var place=document.getElementById('svcPlace').value.trim(),note=document.getElementById('svcNote').value.trim();
+  if(!vid){alert('Pilih kendaraan!');return;}
+  var allTypes=selectedType.concat(svcCustomTypes);
+  if(!allTypes.length){alert('Pilih minimal satu jenis servis!');return;}
+  if(!date){alert('Isi tanggal!');return;}
+  var newCustomComps=[];
+  allTypes.forEach(function(type){
+    services.push({id:'s'+Date.now()+'_'+Math.floor(Math.random()*9999),vehicleId:vid,type:type,date:date,km:km||null,cost:cost?Math.round(+cost/allTypes.length):null,place:place,note:note});
+    if(km)vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
+    // If custom type not already in compSettings, add it inactive
+    if(svcCustomTypes.indexOf(type)>=0&&!getComp(vid,type)){
+      if(!compSettings[vid])compSettings[vid]=[];
+      compSettings[vid].push({name:type,svgKey:'Lainnya',km:0,mo:0,active:false,custom:true});
+      newCustomComps.push(type);
+    }
+  });
+  saveData();closeModal('serviceModal');activeVehicleId=vid;renderAll();
+  if(newCustomComps.length) showToast('✅ '+newCustomComps.join(', ')+' ditambahkan ke Pengingat (nonaktif). Atur intervalnya di Pengaturan.');
+}
+function saveFuel(){
+  var vid=document.getElementById('fuelVehicle').value,date=document.getElementById('fuelDate').value;
+  var km=document.getElementById('fuelKm').value,liter=document.getElementById('fuelLiter').value;
+  var cost=document.getElementById('fuelCost').value,type=document.getElementById('fuelType').value;
+  var note=document.getElementById('fuelNote').value.trim();
+  if(!vid){alert('Pilih kendaraan!');return;}if(!date){alert('Isi tanggal!');return;}
+  fuels.push({id:'f'+Date.now(),vehicleId:vid,date:date,km:km||null,liter:liter||null,cost:cost||null,type:type,note:note});
+  if(km)vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
+  saveData();closeModal('fuelModal');activeVehicleId=vid;renderAll();
+}
+function saveOdo(){
+  var vid=document.getElementById('odoVehicle').value,km=document.getElementById('odoKm').value;
+  var date=document.getElementById('odoDate').value,note=document.getElementById('odoNote').value.trim();
+  if(!vid){alert('Pilih kendaraan!');return;}if(!km){alert('Isi KM!');return;}
+  odos.push({id:'o'+Date.now(),vehicleId:vid,date:date,km:+km,note:note});
+  vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
+  saveData();closeModal('odoModal');activeVehicleId=vid;renderAll();
+}
+function saveVehicle(){
+  var name=document.getElementById('vName').value.trim(),plate=document.getElementById('vPlate').value.trim().toUpperCase();
+  var year=document.getElementById('vYear').value,km=document.getElementById('vKm').value||'0';
+  if(!selectedVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
+  var v={id:'v'+Date.now(),type:selectedVType,name:name,plate:plate,year:year,km:+km,color:selectedColor};
+  vehicles.push(v);activeVehicleId=v.id;ensureCompSettings();saveData();closeModal('vehicleModal');renderAll();
+}
+function saveEditVehicle(){
+  var name=document.getElementById('evName').value.trim(),plate=document.getElementById('evPlate').value.trim().toUpperCase();
+  var year=document.getElementById('evYear').value,km=document.getElementById('evKm').value||'0';
+  if(!selectedEVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
+  vehicles.forEach(function(v){if(v.id===editingVehicleId){v.type=selectedEVType;v.name=name;v.plate=plate;v.year=year;v.km=+km;v.color=selectedEColor;}});
+  saveData();closeModal('editVehicleModal');renderAll();
+}
+function deleteVehicle(){
+  if(!confirm('Hapus kendaraan ini beserta semua datanya?'))return;
+  vehicles=vehicles.filter(function(v){return v.id!==editingVehicleId;});
+  services=services.filter(function(s){return s.vehicleId!==editingVehicleId;});
+  fuels=fuels.filter(function(f){return f.vehicleId!==editingVehicleId;});
+  odos=odos.filter(function(o){return o.vehicleId!==editingVehicleId;});
+  delete compSettings[editingVehicleId];
+  activeVehicleId=vehicles.length?vehicles[0].id:null;
+  saveData();closeModal('editVehicleModal');renderAll();
+}
+
+document.getElementById('vPlate').addEventListener('input',function(){this.value=this.value.toUpperCase();});
+document.getElementById('evPlate').addEventListener('input',function(){this.value=this.value.toUpperCase();});
+
+// CLEAR ALL DATA
+function confirmClearAllData(){openModal('clearDataModal');}
+function clearAllData(){
+  vehicles=[];services=[];fuels=[];odos=[];compSettings={};
+  activeVehicleId=null;
+  localStorage.removeItem('sk9_v');localStorage.removeItem('sk9_s');
+  localStorage.removeItem('sk9_f');localStorage.removeItem('sk9_o');
+  localStorage.removeItem('sk9_cs');
+  // Reset banner
+  document.getElementById('bannerKm').textContent='— km';
+  document.getElementById('bannerSub').textContent='Ketuk untuk statistik';
+  // Reset recent list
+  document.getElementById('recentList').innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><p>Belum ada aktivitas.</p></div>';
+  closeModal('clearDataModal');
+  renderAll();
+  showToast('🗑️ Semua data telah dihapus.');
+}
+
+// PROFILE
+var userProfile=JSON.parse(localStorage.getItem('al_profile')||'{}');
+function renderProfileRow(){
+  var n=userProfile.name||'',e=userProfile.info||'';
+  document.getElementById('profileNameDisplay').textContent=n||'Atur Nama Profil';
+  document.getElementById('profileEmailDisplay').textContent=e||'Ketuk untuk mengatur';
+}
+function openProfilePopup(){
+  document.getElementById('profileName').value=userProfile.name||'';
+  document.getElementById('profileEmail').value=userProfile.info||'';
+  openModal('profileModal');
+}
+function saveProfile(){
+  userProfile.name=document.getElementById('profileName').value.trim();
+  userProfile.info=document.getElementById('profileEmail').value.trim();
+  localStorage.setItem('al_profile',JSON.stringify(userProfile));
+  renderProfileRow();
+  closeModal('profileModal');
+  showToast('✅ Profil disimpan!');
+}
+renderProfileRow();
+
+// Set default stat filter to current year on first load
+document.getElementById('sfYear').value=String(new Date().getFullYear());
+
+// =====================
+// LOGIN SCREEN
+// =====================
+var GOOGLE_CLIENT_ID=''; // Isi dengan Client ID Google kamu
+var karnoteSession=localStorage.getItem('kn_session');
+
+function showApp(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainApp').style.display='';
+  renderAll();
+}
+
+function loginAsGuest(){
+  localStorage.setItem('kn_session','guest');
+  showApp();
+}
+
+function loginWithGoogle(){
+  if(!GOOGLE_CLIENT_ID){
+    showToast('⚠️ Client ID Google belum diatur. Hubungi pengembang.');
+    return;
+  }
+  // Google One Tap / GSI
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: function(response){
+      // Decode JWT payload
+      var parts=response.credential.split('.');
+      var payload=JSON.parse(atob(parts[1]));
+      userProfile.name=payload.name||'';
+      userProfile.info=payload.email||'';
+      userProfile.picture=payload.picture||'';
+      localStorage.setItem('al_profile',JSON.stringify(userProfile));
+      localStorage.setItem('kn_session','google:'+payload.email);
+      renderProfileRow();
+      showApp();
+      renderAll();
+      showToast('👋 Halo, '+payload.name+'!');
+    }
+  });
+  google.accounts.id.prompt(function(notification){
+    if(notification.isNotDisplayed()||notification.isSkippedMoment()){
+      // Fallback: popup
+      google.accounts.id.renderButton(
+        document.createElement('div'),
+        {theme:'outline',size:'large'}
+      );
+      showToast('⚠️ One Tap tidak tersedia. Coba lagi atau masuk tanpa akun.');
+    }
+  });
+}
+
+// Cek session: kalau sudah pernah login, langsung masuk
+if(karnoteSession){
+  showApp();
+} else {
+  // Tampilkan login screen
+  // mainApp tetap hidden, loginScreen tampil
+}
+</script>
+</body>
+</html>
