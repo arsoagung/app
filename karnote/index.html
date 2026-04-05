@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KarNote</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --bg:#0f1117;--card:#1a1d25;--card2:#1e2130;
@@ -14,7 +13,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
-.app{padding-bottom:110px;}
+.app{padding-bottom:130px;}
 .header{padding:52px 24px 16px;}
 .header-top{display:flex;align-items:flex-start;justify-content:space-between;}
 .greeting{font-size:25px;font-weight:800;letter-spacing:-.5px;}
@@ -309,7 +308,7 @@ canvas{display:block;}
 .add-divider{height:1px;background:#252830;margin:2px 0;}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .22s;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .22s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
 .modal{width:100%;max-width:430px;margin:0 auto;background:#1a1d25;border-radius:22px 22px 0 0;padding:18px 22px 44px;transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);max-height:92vh;overflow-y:auto;}
 .modal-overlay.open .modal{transform:translateY(0);}
@@ -395,16 +394,16 @@ canvas{display:block;}
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
   <div class="login-logo">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07C81.29,97.72,31.13,77.33,26.71,75.6L21,73.36A17.74,17.74,0,0,0,16,72a8,8,0,0,0-2.87,15.46h0c.46.18,47.19,18.3,72.13,29.63a32.15,32.15,0,0,0,33.56-4.29c4.86-4,14.57-8.8,33.19-8.8h18.82a71.74,71.74,0,0,0-24.17,36.59A15.86,15.86,0,0,1,131.32,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>
   </div>
   <div class="login-appname">KarNote</div>
   <div class="login-tagline">Catat servis, bensin, dan kondisi<br>kendaraanmu dengan mudah.</div>
   <div class="login-btns">
+    <button class="btn-guest" onclick="loginAsGuest()">Masuk Tanpa Akun</button>
     <button class="btn-google" onclick="loginWithGoogle()">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
       Masuk dengan Google
     </button>
-    <button class="btn-guest" onclick="loginAsGuest()">Masuk Tanpa Akun</button>
   </div>
   <div class="login-tos">Dengan menggunakan KarNote, kamu menyetujui <a href="#" onclick="openModal('privacyModal');return false;">Kebijakan Privasi</a> dan <a href="#" onclick="openModal('tosModal');return false;">Syarat &amp; Ketentuan</a> kami.</div>
 </div>
@@ -644,6 +643,9 @@ canvas{display:block;}
     </div>
 
     <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:var(--text3)">KarNote v1.0 · Dibuat dengan ❤️</div>
+    <div style="padding:0 0 8px;text-align:center">
+      <button onclick="logOut()" style="background:none;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;">Keluar / Ganti Akun</button>
+    </div>
   </div>
 </main>
 </div>
@@ -953,46 +955,22 @@ function buildSvgPicker(){
 }
 function pickCompSvg(k){selectedCompSvg=k;buildSvgPicker();}
 
-// DEMO DATA with 2025 monthly odometer entries
-if(!vehicles.length){
-  vehicles=[{id:'v1',type:'motor',name:'Honda Beat',plate:'B 2345 XYZ',year:2021,km:24500,color:'#ef4444'},{id:'v2',type:'mobil',name:'Toyota Avanza',plate:'B 9876 ABC',year:2019,km:72000,color:'#3b82f6'}];
-  services=[
-    {id:'s1',vehicleId:'v1',type:'Ganti Oli',date:'2024-07-10',km:14000,cost:85000,place:'Bengkel Haji Udin',note:''},
-    {id:'s2',vehicleId:'v1',type:'Rem',date:'2024-10-15',km:16000,cost:120000,place:'Ahass Honda',note:''},
-    {id:'s3',vehicleId:'v1',type:'Ganti Oli',date:'2025-01-08',km:18000,cost:85000,place:'Bengkel Haji Udin',note:''},
-    {id:'s4',vehicleId:'v1',type:'Filter',date:'2025-03-12',km:20000,cost:45000,place:'Ahass Honda',note:''},
-    {id:'s5',vehicleId:'v1',type:'Ganti Oli',date:'2025-05-20',km:22000,cost:85000,place:'Bengkel Haji Udin',note:''},
-    {id:'s6',vehicleId:'v2',type:'Ganti Oli',date:'2024-08-10',km:60000,cost:250000,place:'Auto2000',note:''},
-    {id:'s7',vehicleId:'v2',type:'Rem',date:'2024-11-15',km:63000,cost:320000,place:'Bengkel Prima',note:''},
-    {id:'s8',vehicleId:'v2',type:'Ganti Oli',date:'2025-02-15',km:66000,cost:250000,place:'Auto2000',note:''},
-    {id:'s9',vehicleId:'v2',type:'Filter',date:'2025-04-10',km:68500,cost:75000,place:'Auto2000',note:''},
-  ];
-  fuels=[
-    {id:'f1',vehicleId:'v1',date:'2025-01-15',km:18300,liter:4.5,cost:36000,type:'Pertalite',note:''},
-    {id:'f2',vehicleId:'v1',date:'2025-02-03',km:18900,liter:4.5,cost:36000,type:'Pertalite',note:''},
-    {id:'f3',vehicleId:'v1',date:'2025-02-18',km:19400,liter:4.5,cost:36000,type:'Pertalite',note:''},
-    {id:'f4',vehicleId:'v1',date:'2025-03-05',km:19900,liter:5,cost:40000,type:'Pertalite',note:''},
-    {id:'f5',vehicleId:'v1',date:'2025-03-22',km:20500,liter:5,cost:40000,type:'Pertalite',note:''},
-    {id:'f6',vehicleId:'v1',date:'2025-04-08',km:21100,liter:4.5,cost:36000,type:'Pertalite',note:''},
-    {id:'f7',vehicleId:'v1',date:'2025-04-25',km:21700,liter:5,cost:40000,type:'Pertalite',note:''},
-    {id:'f8',vehicleId:'v1',date:'2025-05-10',km:22300,liter:4.5,cost:36000,type:'Pertalite',note:''},
-    {id:'f9',vehicleId:'v1',date:'2025-06-01',km:23100,liter:5,cost:40000,type:'Pertalite',note:''},
-    {id:'f10',vehicleId:'v1',date:'2025-06-20',km:23800,liter:5,cost:40000,type:'Pertalite',note:''},
-    {id:'f11',vehicleId:'v2',date:'2025-01-22',km:66500,liter:40,cost:480000,type:'Pertamax',note:'Full tank'},
-    {id:'f12',vehicleId:'v2',date:'2025-03-10',km:68000,liter:38,cost:456000,type:'Pertamax',note:''},
-    {id:'f13',vehicleId:'v2',date:'2025-05-05',km:70000,liter:40,cost:480000,type:'Pertamax',note:'Full tank'},
-    {id:'f14',vehicleId:'v2',date:'2025-06-15',km:72000,liter:38,cost:456000,type:'Pertamax',note:''},
-  ];
-  // monthly odometer updates
-  var odoData=[
-    ['v1','2025-01-31',18800],['v1','2025-02-28',19600],['v1','2025-03-31',20700],
-    ['v1','2025-04-30',21900],['v1','2025-05-31',22800],['v1','2025-06-30',24000],
-    ['v2','2025-01-31',67000],['v2','2025-02-28',68000],['v2','2025-03-31',69000],
-    ['v2','2025-04-30',70000],['v2','2025-05-31',71200],['v2','2025-06-30',72000]
-  ];
-  odoData.forEach(function(o,i){odos.push({id:'o'+i,vehicleId:o[0],date:o[1],km:o[2],note:'Update bulanan'});});
-  saveData();
+// Bersihkan data demo lama jika ada (one-time migration)
+if(localStorage.getItem('kn_cleared_demo')!=='1'){
+  vehicles=[];services=[];fuels=[];odos=[];compSettings={};
+  localStorage.removeItem('sk9_v');localStorage.removeItem('sk9_s');
+  localStorage.removeItem('sk9_f');localStorage.removeItem('sk9_o');
+  localStorage.removeItem('sk9_cs');
+  localStorage.setItem('kn_cleared_demo','1');
 }
+
+// Reload data setelah clear
+vehicles=JSON.parse(localStorage.getItem('sk9_v')||'[]');
+services=JSON.parse(localStorage.getItem('sk9_s')||'[]');
+fuels=JSON.parse(localStorage.getItem('sk9_f')||'[]');
+odos=JSON.parse(localStorage.getItem('sk9_o')||'[]');
+compSettings=JSON.parse(localStorage.getItem('sk9_cs')||'{}');
+
 activeVehicleId=vehicles[0]?vehicles[0].id:null;
 ensureCompSettings();
 // renderAll() dipanggil dari showApp() setelah login
@@ -1840,63 +1818,101 @@ renderProfileRow();
 document.getElementById('sfYear').value=String(new Date().getFullYear());
 
 // =====================
-// LOGIN SCREEN
+// LOGIN SCREEN — Supabase + Google SSO
 // =====================
-var GOOGLE_CLIENT_ID=''; // Isi dengan Client ID Google kamu
-var karnoteSession=localStorage.getItem('kn_session');
+var SUPABASE_URL = 'https://kkjkfswwqadgiqcvduvl.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtramtmc3d3cWFkZ2lxY3ZkdXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzAwMzMsImV4cCI6MjA5MDkwNjAzM30.tUf-GG18Ynm6_SYx04rQbZhj7Fd7BJdDzKTPaXvmUeE';
+
+// Inject Supabase SDK
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.onload = function(){
+    window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    checkSession();
+  };
+  document.head.appendChild(s);
+})();
 
 function showApp(){
   document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('mainApp').style.display='';
+  document.getElementById('mainApp').style.display = '';
   renderAll();
 }
 
+function showLoginScreen(){
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('mainApp').style.display = 'none';
+}
+
+function checkSession(){
+  // Tampilkan login dulu, baru cek
+  showLoginScreen();
+
+  window._supabase.auth.getSession().then(function(res){
+    var session = res.data && res.data.session;
+    if(session){
+      applyUserFromSession(session);
+      showApp();
+    } else if(localStorage.getItem('kn_session') === 'guest'){
+      showApp();
+    }
+    // else tetap di login screen
+  });
+
+  // Listen perubahan auth (callback OAuth redirect)
+  window._supabase.auth.onAuthStateChange(function(event, session){
+    if(event === 'SIGNED_IN' && session){
+      applyUserFromSession(session);
+      showApp();
+    } else if(event === 'SIGNED_OUT'){
+      localStorage.removeItem('kn_session');
+      showLoginScreen();
+    }
+  });
+}
+
+function applyUserFromSession(session){
+  var user = session.user;
+  var meta = user.user_metadata || {};
+  userProfile.name = meta.full_name || meta.name || user.email || '';
+  userProfile.info = user.email || '';
+  userProfile.picture = meta.avatar_url || meta.picture || '';
+  localStorage.setItem('al_profile', JSON.stringify(userProfile));
+  localStorage.setItem('kn_session', 'google:' + user.email);
+  renderProfileRow();
+}
+
 function loginAsGuest(){
-  localStorage.setItem('kn_session','guest');
+  localStorage.setItem('kn_session', 'guest');
   showApp();
 }
 
 function loginWithGoogle(){
-  if(!GOOGLE_CLIENT_ID){
-    showToast('⚠️ Client ID Google belum diatur. Hubungi pengembang.');
+  if(!window._supabase){
+    showToast('⏳ Sedang memuat, coba lagi...');
     return;
   }
-  // Google One Tap / GSI
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: function(response){
-      // Decode JWT payload
-      var parts=response.credential.split('.');
-      var payload=JSON.parse(atob(parts[1]));
-      userProfile.name=payload.name||'';
-      userProfile.info=payload.email||'';
-      userProfile.picture=payload.picture||'';
-      localStorage.setItem('al_profile',JSON.stringify(userProfile));
-      localStorage.setItem('kn_session','google:'+payload.email);
-      renderProfileRow();
-      showApp();
-      renderAll();
-      showToast('👋 Halo, '+payload.name+'!');
+  window._supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.href
     }
-  });
-  google.accounts.id.prompt(function(notification){
-    if(notification.isNotDisplayed()||notification.isSkippedMoment()){
-      // Fallback: popup
-      google.accounts.id.renderButton(
-        document.createElement('div'),
-        {theme:'outline',size:'large'}
-      );
-      showToast('⚠️ One Tap tidak tersedia. Coba lagi atau masuk tanpa akun.');
-    }
+  }).then(function(res){
+    if(res.error) showToast('❌ Gagal login: ' + res.error.message);
   });
 }
 
-// Cek session: kalau sudah pernah login, langsung masuk
-if(karnoteSession){
-  showApp();
-} else {
-  // Tampilkan login screen
-  // mainApp tetap hidden, loginScreen tampil
+function logOut(){
+  if(localStorage.getItem('kn_session') === 'guest'){
+    localStorage.removeItem('kn_session');
+    showLoginScreen();
+    return;
+  }
+  window._supabase.auth.signOut().then(function(){
+    localStorage.removeItem('kn_session');
+    showLoginScreen();
+  });
 }
 </script>
 </body>
