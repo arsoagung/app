@@ -630,6 +630,16 @@ canvas{display:block;}
     <div class="settings-section">
       <div class="settings-section-label">Zona Bahaya</div>
       <div class="settings-group">
+        <div class="settings-row" onclick="logOut()">
+          <div class="settings-row-left">
+            <div class="settings-row-icon" style="background:rgba(138,143,158,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#8a8f9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+            <div class="settings-row-text">
+              <div class="settings-row-label">Keluar / Ganti Akun</div>
+              <div class="settings-row-sub">Logout dari sesi saat ini</div>
+            </div>
+          </div>
+          <div class="settings-row-arr">›</div>
+        </div>
         <div class="settings-row" onclick="confirmClearAllData()">
           <div class="settings-row-left">
             <div class="settings-row-icon" style="background:rgba(248,113,113,.1)"><svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
@@ -643,10 +653,7 @@ canvas{display:block;}
       </div>
     </div>
 
-    <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:var(--text3)">KarNote v1.0 · Dibuat dengan ❤️</div>
-    <div style="padding:0 0 8px;text-align:center">
-      <button onclick="logOut()" style="background:none;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;">Keluar / Ganti Akun</button>
-    </div>
+    <div style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--text3)">KarNote · Versi 1.0.0</div>
   </div>
 </main>
 </div>
@@ -1879,6 +1886,8 @@ function checkSession(){
       applyUserFromSession(session);
       loadFromSupabase(function(){ showApp(); });
     } else if(event === 'SIGNED_OUT'){
+      // Data lokal sudah dihapus di logOut() untuk Google SSO
+      // Cukup reset state dan tampilkan login
       _currentUserId = null;
       localStorage.removeItem('kn_session');
       showLoginScreen();
@@ -1916,15 +1925,27 @@ function loginWithGoogle(){
   });
 }
 
+function clearLocalAppData(){
+  localStorage.removeItem('sk9_v');
+  localStorage.removeItem('sk9_s');
+  localStorage.removeItem('sk9_f');
+  localStorage.removeItem('sk9_o');
+  localStorage.removeItem('sk9_cs');
+  localStorage.removeItem('al_profile');
+}
+
 function logOut(){
   if(localStorage.getItem('kn_session') === 'guest'){
+    // Guest logout: simpan data lokal, cukup hapus session marker
     localStorage.removeItem('kn_session');
     showLoginScreen();
     return;
   }
+  // Google SSO logout: hapus semua data lokal (akan diambil ulang dari Supabase saat login lagi)
   window._supabase.auth.signOut().then(function(){
     _currentUserId = null;
     localStorage.removeItem('kn_session');
+    clearLocalAppData();
     showLoginScreen();
   });
 }
@@ -1944,11 +1965,13 @@ function loadFromSupabase(callback){
   ]).then(function(results){
     var vRes = results[0], eRes = results[1], cRes = results[2];
 
+    // Reset in-memory state dulu sebelum load dari Supabase
+    vehicles = []; services = []; fuels = []; odos = [];
+
     if(vRes.data && vRes.data.length){
       vehicles = vRes.data.map(function(r){ return r.data; });
     }
     if(eRes.data && eRes.data.length){
-      services = []; fuels = []; odos = [];
       eRes.data.forEach(function(r){
         if(r.type === 'service') services.push(r.data);
         else if(r.type === 'fuel') fuels.push(r.data);
@@ -1959,7 +1982,7 @@ function loadFromSupabase(callback){
       compSettings = cRes.data.data;
     }
 
-    // Sync ke localStorage juga
+    // Sync ke localStorage (override data guest jika ada)
     localStorage.setItem('sk9_v', JSON.stringify(vehicles));
     localStorage.setItem('sk9_s', JSON.stringify(services));
     localStorage.setItem('sk9_f', JSON.stringify(fuels));
