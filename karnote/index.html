@@ -373,8 +373,9 @@ canvas{display:block;}
 </style>
 <style>
 /* LOGIN SCREEN */
-.login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px 40px;max-width:430px;margin:0 auto;}
+.login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px 40px;max-width:430px;margin:0 auto;transition:opacity .2s;}
 .login-screen.hidden{display:none;}
+.login-screen.invisible{opacity:0;pointer-events:none;}
 .login-logo{width:72px;height:72px;border-radius:22px;background:var(--lime);display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
 .login-logo svg{width:38px;height:38px;color:#0f1117;}
 .login-appname{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;}
@@ -392,7 +393,7 @@ canvas{display:block;}
 <body>
 
 <!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen">
+<div class="login-screen invisible" id="loginScreen">
   <div class="login-logo">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>
   </div>
@@ -955,13 +956,14 @@ function buildSvgPicker(){
 }
 function pickCompSvg(k){selectedCompSvg=k;buildSvgPicker();}
 
-// Bersihkan data demo lama jika ada (one-time migration)
-if(localStorage.getItem('kn_cleared_demo')!=='1'){
+// Bersihkan data demo lama jika ada (one-time migration v2)
+if(localStorage.getItem('kn_cleared_demo')!=='2'){
   vehicles=[];services=[];fuels=[];odos=[];compSettings={};
   localStorage.removeItem('sk9_v');localStorage.removeItem('sk9_s');
   localStorage.removeItem('sk9_f');localStorage.removeItem('sk9_o');
   localStorage.removeItem('sk9_cs');
-  localStorage.setItem('kn_cleared_demo','1');
+  localStorage.removeItem('kn_session');
+  localStorage.setItem('kn_cleared_demo','2');
 }
 
 // Reload data setelah clear
@@ -981,6 +983,7 @@ function saveData(){
   localStorage.setItem('sk9_f',JSON.stringify(fuels));
   localStorage.setItem('sk9_o',JSON.stringify(odos));
   localStorage.setItem('sk9_cs',JSON.stringify(compSettings));
+  syncToSupabase();
 }
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 
@@ -1149,9 +1152,9 @@ function buildEntryHTML(entry,showDel){
 }
 function deleteEntry(kind,id){
   if(!confirm('Hapus catatan ini?'))return;
-  if(kind==='service')services=services.filter(function(x){return x.id!==id;});
-  else if(kind==='fuel')fuels=fuels.filter(function(x){return x.id!==id;});
-  else odos=odos.filter(function(x){return x.id!==id;});
+  if(kind==='service'){services=services.filter(function(x){return x.id!==id;});deleteFromSupabase('entries',id);}
+  else if(kind==='fuel'){fuels=fuels.filter(function(x){return x.id!==id;});deleteFromSupabase('entries',id);}
+  else{odos=odos.filter(function(x){return x.id!==id;});deleteFromSupabase('entries',id);}
   saveData();renderAll();
 }
 function renderRecent(){
@@ -1762,11 +1765,20 @@ function saveEditVehicle(){
 }
 function deleteVehicle(){
   if(!confirm('Hapus kendaraan ini beserta semua datanya?'))return;
-  vehicles=vehicles.filter(function(v){return v.id!==editingVehicleId;});
-  services=services.filter(function(s){return s.vehicleId!==editingVehicleId;});
-  fuels=fuels.filter(function(f){return f.vehicleId!==editingVehicleId;});
-  odos=odos.filter(function(o){return o.vehicleId!==editingVehicleId;});
-  delete compSettings[editingVehicleId];
+  var vid=editingVehicleId;
+  // Hapus entries kendaraan ini dari Supabase
+  if(_currentUserId && window._supabase){
+    window._supabase.from('entries').delete().eq('user_id',_currentUserId)
+      .in('id', services.filter(function(s){return s.vehicleId===vid;}).map(function(s){return s.id;})
+        .concat(fuels.filter(function(f){return f.vehicleId===vid;}).map(function(f){return f.id;}))
+        .concat(odos.filter(function(o){return o.vehicleId===vid;}).map(function(o){return o.id;})));
+    window._supabase.from('vehicles').delete().eq('id',vid).eq('user_id',_currentUserId);
+  }
+  vehicles=vehicles.filter(function(v){return v.id!==vid;});
+  services=services.filter(function(s){return s.vehicleId!==vid;});
+  fuels=fuels.filter(function(f){return f.vehicleId!==vid;});
+  odos=odos.filter(function(o){return o.vehicleId!==vid;});
+  delete compSettings[vid];
   activeVehicleId=vehicles.length?vehicles[0].id:null;
   saveData();closeModal('editVehicleModal');renderAll();
 }
@@ -1822,6 +1834,8 @@ document.getElementById('sfYear').value=String(new Date().getFullYear());
 // =====================
 var SUPABASE_URL = 'https://kkjkfswwqadgiqcvduvl.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtramtmc3d3cWFkZ2lxY3ZkdXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzAwMzMsImV4cCI6MjA5MDkwNjAzM30.tUf-GG18Ynm6_SYx04rQbZhj7Fd7BJdDzKTPaXvmUeE';
+var REDIRECT_URL = 'https://arsoagung.github.io/app/karnote/';
+var _currentUserId = null;
 
 // Inject Supabase SDK
 (function(){
@@ -1836,36 +1850,36 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 function showApp(){
   document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('invisible');
   document.getElementById('mainApp').style.display = '';
   renderAll();
 }
 
 function showLoginScreen(){
   document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginScreen').classList.remove('invisible');
   document.getElementById('mainApp').style.display = 'none';
 }
 
 function checkSession(){
-  // Tampilkan login dulu, baru cek
-  showLoginScreen();
-
   window._supabase.auth.getSession().then(function(res){
     var session = res.data && res.data.session;
     if(session){
       applyUserFromSession(session);
-      showApp();
+      loadFromSupabase(function(){ showApp(); });
     } else if(localStorage.getItem('kn_session') === 'guest'){
       showApp();
+    } else {
+      showLoginScreen();
     }
-    // else tetap di login screen
   });
 
-  // Listen perubahan auth (callback OAuth redirect)
   window._supabase.auth.onAuthStateChange(function(event, session){
     if(event === 'SIGNED_IN' && session){
       applyUserFromSession(session);
-      showApp();
+      loadFromSupabase(function(){ showApp(); });
     } else if(event === 'SIGNED_OUT'){
+      _currentUserId = null;
       localStorage.removeItem('kn_session');
       showLoginScreen();
     }
@@ -1875,6 +1889,7 @@ function checkSession(){
 function applyUserFromSession(session){
   var user = session.user;
   var meta = user.user_metadata || {};
+  _currentUserId = user.id;
   userProfile.name = meta.full_name || meta.name || user.email || '';
   userProfile.info = user.email || '';
   userProfile.picture = meta.avatar_url || meta.picture || '';
@@ -1895,9 +1910,7 @@ function loginWithGoogle(){
   }
   window._supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: {
-      redirectTo: window.location.href
-    }
+    options: { redirectTo: REDIRECT_URL }
   }).then(function(res){
     if(res.error) showToast('❌ Gagal login: ' + res.error.message);
   });
@@ -1910,9 +1923,93 @@ function logOut(){
     return;
   }
   window._supabase.auth.signOut().then(function(){
+    _currentUserId = null;
     localStorage.removeItem('kn_session');
     showLoginScreen();
   });
+}
+
+// =====================
+// SUPABASE SYNC
+// =====================
+
+// Load data dari Supabase (dipanggil setelah login Google)
+function loadFromSupabase(callback){
+  if(!_currentUserId){ callback(); return; }
+  var sb = window._supabase;
+  Promise.all([
+    sb.from('vehicles').select('*').eq('user_id', _currentUserId),
+    sb.from('entries').select('*').eq('user_id', _currentUserId),
+    sb.from('comp_settings').select('*').eq('user_id', _currentUserId).maybeSingle()
+  ]).then(function(results){
+    var vRes = results[0], eRes = results[1], cRes = results[2];
+
+    if(vRes.data && vRes.data.length){
+      vehicles = vRes.data.map(function(r){ return r.data; });
+    }
+    if(eRes.data && eRes.data.length){
+      services = []; fuels = []; odos = [];
+      eRes.data.forEach(function(r){
+        if(r.type === 'service') services.push(r.data);
+        else if(r.type === 'fuel') fuels.push(r.data);
+        else if(r.type === 'odo') odos.push(r.data);
+      });
+    }
+    if(cRes.data && cRes.data.data){
+      compSettings = cRes.data.data;
+    }
+
+    // Sync ke localStorage juga
+    localStorage.setItem('sk9_v', JSON.stringify(vehicles));
+    localStorage.setItem('sk9_s', JSON.stringify(services));
+    localStorage.setItem('sk9_f', JSON.stringify(fuels));
+    localStorage.setItem('sk9_o', JSON.stringify(odos));
+    localStorage.setItem('sk9_cs', JSON.stringify(compSettings));
+
+    activeVehicleId = vehicles[0] ? vehicles[0].id : null;
+    ensureCompSettings();
+    callback();
+  }).catch(function(){ callback(); });
+}
+
+// Upsert semua data ke Supabase (dipanggil tiap saveData)
+function syncToSupabase(){
+  if(!_currentUserId || !window._supabase) return;
+  var sb = window._supabase;
+  var uid = _currentUserId;
+
+  // Vehicles
+  var vRows = vehicles.map(function(v){
+    return { id: v.id, user_id: uid, data: v, updated_at: new Date().toISOString() };
+  });
+
+  // Entries
+  var eRows = [];
+  services.forEach(function(s){
+    eRows.push({ id: s.id, user_id: uid, type: 'service', data: s, updated_at: new Date().toISOString() });
+  });
+  fuels.forEach(function(f){
+    eRows.push({ id: f.id, user_id: uid, type: 'fuel', data: f, updated_at: new Date().toISOString() });
+  });
+  odos.forEach(function(o){
+    eRows.push({ id: o.id, user_id: uid, type: 'odo', data: o, updated_at: new Date().toISOString() });
+  });
+
+  // CompSettings
+  var cRow = { user_id: uid, data: compSettings, updated_at: new Date().toISOString() };
+
+  // Jalankan upsert paralel
+  Promise.all([
+    vRows.length ? sb.from('vehicles').upsert(vRows) : Promise.resolve(),
+    eRows.length ? sb.from('entries').upsert(eRows) : Promise.resolve(),
+    sb.from('comp_settings').upsert(cRow)
+  ]).catch(function(err){ console.warn('Sync error:', err); });
+}
+
+// Hapus satu entry dari Supabase saat delete
+function deleteFromSupabase(table, id){
+  if(!_currentUserId || !window._supabase) return;
+  window._supabase.from(table).delete().eq('id', id).eq('user_id', _currentUserId);
 }
 </script>
 </body>
