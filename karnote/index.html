@@ -29,14 +29,13 @@ main{padding:20px 24px;}
 .vehicle-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:18px;}
 .vehicle-scroll::-webkit-scrollbar{display:none;}
 .vehicle-card{min-width:108px;background:var(--card);border-radius:16px;padding:13px 12px 11px;cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px;position:relative;overflow:hidden;}
-.vehicle-card.active{background:#1c2110;}
-.vc-color-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:2px 2px 0 0;}
-.vehicle-icon{width:26px;height:26px;}
-/* inactive: icon redup, name tetap terang */
-.vehicle-card:not(.active) .vehicle-icon{opacity:.3;filter:grayscale(1);}
+.vehicle-card.active{background:#9de041;}
+.vehicle-icon{width:26px;height:26px;color:var(--text3);}
+.vehicle-card.active .vehicle-icon{color:#0f1117;}
+.vehicle-card.active .vehicle-name{color:#0f1117;}
+.vehicle-card.active .vehicle-plate{background:rgba(0,0,0,.12);color:#0f1117;}
 .vehicle-name{font-size:12px;font-weight:700;line-height:1.2;}
 .vehicle-plate{font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.07);color:var(--text2);}
-.vehicle-card.active .vehicle-plate{background:rgba(157,224,65,.12);color:var(--lime);}
 .vehicle-add{min-width:66px;align-items:center;justify-content:center;gap:5px;color:var(--text3);border:2px dashed #2a2e3a;}
 .vehicle-add svg{width:20px;height:20px;}
 .vehicle-add p{font-size:10px;font-weight:600;}
@@ -653,7 +652,11 @@ canvas{display:block;}
       </div>
     </div>
 
-    <div style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--text3)">KarNote · Versi 1.0.0</div>
+    <div style="text-align:center;padding:16px 0 4px;font-size:11px;color:var(--text3)">KarNote · Versi 1.2.0</div>
+    <div style="text-align:center;padding:0 24px 12px;font-size:10px;color:var(--text3);line-height:1.7">
+      <b style="color:var(--text2)">v1.2.0</b> — Ikon kendaraan aktif jadi hitam; hapus aksen bar warna di tab kendaraan tidak aktif; bersihkan kode warna tak terpakai<br>
+      <b style="color:var(--text2)">v1.1.0</b> — Sinkronisasi Supabase &amp; Google SSO
+    </div>
   </div>
 </main>
 </div>
@@ -754,11 +757,7 @@ canvas{display:block;}
     <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="fuelDate"></div>
     <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="fuelKm"></div>
   </div>
-  <div class="form-row">
-    <div class="form-group"><label class="form-label">Volume (Liter)</label><input type="number" class="form-input" id="fuelLiter" placeholder="5.0" step="0.1"></div>
-    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="fuelCost" placeholder="80000"></div>
-  </div>
-  <div class="form-group"><label class="form-label">Jenis BBM</label><select class="form-select" id="fuelType"><option>Pertalite</option><option>Pertamax</option><option>Pertamax Turbo</option><option>Dexlite</option><option>Pertamina Dex</option><option>Solar</option></select></div>
+  <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="fuelCost" placeholder="80000"></div>
   <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="fuelNote" style="min-height:60px" placeholder="SPBU, full tank..."></textarea></div>
   <button class="btn-primary" onclick="saveFuel()">Simpan</button>
 </div></div>
@@ -790,7 +789,6 @@ canvas{display:block;}
     <div class="form-group"><label class="form-label">Tahun</label><select class="form-select" id="vYear"></select></div>
   </div>
   <div class="form-group"><label class="form-label">KM Awal</label><input type="text" inputmode="numeric" pattern="[0-9]*" class="form-input" id="vKm" placeholder="0"></div>
-  <div class="form-group"><label class="form-label">Warna Kendaraan</label><div class="color-grid" id="vColorGrid"></div></div>
   <button class="btn-primary" onclick="saveVehicle()">Tambah Kendaraan</button>
 </div></div>
 
@@ -810,7 +808,6 @@ canvas{display:block;}
     <div class="form-group"><label class="form-label">Tahun</label><select class="form-select" id="evYear"></select></div>
   </div>
   <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="evKm"></div>
-  <div class="form-group"><label class="form-label">Warna Kendaraan</label><div class="color-grid" id="evColorGrid"></div></div>
   <button class="btn-primary" onclick="saveEditVehicle()">Simpan Perubahan</button>
 </div></div>
 
@@ -1063,17 +1060,18 @@ function renderAll(){
 
 function renderVC(id){
   var el=document.getElementById(id);if(!el)return;
+  var isKomponenScroll=(id==='komponenVehicleScroll');
   var h='';
   vehicles.forEach(function(v){
-    var a=v.id===activeVehicleId?'active':'',ac=v.color||'#9de041';
-    var barColor=a?ac:hexAlpha(ac,.25);
+    var a=v.id===activeVehicleId?'active':'';
     h+='<div class="vehicle-card '+a+'" onclick="selectVehicle(\''+v.id+'\')">';
-    h+='<div class="vc-color-bar" style="background:'+barColor+'"></div>';
-    h+='<div class="vehicle-icon" style="color:'+ac+'">'+SVG_EXTRA[v.type]+'</div>';
+    h+='<div class="vehicle-icon">'+SVG_EXTRA[v.type]+'</div>';
     h+='<div class="vehicle-name">'+v.name+'</div>';
     h+='<div class="vehicle-plate">'+v.plate+'</div></div>';
   });
-  h+='<div class="vehicle-card vehicle-add" onclick="openVehicleModal()">'+SVG_EXTRA.plus+'<p>Tambah</p></div>';
+  if(!isKomponenScroll){
+    h+='<div class="vehicle-card vehicle-add" onclick="openVehicleModal()">'+SVG_EXTRA.plus+'<p>Tambah</p></div>';
+  }
   el.innerHTML=h;
 }
 
@@ -1129,7 +1127,7 @@ function getAllEntries(vid){
   services.forEach(function(s){if(!vid||s.vehicleId===vid)all.push({kind:'service',date:s.date,data:s});});
   fuels.forEach(function(f){if(!vid||f.vehicleId===vid)all.push({kind:'fuel',date:f.date,data:f});});
   odos.forEach(function(o){if(!vid||o.vehicleId===vid)all.push({kind:'odo',date:o.date,data:o});});
-  all.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  all.sort(function(a,b){var dd=new Date(b.date)-new Date(a.date);if(dd!==0)return dd;var ai=parseInt((a.data.id||'').replace(/\D/g,''))||0,bi=parseInt((b.data.id||'').replace(/\D/g,''))||0;return bi-ai;});
   return all;
 }
 
@@ -1142,7 +1140,7 @@ function buildEntryHTML(entry,showDel){
     col=COMP_COLORS[d.type]||'lime';name=d.type;detail=vname+(d.place?' · '+d.place:'');
     meta='<span class="bd">'+fDate(d.date)+'</span>'+(d.cost?'<span class="bc">'+fRp(d.cost)+'</span>':'');
   }else if(entry.kind==='fuel'){
-    icon=SVG_EXTRA.fuel;col='blue';name='Isi Bensin';detail=vname+' · '+d.type;
+    icon=SVG_EXTRA.fuel;col='blue';name='Isi Bensin';detail=vname;
     meta='<span class="bd">'+fDate(d.date)+'</span>'+(d.liter?'<span class="bf">'+d.liter+' L</span>':'')+(d.cost?'<span class="bc">'+fRp(d.cost)+'</span>':'');
   }else{
     icon=SVG_EXTRA.odo;col='orange';name='Update Odometer';detail=vname+(d.note?' · '+d.note:'');
@@ -1286,8 +1284,8 @@ function openEntryPopup(eid){
     if(d.cost)rows.push(['Biaya',fRp(d.cost)]);
     if(d.place)rows.push(['Tempat',d.place]);
   }else if(currentEntryKind==='fuel'){
-    icon=SVG_EXTRA.fuel;col='blue';title='Isi Bensin';sub=(v?v.name:'—')+' · '+d.type;
-    rows=[['Tanggal',fDate(d.date)],['Kendaraan',v?v.name:'—'],['Jenis BBM',d.type]];
+    icon=SVG_EXTRA.fuel;col='blue';title='Isi Bensin';sub=v?v.name:'—';
+    rows=[['Tanggal',fDate(d.date)],['Kendaraan',v?v.name:'—']];
     if(d.km)rows.push(['Odometer',fKm(d.km)]);
     if(d.liter)rows.push(['Volume',d.liter+' Liter']);
     if(d.cost)rows.push(['Biaya',fRp(d.cost)]);
@@ -1321,12 +1319,42 @@ function deleteCurrentEntry(){
   else odos=odos.filter(function(x){return x.id!==currentEntryId;});
   saveData();closeEntryPopup();renderAll();
 }
+var _editingEntryId=null,_editingEntryKind=null;
 function editCurrentEntry(){
+  var entry=findEntry(currentEntryKind,currentEntryId);
+  if(!entry){closeEntryPopup();return;}
+  var editId=currentEntryId;
+  var editKind=currentEntryKind;
   closeEntryPopup();
-  // open appropriate edit modal pre-filled
-  if(currentEntryKind==='service'){openServiceModal();}
-  else if(currentEntryKind==='fuel'){openFuelModal();}
-  else{openOdoModal();}
+  var d=entry.data;
+  if(editKind==='service'){
+    openServiceModal();
+    document.getElementById('svcVehicle').value=d.vehicleId;
+    document.getElementById('svcDate').value=d.date||todayStr;
+    document.getElementById('svcKm').value=d.km||'';
+    document.getElementById('svcCost').value=d.cost||'';
+    document.getElementById('svcPlace').value=d.place||'';
+    document.getElementById('svcNote').value=d.note||'';
+    document.querySelectorAll('.type-chip').forEach(function(el){
+      if(el.dataset.type===d.type){el.classList.add('selected');selectedType=[d.type];}
+    });
+  } else if(editKind==='fuel'){
+    openFuelModal();
+    document.getElementById('fuelVehicle').value=d.vehicleId;
+    document.getElementById('fuelDate').value=d.date||todayStr;
+    document.getElementById('fuelKm').value=d.km||'';
+    document.getElementById('fuelCost').value=d.cost||'';
+    document.getElementById('fuelNote').value=d.note||'';
+  } else {
+    openOdoModal();
+    document.getElementById('odoVehicle').value=d.vehicleId;
+    document.getElementById('odoDate').value=d.date||todayStr;
+    document.getElementById('odoKm').value=d.km||'';
+    document.getElementById('odoNote').value=d.note||'';
+  }
+  // Set SETELAH openModal (karena openModal me-reset state editing)
+  _editingEntryId=editId;
+  _editingEntryKind=editKind;
 }
 
 // KOMPONEN MODAL
@@ -1484,11 +1512,23 @@ function drawOdoChart(){
     }
   }
 
-  // Fill nulls with interpolation or nearest
+  // Fill nulls: forward-fill hanya sampai bulan saat ini, jangan ke depan
   var filled=values.slice();
   var lastVal=null;
-  for(var i=0;i<filled.length;i++){if(filled[i]!==null)lastVal=filled[i];else if(lastVal!==null)filled[i]=lastVal;}
-  var hasData=filled.some(function(v){return v!==null;});
+  var nowYear=now.getFullYear(),nowMonth=now.getMonth();
+  for(var i=0;i<filled.length;i++){
+    if(filled[i]!==null){lastVal=filled[i];}
+    else if(lastVal!==null){
+      // Cek apakah slot ini masih di masa lalu atau bulan ini
+      var slotIsFuture=false;
+      if(odoPeriod==='year'){
+        var yr=now.getFullYear()+odoOffset;
+        slotIsFuture=(yr===nowYear&&i>nowMonth)||(yr>nowYear);
+      }
+      if(!slotIsFuture) filled[i]=lastVal;
+    }
+  }
+  var hasData=values.some(function(v){return v!==null;});
 
   var W=canvas.width,H=canvas.height,pL=44,pR=12,pT=12,pB=26,cW=W-pL-pR,cH=H-pT-pB;
   ctx.fillStyle='rgba(138,143,158,.5)';ctx.font='9px Inter';ctx.textAlign='right';
@@ -1655,8 +1695,16 @@ function drawCostBars(vS,vF){
   }).join('');
 }
 
-// SELECT
-function selectVehicle(id){activeVehicleId=id;ensureCompSettings();renderAll();}
+function selectVehicle(id){
+  activeVehicleId=id;ensureCompSettings();
+  // Update semua vehicle scroll (termasuk di dalam modal komponen)
+  ['vehicleScroll','vehicleScrollStat','vehicleScrollRiwayat','vehicleScrollPengingat','vehicleScrollPengaturan','komponenVehicleScroll'].forEach(renderVC);
+  renderAll();
+  // Jika modal komponen terbuka, re-render isi kompoenennya
+  if(document.getElementById('komponenModal').classList.contains('open')){
+    renderCompSettings();
+  }
+}
 
 // ADD POPUP
 var popupOpen=false;
@@ -1671,6 +1719,7 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 // SERVICE MODAL — multi type + custom
 var svcCustomTypes=[];
 function openServiceModal(){
+  _editingEntryId=null;_editingEntryKind=null;
   popVehicleSel('svcVehicle');selectedType=[];svcCustomTypes=[];
   // Build type grid
   var stdTypes=['Ganti Oli','Rem','Ban','Aki','Filter','Rantai','Busi','Cuci'];
@@ -1699,9 +1748,9 @@ function addCustomType(){
 }
 function removeCustomType(el,val){svcCustomTypes=svcCustomTypes.filter(function(t){return t!==val;});el.parentElement.remove();}
 
-function openFuelModal(){popVehicleSel('fuelVehicle');['fuelKm','fuelLiter','fuelCost','fuelNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('fuelDate').value=todayStr;openModal('fuelModal');}
-function openOdoModal(){popVehicleSel('odoVehicle');['odoKm','odoNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('odoDate').value=todayStr;openModal('odoModal');}
-function openVehicleModal(){selectedVType='';selectedColor='#f5f5f5';document.getElementById('vtype-motor').classList.remove('selected');document.getElementById('vtype-mobil').classList.remove('selected');['vName','vPlate'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('vKm').value='0';buildColorGrid('vColorGrid','#f5f5f5','pickColor');openModal('vehicleModal');}
+function openFuelModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('fuelVehicle');['fuelKm','fuelCost','fuelNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('fuelDate').value=todayStr;openModal('fuelModal');}
+function openOdoModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('odoVehicle');['odoKm','odoNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('odoDate').value=todayStr;openModal('odoModal');}
+function openVehicleModal(){selectedVType='';document.getElementById('vtype-motor').classList.remove('selected');document.getElementById('vtype-mobil').classList.remove('selected');['vName','vPlate'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('vKm').value='0';openModal('vehicleModal');}
 function openEditVehicleModal(id){
   editingVehicleId=id;var v=getV(id);if(!v)return;
   selectedEVType=v.type;selectedEColor=v.color||'#f5f5f5';
@@ -1710,7 +1759,7 @@ function openEditVehicleModal(id){
   document.getElementById('evName').value=v.name;document.getElementById('evPlate').value=v.plate;
   document.getElementById('evYear').value=v.year||new Date().getFullYear();
   document.getElementById('evKm').value=v.km||0;
-  buildColorGrid('evColorGrid',selectedEColor,'pickColor');openModal('editVehicleModal');
+  openModal('editVehicleModal');
 }
 function selectVType(t){selectedVType=t;document.getElementById('vtype-motor').classList.toggle('selected',t==='motor');document.getElementById('vtype-mobil').classList.toggle('selected',t==='mobil');}
 function selectEVType(t){selectedEVType=t;document.getElementById('evtype-motor').classList.toggle('selected',t==='motor');document.getElementById('evtype-mobil').classList.toggle('selected',t==='mobil');}
@@ -1720,15 +1769,25 @@ function saveService(){
   var vid=document.getElementById('svcVehicle').value,date=document.getElementById('svcDate').value;
   var km=document.getElementById('svcKm').value,cost=document.getElementById('svcCost').value;
   var place=document.getElementById('svcPlace').value.trim(),note=document.getElementById('svcNote').value.trim();
-  if(!vid){alert('Pilih kendaraan!');return;}
+  if(!vid){showToast('⚠️ Pilih kendaraan!');return;}
   var allTypes=selectedType.concat(svcCustomTypes);
-  if(!allTypes.length){alert('Pilih minimal satu jenis servis!');return;}
-  if(!date){alert('Isi tanggal!');return;}
+  if(!allTypes.length){showToast('⚠️ Pilih minimal satu jenis servis!');return;}
+  if(!date){showToast('⚠️ Isi tanggal!');return;}
+  // Edit mode: update entry yang ada
+  if(_editingEntryKind==='service'&&_editingEntryId){
+    var idx=services.findIndex(function(s){return s.id===_editingEntryId;});
+    if(idx>=0){
+      services[idx].vehicleId=vid;services[idx].type=allTypes[0];services[idx].date=date;
+      services[idx].km=km||null;services[idx].cost=cost||null;services[idx].place=place;services[idx].note=note;
+      if(km)vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
+    }
+    _editingEntryId=null;_editingEntryKind=null;
+    saveData();closeModal('serviceModal');activeVehicleId=vid;renderAll();return;
+  }
   var newCustomComps=[];
   allTypes.forEach(function(type){
     services.push({id:'s'+Date.now()+'_'+Math.floor(Math.random()*9999),vehicleId:vid,type:type,date:date,km:km||null,cost:cost?Math.round(+cost/allTypes.length):null,place:place,note:note});
     if(km)vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
-    // If custom type not already in compSettings, add it inactive
     if(svcCustomTypes.indexOf(type)>=0&&!getComp(vid,type)){
       if(!compSettings[vid])compSettings[vid]=[];
       compSettings[vid].push({name:type,svgKey:'Lainnya',km:0,mo:0,active:false,custom:true});
@@ -1740,18 +1799,44 @@ function saveService(){
 }
 function saveFuel(){
   var vid=document.getElementById('fuelVehicle').value,date=document.getElementById('fuelDate').value;
-  var km=document.getElementById('fuelKm').value,liter=document.getElementById('fuelLiter').value;
-  var cost=document.getElementById('fuelCost').value,type=document.getElementById('fuelType').value;
+  var km=document.getElementById('fuelKm').value;
+  var cost=document.getElementById('fuelCost').value;
   var note=document.getElementById('fuelNote').value.trim();
-  if(!vid){alert('Pilih kendaraan!');return;}if(!date){alert('Isi tanggal!');return;}
-  fuels.push({id:'f'+Date.now(),vehicleId:vid,date:date,km:km||null,liter:liter||null,cost:cost||null,type:type,note:note});
+  if(!vid){showToast('⚠️ Pilih kendaraan!');return;}
+  if(!date){showToast('⚠️ Isi tanggal!');return;}
+  // Edit mode
+  if(_editingEntryKind==='fuel'&&_editingEntryId){
+    var idx=fuels.findIndex(function(f){return f.id===_editingEntryId;});
+    if(idx>=0){
+      fuels[idx].vehicleId=vid;fuels[idx].date=date;fuels[idx].km=km||null;
+      fuels[idx].cost=cost||null;fuels[idx].note=note;
+      if(km)vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
+    }
+    _editingEntryId=null;_editingEntryKind=null;
+    saveData();closeModal('fuelModal');activeVehicleId=vid;renderAll();return;
+  }
+  fuels.push({id:'f'+Date.now(),vehicleId:vid,date:date,km:km||null,cost:cost||null,note:note});
   if(km)vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
   saveData();closeModal('fuelModal');activeVehicleId=vid;renderAll();
 }
 function saveOdo(){
   var vid=document.getElementById('odoVehicle').value,km=document.getElementById('odoKm').value;
   var date=document.getElementById('odoDate').value,note=document.getElementById('odoNote').value.trim();
-  if(!vid){alert('Pilih kendaraan!');return;}if(!km){alert('Isi KM!');return;}
+  if(!vid){showToast('⚠️ Pilih kendaraan!');return;}if(!km){showToast('⚠️ Isi KM!');return;}
+  // Validasi: KM tidak boleh lebih rendah dari odometer terakhir (kecuali sedang edit entry yang sama)
+  var curKm=getCurKm(vid);
+  var isEditingSelf=(_editingEntryKind==='odo'&&_editingEntryId);
+  if(!isEditingSelf&&curKm>0&&+km<curKm){
+    showToast('⚠️ KM tidak boleh lebih rendah dari odometer saat ini ('+Number(curKm).toLocaleString('id-ID')+' km)');return;
+  }
+  // Edit mode
+  if(isEditingSelf){
+    var idx=odos.findIndex(function(o){return o.id===_editingEntryId;});
+    if(idx>=0){odos[idx].vehicleId=vid;odos[idx].date=date;odos[idx].km=+km;odos[idx].note=note;
+      vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});}
+    _editingEntryId=null;_editingEntryKind=null;
+    saveData();closeModal('odoModal');activeVehicleId=vid;renderAll();return;
+  }
   odos.push({id:'o'+Date.now(),vehicleId:vid,date:date,km:+km,note:note});
   vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
   saveData();closeModal('odoModal');activeVehicleId=vid;renderAll();
@@ -1814,9 +1899,33 @@ function clearAllData(){
 // PROFILE
 var userProfile=JSON.parse(localStorage.getItem('al_profile')||'{}');
 function renderProfileRow(){
+  var isGoogle=localStorage.getItem('kn_session')&&localStorage.getItem('kn_session').indexOf('google:')===0;
   var n=userProfile.name||'',e=userProfile.info||'';
-  document.getElementById('profileNameDisplay').textContent=n||'Atur Nama Profil';
-  document.getElementById('profileEmailDisplay').textContent=e||'Ketuk untuk mengatur';
+  document.getElementById('profileNameDisplay').textContent=n||(isGoogle?'Akun Google':'Atur Nama Profil');
+  document.getElementById('profileEmailDisplay').textContent=e||(isGoogle?'Login via Google':'Ketuk untuk mengatur');
+  // Avatar kanan atas: foto Google jika ada, fallback ikon
+  var avatarEls=document.querySelectorAll('.avatar');
+  avatarEls.forEach(function(av){
+    if(isGoogle&&userProfile.picture){
+      av.innerHTML='<img src="'+userProfile.picture+'" style="width:42px;height:42px;border-radius:14px;object-fit:cover;" onerror="this.parentElement.innerHTML=\'<svg viewBox=\\\"0 0 24 24\\\" fill=\\\"none\\\" stroke=\\\"#0f1117\\\" stroke-width=\\\"2\\\" stroke-linecap=\\\"round\\\" stroke-linejoin=\\\"round\\\"><path d=\\\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\\\"/><circle cx=\\\"12\\\" cy=\\\"7\\\" r=\\\"4\\\"/></svg>\'">';
+    } else {
+      av.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#0f1117" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    }
+  });
+  // Row profil di pengaturan: kalau Google, tidak bisa diklik untuk edit
+  var profileRow=document.getElementById('profileRow');
+  if(profileRow){
+    if(isGoogle){
+      profileRow.onclick=function(){showToast('ℹ️ Profil diambil otomatis dari akun Google.');};
+      // Tampilkan foto di settings row juga
+      var iconEl=profileRow.querySelector('.settings-row-icon');
+      if(iconEl&&userProfile.picture){
+        iconEl.innerHTML='<img src="'+userProfile.picture+'" style="width:24px;height:24px;border-radius:7px;object-fit:cover;">';
+      }
+    } else {
+      profileRow.onclick=openProfilePopup;
+    }
+  }
 }
 function openProfilePopup(){
   document.getElementById('profileName').value=userProfile.name||'';
