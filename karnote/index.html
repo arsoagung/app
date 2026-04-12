@@ -652,11 +652,7 @@ canvas{display:block;}
       </div>
     </div>
 
-    <div style="text-align:center;padding:16px 0 4px;font-size:11px;color:var(--text3)">KarNote · Versi 1.2.0</div>
-    <div style="text-align:center;padding:0 24px 12px;font-size:10px;color:var(--text3);line-height:1.7">
-      <b style="color:var(--text2)">v1.2.0</b> — Ikon kendaraan aktif jadi hitam; hapus aksen bar warna di tab kendaraan tidak aktif; bersihkan kode warna tak terpakai<br>
-      <b style="color:var(--text2)">v1.1.0</b> — Sinkronisasi Supabase &amp; Google SSO
-    </div>
+    <div style="text-align:center;padding:16px 0 4px;font-size:11px;color:var(--text3)">KarNote · Versi 1.2.1</div>
   </div>
 </main>
 </div>
@@ -1317,6 +1313,7 @@ function deleteCurrentEntry(){
   if(currentEntryKind==='service')services=services.filter(function(x){return x.id!==currentEntryId;});
   else if(currentEntryKind==='fuel')fuels=fuels.filter(function(x){return x.id!==currentEntryId;});
   else odos=odos.filter(function(x){return x.id!==currentEntryId;});
+  deleteFromSupabase('entries',currentEntryId);
   saveData();closeEntryPopup();renderAll();
 }
 var _editingEntryId=null,_editingEntryKind=null;
@@ -1858,14 +1855,19 @@ function saveEditVehicle(){
 function deleteVehicle(){
   if(!confirm('Hapus kendaraan ini beserta semua datanya?'))return;
   var vid=editingVehicleId;
-  // Hapus entries kendaraan ini dari Supabase
+  // Kumpulkan id entries sebelum dihapus dari array lokal
+  var entryIds=[];
+  services.forEach(function(s){if(s.vehicleId===vid)entryIds.push(s.id);});
+  fuels.forEach(function(f){if(f.vehicleId===vid)entryIds.push(f.id);});
+  odos.forEach(function(o){if(o.vehicleId===vid)entryIds.push(o.id);});
+  // Hapus dari Supabase
   if(_currentUserId && window._supabase){
-    window._supabase.from('entries').delete().eq('user_id',_currentUserId)
-      .in('id', services.filter(function(s){return s.vehicleId===vid;}).map(function(s){return s.id;})
-        .concat(fuels.filter(function(f){return f.vehicleId===vid;}).map(function(f){return f.id;}))
-        .concat(odos.filter(function(o){return o.vehicleId===vid;}).map(function(o){return o.id;})));
-    window._supabase.from('vehicles').delete().eq('id',vid).eq('user_id',_currentUserId);
+    if(entryIds.length){
+      window._supabase.from('entries').delete().eq('user_id',_currentUserId).in('id',entryIds).then(function(){});
+    }
+    window._supabase.from('vehicles').delete().eq('id',vid).eq('user_id',_currentUserId).then(function(){});
   }
+  // Hapus data lokal
   vehicles=vehicles.filter(function(v){return v.id!==vid;});
   services=services.filter(function(s){return s.vehicleId!==vid;});
   fuels=fuels.filter(function(f){return f.vehicleId!==vid;});
@@ -1903,15 +1905,7 @@ function renderProfileRow(){
   var n=userProfile.name||'',e=userProfile.info||'';
   document.getElementById('profileNameDisplay').textContent=n||(isGoogle?'Akun Google':'Atur Nama Profil');
   document.getElementById('profileEmailDisplay').textContent=e||(isGoogle?'Login via Google':'Ketuk untuk mengatur');
-  // Avatar kanan atas: foto Google jika ada, fallback ikon
-  var avatarEls=document.querySelectorAll('.avatar');
-  avatarEls.forEach(function(av){
-    if(isGoogle&&userProfile.picture){
-      av.innerHTML='<img src="'+userProfile.picture+'" style="width:42px;height:42px;border-radius:14px;object-fit:cover;" onerror="this.parentElement.innerHTML=\'<svg viewBox=\\\"0 0 24 24\\\" fill=\\\"none\\\" stroke=\\\"#0f1117\\\" stroke-width=\\\"2\\\" stroke-linecap=\\\"round\\\" stroke-linejoin=\\\"round\\\"><path d=\\\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\\\"/><circle cx=\\\"12\\\" cy=\\\"7\\\" r=\\\"4\\\"/></svg>\'">';
-    } else {
-      av.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#0f1117" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-    }
-  });
+  // Avatar kanan atas header: selalu tampilkan ikon settings (bukan foto profil)
   // Row profil di pengaturan: kalau Google, tidak bisa diklik untuk edit
   var profileRow=document.getElementById('profileRow');
   if(profileRow){
