@@ -212,6 +212,12 @@ canvas{display:block;}
 .settings-row-arr{color:var(--text3);font-size:16px;margin-left:8px;}
 .svr-name{font-size:13px;font-weight:600;}
 .svr-meta{font-size:11px;color:var(--text3);}
+/* drag vehicle reorder */
+.drag-handle{width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:grab;flex-shrink:0;color:var(--text3);touch-action:none;}
+.drag-handle:active{cursor:grabbing;}
+.drag-handle svg{width:14px;height:14px;}
+.settings-row.dragging{opacity:.4;background:var(--card2);}
+.settings-row.drag-over{background:rgba(157,224,65,.07);}
 /* old compat */
 .pv-item{background:var(--card);border-radius:var(--r);padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:8px;position:relative;overflow:hidden;}
 .pv-color-bar{position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:2px 0 0 2px;}
@@ -652,7 +658,7 @@ canvas{display:block;}
       </div>
     </div>
 
-    <div style="text-align:center;padding:16px 0 4px;font-size:11px;color:var(--text3)">KarNote · Versi 1.2.1</div>
+    <div style="text-align:center;padding:16px 0 4px;font-size:11px;color:var(--text3)">KarNote · Versi 1.2.2</div>
   </div>
 </main>
 </div>
@@ -1002,6 +1008,11 @@ function fKm(n){return Number(n).toLocaleString('id-ID')+' km';}
 function fRp(n){
   n=Number(n);
   if(!n) return '—';
+  return 'Rp '+n.toLocaleString('id-ID');
+}
+function fRpShort(n){
+  n=Number(n);
+  if(!n) return '—';
   if(n>=1000000) return 'Rp '+Math.round(n/100000)/10+'jt';
   if(n>=1000) return 'Rp '+Math.round(n/1000)+'rb';
   return 'Rp '+n.toLocaleString('id-ID');
@@ -1095,7 +1106,7 @@ function renderStats(){
   document.getElementById('statTotal').textContent=vS.length;
   var tot=0;vS.forEach(function(s){if(s.cost)tot+=+s.cost;});
   var ft=0;fuels.filter(function(f){return f.vehicleId===activeVehicleId;}).forEach(function(f){if(f.cost)ft+=+f.cost;});
-  document.getElementById('statCost').textContent=fRp(tot+ft);
+  document.getElementById('statCost').textContent=fRpShort(tot+ft);
 }
 
 function renderAlerts(){
@@ -1237,19 +1248,21 @@ function closeRemPopup(){document.getElementById('remPopup').classList.remove('o
 
 // PROFILE / SETTINGS
 function renderProfile(){
-  // Settings vehicle list
+  // Settings vehicle list — with drag-to-reorder
   var el=document.getElementById('settingsVehicleList');
   if(!el)return;
   if(!vehicles.length){el.innerHTML='';return;}
   el.innerHTML=vehicles.map(function(v){
     var cnt=0;services.forEach(function(s){if(s.vehicleId===v.id)cnt++;});
     var ac=v.color||'#9de041';
-    return '<div class="settings-row" onclick="openEditVehicleModal(\''+v.id+'\')">'
-      +'<div class="settings-row-left">'
+    return '<div class="settings-row" draggable="true" data-vid="'+v.id+'" style="cursor:default">'
+      +'<div class="drag-handle" title="Seret untuk urut ulang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/></svg></div>'
+      +'<div class="settings-row-left" style="flex:1;cursor:pointer" onclick="openEditVehicleModal(\''+v.id+'\')">'
       +'<div class="settings-row-icon" style="background:'+hexAlpha(ac,.15)+'">'+getVehicleIconColored(v.type,ac,16)+'</div>'
       +'<div class="settings-row-text"><div class="settings-row-label">'+v.name+'</div><div class="settings-row-sub">'+v.plate+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
-      +'</div><div class="settings-row-arr">›</div></div>';
+      +'</div><div class="settings-row-arr" style="cursor:pointer" onclick="openEditVehicleModal(\''+v.id+'\')">›</div></div>';
   }).join('');
+  initVehicleDragSort(el);
   // also keep old profileVehicleList if exists
   var el2=document.getElementById('profileVehicleList');if(!el2)return;
   el2.innerHTML=vehicles.map(function(v){
@@ -1261,6 +1274,71 @@ function renderProfile(){
       +'<div class="pv-info"><div class="pv-name">'+v.name+'</div><div class="pv-meta">'+v.plate+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
       +'<svg class="pv-arr" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>';
   }).join('');
+}
+
+function initVehicleDragSort(container){
+  var dragged=null;
+  var rows=container.querySelectorAll('.settings-row[draggable]');
+  rows.forEach(function(row){
+    // Desktop drag
+    row.addEventListener('dragstart',function(e){
+      dragged=row;row.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    row.addEventListener('dragend',function(){
+      row.classList.remove('dragging');
+      container.querySelectorAll('.settings-row').forEach(function(r){r.classList.remove('drag-over');});
+      dragged=null;
+    });
+    row.addEventListener('dragover',function(e){
+      e.preventDefault();e.dataTransfer.dropEffect='move';
+      if(row!==dragged){
+        container.querySelectorAll('.settings-row').forEach(function(r){r.classList.remove('drag-over');});
+        row.classList.add('drag-over');
+      }
+    });
+    row.addEventListener('drop',function(e){
+      e.preventDefault();
+      if(dragged&&dragged!==row){applyVehicleReorder(dragged,row,container);}
+      row.classList.remove('drag-over');
+    });
+    // Touch drag
+    var touchStartY=0,touchRowH=0;
+    row.querySelector('.drag-handle').addEventListener('touchstart',function(e){
+      dragged=row;touchStartY=e.touches[0].clientY;touchRowH=row.offsetHeight;
+      row.classList.add('dragging');e.preventDefault();
+    },{passive:false});
+    row.querySelector('.drag-handle').addEventListener('touchmove',function(e){
+      e.preventDefault();
+      var y=e.touches[0].clientY;
+      var els=Array.from(container.querySelectorAll('.settings-row[draggable]'));
+      container.querySelectorAll('.settings-row').forEach(function(r){r.classList.remove('drag-over');});
+      for(var i=0;i<els.length;i++){
+        var rect=els[i].getBoundingClientRect();
+        if(y>=rect.top&&y<=rect.bottom&&els[i]!==dragged){els[i].classList.add('drag-over');break;}
+      }
+    },{passive:false});
+    row.querySelector('.drag-handle').addEventListener('touchend',function(e){
+      var target=container.querySelector('.settings-row.drag-over');
+      if(target&&target!==dragged)applyVehicleReorder(dragged,target,container);
+      container.querySelectorAll('.settings-row').forEach(function(r){r.classList.remove('drag-over','dragging');});
+      dragged=null;
+    });
+  });
+}
+
+function applyVehicleReorder(fromRow,toRow,container){
+  var fromId=fromRow.getAttribute('data-vid');
+  var toId=toRow.getAttribute('data-vid');
+  var fi=vehicles.findIndex(function(v){return v.id===fromId;});
+  var ti=vehicles.findIndex(function(v){return v.id===toId;});
+  if(fi<0||ti<0)return;
+  var moved=vehicles.splice(fi,1)[0];
+  vehicles.splice(ti,0,moved);
+  saveData();
+  renderProfile();
+  renderVC('vehicleScroll');renderVC('vehicleScrollStat');renderVC('vehicleScrollRiwayat');renderVC('vehicleScrollPengingat');
+  showToast('✅ Urutan kendaraan diperbarui');
 }
 
 // ENTRY DETAIL POPUP
