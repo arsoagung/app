@@ -491,6 +491,45 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
 .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px));border-radius:30px;padding:12px 20px;background:rgba(34,34,30,.92);}
 
 .log-item,.stat-card,.vehicle-card,.rem-card,.stat-tile,.chart-card,.pv-item{animation-fill-mode:backwards;}
+/* ===== v2.1: no white, icon-only nav, hero photo ===== */
+.banner-card{--lime:#e6ff3d;--text:#fff;--text2:var(--text2);background:var(--card);box-shadow:none;}
+.banner-card{--text2:#a3a299;}
+.banner-label{color:var(--text2);}
+.banner-value{color:#e6ff3d;}
+.banner-sub{color:var(--text2);}
+.banner-icon{background:#e6ff3d;color:#151513;}
+.stats-row .stat-card:first-child{background:var(--card);--text:#fff;--text3:#6a6961;--text2:#a3a299;--lime:#e6ff3d;color:#fff;}
+.nav-item span{display:none;}
+.nav-item{width:52px;height:48px;min-width:0;padding:0;justify-content:center;border-radius:26px;gap:0;}
+.nav-item svg{width:23px;height:23px;}
+.nav-item.active{color:#e6ff3d;background:rgba(230,255,61,.14);}
+.bottom-nav{padding:8px 10px;}
+
+/* hero photo 16:9 */
+.hero-photo{position:relative;aspect-ratio:16/9;border-radius:32px;overflow:hidden;background:var(--card2);margin-bottom:0;z-index:1;box-shadow:0 20px 40px -22px rgba(0,0,0,.8);}
+.hero-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(19,19,17,0) 45%,rgba(19,19,17,.78) 100%);pointer-events:none;z-index:2;}
+.hero-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .45s ease;}
+.hero-img.on{opacity:1;animation:heroin .7s cubic-bezier(.22,1,.36,1);}
+@keyframes heroin{from{transform:scale(1.07)}to{transform:scale(1)}}
+.hero-empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);background:radial-gradient(80% 90% at 50% 0%,rgba(230,255,61,.1),transparent 70%),var(--card);z-index:1;}
+.hero-empty.show{display:flex;}
+.hero-empty svg{width:34px;height:34px;}
+#vehicleScroll{position:relative;z-index:3;margin-top:-38px;padding:0 2px 4px;}
+#vehicleScroll .vehicle-card{box-shadow:0 12px 26px -12px rgba(0,0,0,.7);}
+#vehicleScroll .vehicle-card:not(.active){background:rgba(34,34,30,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);}
+#vehicleScroll .vehicle-add{box-shadow:none;background:rgba(34,34,30,.55);}
+
+/* photo picker in modals */
+.photo-pick{position:relative;aspect-ratio:16/9;border-radius:24px;background:var(--bg);border:2px dashed var(--text3);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-direction:column;gap:6px;transition:transform .4s var(--spring);}
+.photo-pick:active{transform:scale(.97);}
+.photo-pick svg{width:28px;height:28px;}
+.photo-pick span{font-size:12px;font-weight:600;}
+.photo-pick img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;}
+.photo-pick.has{border-style:solid;border-color:transparent;}
+.photo-pick.has img{display:block;}
+.photo-pick.has svg,.photo-pick.has span{display:none;}
+.photo-hint{font-size:11px;color:var(--text3);margin-top:6px;}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important;}}
 
 </style>
@@ -521,6 +560,7 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
 <main>
   <!-- BERANDA -->
   <div class="page active" id="page-beranda">
+    <div class="hero-photo" id="heroPhoto"><div class="hero-img" id="heroImgA"></div><div class="hero-img" id="heroImgB"></div><div class="hero-empty" id="heroEmpty" onclick="heroEmptyTap()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div></div>
     <div id="vehicleScroll" class="vehicle-scroll"></div>
     <div class="banner-card" onclick="showTab('statistik')">
       <div class="banner-accent-bar"></div>
@@ -787,19 +827,19 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item active" id="nav-beranda" onclick="showTab('beranda')">
+  <div class="nav-item active" id="nav-beranda" role="button" aria-label="Beranda" onclick="showTab('beranda')">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Beranda</span>
   </div>
-  <div class="nav-item" id="nav-statistik" onclick="showTab('statistik')">
+  <div class="nav-item" id="nav-statistik" role="button" aria-label="Statistik" onclick="showTab('statistik')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Statistik</span>
   </div>
-  <button class="nav-fab" id="navFab" onclick="toggleAddPopup()">
+  <button class="nav-fab" id="navFab" aria-label="Tambah catatan" onclick="toggleAddPopup()">
     <svg id="fabIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
-  <div class="nav-item" id="nav-riwayat" onclick="showTab('riwayat')">
+  <div class="nav-item" id="nav-riwayat" role="button" aria-label="Riwayat" onclick="showTab('riwayat')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Riwayat</span>
   </div>
-  <div class="nav-item" id="nav-pengingat" onclick="showTab('pengingat')">
+  <div class="nav-item" id="nav-pengingat" role="button" aria-label="Pengingat" onclick="showTab('pengingat')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Pengingat</span>
   </div>
 </div>
@@ -859,6 +899,7 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
 <!-- MODAL TAMBAH KENDARAAN -->
 <div class="modal-overlay" id="vehicleModal"><div class="modal">
   <div class="modal-handle"></div><div class="modal-title">Tambah Kendaraan</div>
+  <div class="form-group"><label class="form-label">Foto kendaraan</label><div class="photo-pick" id="vPhotoPick" onclick="document.getElementById('vPhotoFile').click()"><img id="vPhotoPrev" alt=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Pilih foto (wajib)</span></div><input type="file" accept="image/*" id="vPhotoFile" style="display:none" onchange="pickPhoto(this,'v')"><div class="photo-hint">Otomatis dipotong rasio 16:9 dan dikecilkan.</div></div>
   <div class="form-group"><label class="form-label">Tipe</label>
     <div class="vtype-row">
       <div class="vtype-btn" id="vtype-motor" onclick="selectVType('motor')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:28px;height:28px;fill:currentColor"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07c-10.58-4.81-73.29-30.12-73.8-30.26a8,8,0,0,0-5,15.19S68.57,109.4,79.6,120.4A55.67,55.67,0,0,1,95.43,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>Motor</div>
@@ -878,6 +919,7 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
 <div class="modal-overlay" id="editVehicleModal"><div class="modal">
   <div class="modal-handle"></div>
   <div class="modal-title-row"><div class="modal-title">Edit Kendaraan</div><button class="btn-delete" onclick="deleteVehicle()">Hapus</button></div>
+  <div class="form-group"><label class="form-label">Foto kendaraan</label><div class="photo-pick" id="evPhotoPick" onclick="document.getElementById('evPhotoFile').click()"><img id="evPhotoPrev" alt=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Ganti foto</span></div><input type="file" accept="image/*" id="evPhotoFile" style="display:none" onchange="pickPhoto(this,'ev')"><div class="photo-hint">Otomatis dipotong rasio 16:9 dan dikecilkan.</div></div>
   <div class="form-group"><label class="form-label">Tipe</label>
     <div class="vtype-row">
       <div class="vtype-btn" id="evtype-motor" onclick="selectEVType('motor')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:28px;height:28px;fill:currentColor"><path d="M216,120a41,41,0,0,0-6.6.55l-5.82-15.14A55.64,55.64,0,0,1,216,104a8,8,0,0,0,0-16H196.88L183.47,53.13A8,8,0,0,0,176,48H144a8,8,0,0,0,0,16h26.51l9.23,24H152c-18.5,0-33.5,4.31-43.37,12.46a16,16,0,0,1-16.76,2.07c-10.58-4.81-73.29-30.12-73.8-30.26a8,8,0,0,0-5,15.19S68.57,109.4,79.6,120.4A55.67,55.67,0,0,1,95.43,152H79.2a40,40,0,1,0,0,16h52.12a31.91,31.91,0,0,0,30.74-23.1,56,56,0,0,1,26.59-33.72l5.82,15.13A40,40,0,1,0,216,120ZM40,168H62.62a24,24,0,1,1,0-16H40a8,8,0,0,0,0,16Zm176,16a24,24,0,0,1-15.58-42.23l8.11,21.1a8,8,0,1,0,14.94-5.74L215.35,136l.65,0a24,24,0,0,1,0,48Z"/></svg>Motor</div>
@@ -1145,7 +1187,7 @@ function showTab(tab){
 
 function renderAll(){
   ['vehicleScroll','vehicleScrollStat','vehicleScrollRiwayat','vehicleScrollPengingat','vehicleScrollPengaturan'].forEach(renderVC);
-  renderBanner();renderStats();renderAlerts();renderRecent();
+  renderBanner();renderHero();renderStats();renderAlerts();renderRecent();
   renderAllLogs();renderReminders();renderProfile();renderCompSettings();
   if(currentTab==='statistik'){populateStatYears();renderStatistik();}
 }
@@ -1910,9 +1952,9 @@ function removeCustomType(el,val){svcCustomTypes=svcCustomTypes.filter(function(
 
 function openFuelModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('fuelVehicle');['fuelKm','fuelCost','fuelNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('fuelDate').value=todayStr;openModal('fuelModal');}
 function openOdoModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('odoVehicle');['odoKm','odoNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('odoDate').value=todayStr;openModal('odoModal');}
-function openVehicleModal(){selectedVType='';document.getElementById('vtype-motor').classList.remove('selected');document.getElementById('vtype-mobil').classList.remove('selected');['vName','vPlate'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('vKm').value='0';openModal('vehicleModal');}
+function openVehicleModal(){resetPhotoPick('v');selectedVType='';document.getElementById('vtype-motor').classList.remove('selected');document.getElementById('vtype-mobil').classList.remove('selected');['vName','vPlate'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('vKm').value='0';openModal('vehicleModal');}
 function openEditVehicleModal(id){
-  editingVehicleId=id;var v=getV(id);if(!v)return;
+  editingVehicleId=id;var v=getV(id);if(!v)return;resetPhotoPick('ev',v.photo);
   selectedEVType=v.type;selectedEColor=v.color||'#f5f5f5';
   document.getElementById('evtype-motor').classList.toggle('selected',v.type==='motor');
   document.getElementById('evtype-mobil').classList.toggle('selected',v.type==='mobil');
@@ -2001,18 +2043,113 @@ function saveOdo(){
   vehicles.forEach(function(v){if(v.id===vid&&+km>+v.km)v.km=+km;});
   saveData();closeModal('odoModal');activeVehicleId=vid;renderAll();
 }
+
+/* ===== FOTO KENDARAAN (16:9, Supabase Storage) ===== */
+var PHOTO_BUCKET='karnote-photos';
+var _pendingPhoto={v:null,ev:null},_photoBusy={},_heroCur=null,_heroLayer=0;
+function phGet(p){try{return localStorage.getItem('kn_img_'+p);}catch(e){return null;}}
+function phSet(p,d){try{localStorage.setItem('kn_img_'+p,d);}catch(e){}}
+function phFlag(p,v){try{if(v===undefined)return localStorage.getItem('kn_up_'+p);if(v)localStorage.setItem('kn_up_'+p,'1');else localStorage.removeItem('kn_up_'+p);}catch(e){}}
+function blobToDataUrl(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result);};r.onerror=rej;r.readAsDataURL(b);});}
+function compressPhoto(file){
+  return new Promise(function(res,rej){
+    var url=URL.createObjectURL(file),img=new Image();
+    img.onload=function(){
+      var W=960,H=540,c=document.createElement('canvas');c.width=W;c.height=H;
+      var x=c.getContext('2d'),s=Math.max(W/img.width,H/img.height),w=img.width*s,h=img.height*s;
+      x.drawImage(img,(W-w)/2,(H-h)/2,w,h);URL.revokeObjectURL(url);
+      function fin(b){blobToDataUrl(b).then(function(d){res({blob:b,dataUrl:d});},rej);}
+      c.toBlob(function(b){
+        if(b&&b.type==='image/webp')return fin(b);
+        c.toBlob(function(j){j?fin(j):rej(new Error('gagal'));},'image/jpeg',.8);
+      },'image/webp',.8);
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);rej(new Error('bukan gambar'));};
+    img.src=url;
+  });
+}
+function pickPhoto(inp,k){
+  var f=inp.files&&inp.files[0];if(!f)return;
+  compressPhoto(f).then(function(p){
+    _pendingPhoto[k]=p;
+    document.getElementById(k+'PhotoPrev').src=p.dataUrl;
+    document.getElementById(k+'PhotoPick').classList.add('has');
+  }).catch(function(){showToast('Foto gagal dibaca, coba gambar lain');});
+  inp.value='';
+}
+function resetPhotoPick(k,path){
+  _pendingPhoto[k]=null;
+  var box=document.getElementById(k+'PhotoPick'),im=document.getElementById(k+'PhotoPrev'),d=path?phGet(path):null;
+  im.src=d||'';box.classList.toggle('has',!!d);
+}
+function uploadPhoto(path,blob){
+  if(!_currentUserId||!window._supabase)return;
+  window._supabase.storage.from(PHOTO_BUCKET).upload(path,blob,{contentType:blob.type,upsert:true}).then(function(r){
+    if(r.error){console.warn('Upload foto gagal:',r.error.message);return;}
+    phFlag(path,true);
+  }).catch(function(){});
+}
+function commitPhoto(vid,p,oldPath){
+  var ext=p.blob.type==='image/webp'?'webp':'jpg';
+  var path=(_currentUserId||'guest')+'/'+vid+'-'+Date.now()+'.'+ext;
+  phSet(path,p.dataUrl);_photoBusy[path]=1;uploadPhoto(path,p.blob);
+  if(oldPath)removePhoto(oldPath);
+  return path;
+}
+function removePhoto(path){
+  if(!path)return;
+  try{localStorage.removeItem('kn_img_'+path);localStorage.removeItem('kn_up_'+path);}catch(e){}
+  if(_currentUserId&&window._supabase)window._supabase.storage.from(PHOTO_BUCKET).remove([path]).then(function(){}).catch(function(){});
+}
+// ambil foto dari server kalau belum ada di perangkat, atau kirim ulang yang belum terupload
+function syncPhoto(path){
+  if(_photoBusy[path]||!_currentUserId||!window._supabase)return;
+  var d=phGet(path);
+  _photoBusy[path]=1;
+  if(d){
+    if(!phFlag(path)){fetch(d).then(function(r){return r.blob();}).then(function(b){uploadPhoto(path,b);}).catch(function(){});}
+    return;
+  }
+  window._supabase.storage.from(PHOTO_BUCKET).download(path).then(function(r){
+    if(r.error||!r.data){delete _photoBusy[path];return;}
+    return blobToDataUrl(r.data).then(function(u){phSet(path,u);phFlag(path,true);_heroCur=null;renderHero();});
+  }).catch(function(){delete _photoBusy[path];});
+}
+function renderHero(){
+  var empty=document.getElementById('heroEmpty');if(!empty)return;
+  var v=getV(activeVehicleId),path=v&&v.photo,d=path?phGet(path):null;
+  if(path)syncPhoto(path);
+  var A=document.getElementById('heroImgA'),B=document.getElementById('heroImgB');
+  var key=d?path:'';
+  if(key===_heroCur)return;
+  _heroCur=key;
+  if(!d){A.classList.remove('on');B.classList.remove('on');empty.classList.add('show');return;}
+  empty.classList.remove('show');
+  _heroLayer=1-_heroLayer;
+  var on=_heroLayer?B:A,off=_heroLayer?A:B;
+  on.style.backgroundImage='url("'+d+'")';
+  on.classList.remove('on');void on.offsetWidth;on.classList.add('on');
+  off.classList.remove('on');
+}
+function heroEmptyTap(){
+  if(activeVehicleId)openEditVehicleModal(activeVehicleId);else openVehicleModal();
+}
+
 function saveVehicle(){
   var name=document.getElementById('vName').value.trim(),plate=document.getElementById('vPlate').value.trim().toUpperCase();
   var year=document.getElementById('vYear').value,km=document.getElementById('vKm').value||'0';
   if(!selectedVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
+  if(!_pendingPhoto['v']){alert('Tambah foto kendaraan dulu!');return;}
   var v={id:'v'+Date.now(),type:selectedVType,name:name,plate:plate,year:year,km:+km,color:selectedColor};
+  v.photo=commitPhoto(v.id,_pendingPhoto['v']);
   vehicles.push(v);activeVehicleId=v.id;ensureCompSettings();saveData();closeModal('vehicleModal');renderAll();
 }
 function saveEditVehicle(){
   var name=document.getElementById('evName').value.trim(),plate=document.getElementById('evPlate').value.trim().toUpperCase();
   var year=document.getElementById('evYear').value,km=document.getElementById('evKm').value||'0';
   if(!selectedEVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
-  vehicles.forEach(function(v){if(v.id===editingVehicleId){v.type=selectedEVType;v.name=name;v.plate=plate;v.year=year;v.km=+km;v.color=selectedEColor;}});
+  var newPhoto=_pendingPhoto['ev']?commitPhoto(editingVehicleId,_pendingPhoto['ev'],(getV(editingVehicleId)||{}).photo):null;
+  vehicles.forEach(function(v){if(v.id===editingVehicleId){v.type=selectedEVType;v.name=name;v.plate=plate;v.year=year;v.km=+km;v.color=selectedEColor;if(newPhoto)v.photo=newPhoto;}});
   saveData();closeModal('editVehicleModal');renderAll();
 }
 function deleteVehicle(){
@@ -2030,6 +2167,7 @@ function deleteVehicle(){
     }
     window._supabase.from('karnote_vehicles').delete().eq('id',vid).eq('user_id',_currentUserId).then(function(){});
   }
+  removePhoto((getV(vid)||{}).photo);
   // Hapus data lokal
   vehicles=vehicles.filter(function(v){return v.id!==vid;});
   services=services.filter(function(s){return s.vehicleId!==vid;});
