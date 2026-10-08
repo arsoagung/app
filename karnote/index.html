@@ -820,6 +820,8 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
     <div class="add-divider"></div>
     <div class="add-choice" onclick="closeAddPopup();openOdoModal()"><div class="add-ci ac-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="add-choice-label">Update Odometer</div><div class="add-choice-sub">Catat KM tanpa servis</div></div></div>
     <div class="add-divider"></div>
+    <div class="add-choice" onclick="closeAddPopup();openWashModal()"><div class="add-ci ac-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></div><div><div class="add-choice-label">Cuci Kendaraan</div><div class="add-choice-sub">Catat kapan terakhir dicuci</div></div></div>
+    <div class="add-divider"></div>
     <div class="add-choice" onclick="closeAddPopup();openServiceModal()"><div class="add-ci ac-lime"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div><div class="add-choice-label">Catat Servis</div><div class="add-choice-sub">Ganti oli, rem, aki, dll</div></div></div>
   </div>
 </div>
@@ -893,6 +895,18 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
   </div>
   <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="odoNote" style="min-height:60px" placeholder="Pulang mudik, dll..."></textarea></div>
   <button class="btn-primary" onclick="saveOdo()">Simpan</button>
+</div></div>
+
+<!-- MODAL CUCI -->
+<div class="modal-overlay" id="washModal"><div class="modal">
+  <div class="modal-handle"></div><div class="modal-title">Cuci Kendaraan</div>
+  <div class="form-group"><label class="form-label">Kendaraan</label><select class="form-select" id="washVehicle"></select></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="washDate"></div>
+    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="washCost" placeholder="Opsional"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="washNote" style="min-height:60px" placeholder="Tempat cuci, snow wash, dll..."></textarea></div>
+  <button class="btn-primary" onclick="saveWash()">Simpan</button>
 </div></div>
 
 <!-- MODAL TAMBAH KENDARAAN -->
@@ -1288,11 +1302,23 @@ function buildEntryHTML(entry,showDel){
     +'<div class="log-meta">'+meta+'</div></div>'
     +'<div class="log-km-r">'+(d.km?fKm(d.km):'')+'</div></div>';
 }
+// KM kendaraan ikut naik tiap catat odometer/bensin/servis; saat catatan dihapus, turunkan lagi
+function recalcVehicleKm(vid,delKm){
+  var v=getV(vid);if(!v)return;
+  // kendaraan lama tanpa baseKm: hanya hitung ulang kalau catatan yang dihapus memang sumber KM saat ini
+  if(v.baseKm==null&&+delKm!==+v.km)return;
+  var m=0;
+  [services,fuels,odos].forEach(function(a){a.forEach(function(e){if(e.vehicleId===vid&&e.km&&+e.km>m)m=+e.km;});});
+  v.km=Math.max(m,v.baseKm!=null?+v.baseKm:0);
+}
 function deleteEntry(kind,id){
   if(!confirm('Hapus catatan ini?'))return;
+  var _arr=kind==='service'?services:kind==='fuel'?fuels:odos,_del=null;
+  _arr.forEach(function(x){if(x.id===id)_del=x;});
   if(kind==='service'){services=services.filter(function(x){return x.id!==id;});deleteFromSupabase('karnote_entries',id);}
   else if(kind==='fuel'){fuels=fuels.filter(function(x){return x.id!==id;});deleteFromSupabase('karnote_entries',id);}
   else{odos=odos.filter(function(x){return x.id!==id;});deleteFromSupabase('karnote_entries',id);}
+  if(_del&&_del.km)recalcVehicleKm(_del.vehicleId,_del.km);
   saveData();renderAll();
 }
 function renderRecent(){
@@ -1950,6 +1976,15 @@ function addCustomType(){
 function removeCustomType(el,val){svcCustomTypes=svcCustomTypes.filter(function(t){return t!==val;});el.parentElement.remove();}
 
 function openFuelModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('fuelVehicle');['fuelKm','fuelCost','fuelNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('fuelDate').value=todayStr;openModal('fuelModal');}
+function openWashModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('washVehicle');['washCost','washNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('washDate').value=todayStr;openModal('washModal');}
+function saveWash(){
+  var vid=document.getElementById('washVehicle').value,date=document.getElementById('washDate').value;
+  var cost=document.getElementById('washCost').value,note=document.getElementById('washNote').value.trim();
+  if(!vid){showToast('⚠️ Pilih kendaraan!');return;}
+  if(!date){showToast('⚠️ Isi tanggal!');return;}
+  services.push({id:'s'+Date.now()+'_'+Math.floor(Math.random()*9999),vehicleId:vid,type:'Cuci',date:date,km:null,cost:cost||null,place:'',note:note});
+  saveData();closeModal('washModal');activeVehicleId=vid;renderAll();
+}
 function openOdoModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('odoVehicle');['odoKm','odoNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('odoDate').value=todayStr;openModal('odoModal');}
 function openVehicleModal(){resetPhotoPick('v');selectedVType='';document.getElementById('vtype-motor').classList.remove('selected');document.getElementById('vtype-mobil').classList.remove('selected');['vName','vPlate'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('vKm').value='0';openModal('vehicleModal');}
 function openEditVehicleModal(id){
@@ -2139,7 +2174,7 @@ function saveVehicle(){
   var year=document.getElementById('vYear').value,km=document.getElementById('vKm').value||'0';
   if(!selectedVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
   if(!_pendingPhoto['v']){alert('Tambah foto kendaraan dulu!');return;}
-  var v={id:'v'+Date.now(),type:selectedVType,name:name,plate:plate,year:year,km:+km,color:selectedColor};
+  var v={id:'v'+Date.now(),type:selectedVType,name:name,plate:plate,year:year,km:+km,baseKm:+km,color:selectedColor};
   v.photo=commitPhoto(v.id,_pendingPhoto['v']);
   vehicles.push(v);activeVehicleId=v.id;ensureCompSettings();saveData();closeModal('vehicleModal');renderAll();
 }
@@ -2148,7 +2183,7 @@ function saveEditVehicle(){
   var year=document.getElementById('evYear').value,km=document.getElementById('evKm').value||'0';
   if(!selectedEVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
   var newPhoto=_pendingPhoto['ev']?commitPhoto(editingVehicleId,_pendingPhoto['ev'],(getV(editingVehicleId)||{}).photo):null;
-  vehicles.forEach(function(v){if(v.id===editingVehicleId){v.type=selectedEVType;v.name=name;v.plate=plate;v.year=year;v.km=+km;v.color=selectedEColor;if(newPhoto)v.photo=newPhoto;}});
+  vehicles.forEach(function(v){if(v.id===editingVehicleId){v.type=selectedEVType;v.name=name;v.plate=plate;v.year=year;v.km=+km;v.baseKm=+km;v.color=selectedEColor;if(newPhoto)v.photo=newPhoto;}});
   saveData();closeModal('editVehicleModal');renderAll();
 }
 function deleteVehicle(){
