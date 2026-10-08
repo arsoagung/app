@@ -506,12 +506,11 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
 .bottom-nav{padding:8px 10px;}
 
 /* hero photo 16:9 */
-.hero-photo{position:relative;aspect-ratio:16/9;border-radius:32px;overflow:hidden;background:var(--card2);margin-bottom:0;z-index:1;box-shadow:0 20px 40px -22px rgba(0,0,0,.8);}
-.hero-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(19,19,17,0) 45%,rgba(19,19,17,.78) 100%);pointer-events:none;z-index:2;}
-.hero-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .45s ease;}
+.hero-photo{position:relative;aspect-ratio:16/9;margin:-14px -24px 0;background:none;z-index:1;}
+.hero-img{position:absolute;inset:0;background-size:100% 100%;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity .45s ease;}
 .hero-img.on{opacity:1;animation:heroin .7s cubic-bezier(.22,1,.36,1);}
 @keyframes heroin{from{transform:scale(1.07)}to{transform:scale(1)}}
-.hero-empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);background:radial-gradient(80% 90% at 50% 0%,rgba(230,255,61,.1),transparent 70%),var(--card);z-index:1;}
+.hero-empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);background:none;z-index:1;}
 .hero-empty.show{display:flex;}
 .hero-empty svg{width:34px;height:34px;}
 #vehicleScroll{position:relative;z-index:3;margin-top:-38px;padding:0 2px 4px;}
@@ -2061,7 +2060,7 @@ function compressPhoto(file){
       function fin(b){blobToDataUrl(b).then(function(d){res({blob:b,dataUrl:d});},rej);}
       c.toBlob(function(b){
         if(b&&b.type==='image/webp')return fin(b);
-        c.toBlob(function(j){j?fin(j):rej(new Error('gagal'));},'image/jpeg',.8);
+        c.toBlob(function(j){j?fin(j):rej(new Error('gagal'));},'image/png');
       },'image/webp',.8);
     };
     img.onerror=function(){URL.revokeObjectURL(url);rej(new Error('bukan gambar'));};
@@ -2090,7 +2089,7 @@ function uploadPhoto(path,blob){
   }).catch(function(){});
 }
 function commitPhoto(vid,p,oldPath){
-  var ext=p.blob.type==='image/webp'?'webp':'jpg';
+  var ext=p.blob.type==='image/webp'?'webp':'png';
   var path=(_currentUserId||'guest')+'/'+vid+'-'+Date.now()+'.'+ext;
   phSet(path,p.dataUrl);_photoBusy[path]=1;uploadPhoto(path,p.blob);
   if(oldPath)removePhoto(oldPath);
