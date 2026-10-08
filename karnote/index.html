@@ -1177,9 +1177,9 @@ function buildEntryHTML(entry,showDel){
 }
 function deleteEntry(kind,id){
   if(!confirm('Hapus catatan ini?'))return;
-  if(kind==='service'){services=services.filter(function(x){return x.id!==id;});deleteFromSupabase('entries',id);}
-  else if(kind==='fuel'){fuels=fuels.filter(function(x){return x.id!==id;});deleteFromSupabase('entries',id);}
-  else{odos=odos.filter(function(x){return x.id!==id;});deleteFromSupabase('entries',id);}
+  if(kind==='service'){services=services.filter(function(x){return x.id!==id;});deleteFromSupabase('karnote_entries',id);}
+  else if(kind==='fuel'){fuels=fuels.filter(function(x){return x.id!==id;});deleteFromSupabase('karnote_entries',id);}
+  else{odos=odos.filter(function(x){return x.id!==id;});deleteFromSupabase('karnote_entries',id);}
   saveData();renderAll();
 }
 function renderRecent(){
@@ -1404,7 +1404,7 @@ function deleteCurrentEntry(){
   if(currentEntryKind==='service')services=services.filter(function(x){return x.id!==currentEntryId;});
   else if(currentEntryKind==='fuel')fuels=fuels.filter(function(x){return x.id!==currentEntryId;});
   else odos=odos.filter(function(x){return x.id!==currentEntryId;});
-  deleteFromSupabase('entries',currentEntryId);
+  deleteFromSupabase('karnote_entries',currentEntryId);
   saveData();closeEntryPopup();renderAll();
 }
 var _editingEntryId=null,_editingEntryKind=null;
@@ -1954,9 +1954,9 @@ function deleteVehicle(){
   // Hapus dari Supabase
   if(_currentUserId && window._supabase){
     if(entryIds.length){
-      window._supabase.from('entries').delete().eq('user_id',_currentUserId).in('id',entryIds).then(function(){});
+      window._supabase.from('karnote_entries').delete().eq('user_id',_currentUserId).in('id',entryIds).then(function(){});
     }
-    window._supabase.from('vehicles').delete().eq('id',vid).eq('user_id',_currentUserId).then(function(){});
+    window._supabase.from('karnote_vehicles').delete().eq('id',vid).eq('user_id',_currentUserId).then(function(){});
   }
   // Hapus data lokal
   vehicles=vehicles.filter(function(v){return v.id!==vid;});
@@ -2033,8 +2033,8 @@ document.getElementById('sfYear').value=String(new Date().getFullYear());
 // =====================
 // LOGIN SCREEN — Supabase + Google SSO
 // =====================
-var SUPABASE_URL = 'https://kkjkfswwqadgiqcvduvl.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtramtmc3d3cWFkZ2lxY3ZkdXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzAwMzMsImV4cCI6MjA5MDkwNjAzM30.tUf-GG18Ynm6_SYx04rQbZhj7Fd7BJdDzKTPaXvmUeE';
+var SUPABASE_URL = 'https://kkrphmvdxxpzdglljoqa.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrcnBobXZkeHhwemRnbGxqb3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NDExODIsImV4cCI6MjEwNzAxNzE4Mn0.eN7KzESeMbd2y-ZGq16G9WvFsYuvFOeHSAC72WPyGR0';
 var REDIRECT_URL = 'https://arsoagung.github.io/app/karnote/';
 var _currentUserId = null;
 
@@ -2153,9 +2153,9 @@ function loadFromSupabase(callback){
   if(!_currentUserId){ callback(); return; }
   var sb = window._supabase;
   Promise.all([
-    sb.from('vehicles').select('*').eq('user_id', _currentUserId),
-    sb.from('entries').select('*').eq('user_id', _currentUserId),
-    sb.from('comp_settings').select('*').eq('user_id', _currentUserId).maybeSingle()
+    sb.from('karnote_vehicles').select('*').eq('user_id', _currentUserId),
+    sb.from('karnote_entries').select('*').eq('user_id', _currentUserId),
+    sb.from('karnote_settings').select('*').eq('user_id', _currentUserId).maybeSingle()
   ]).then(function(results){
     var vRes = results[0], eRes = results[1], cRes = results[2];
 
@@ -2217,9 +2217,9 @@ function syncToSupabase(){
 
   // Jalankan upsert paralel
   Promise.all([
-    vRows.length ? sb.from('vehicles').upsert(vRows) : Promise.resolve(),
-    eRows.length ? sb.from('entries').upsert(eRows) : Promise.resolve(),
-    sb.from('comp_settings').upsert(cRow)
+    vRows.length ? sb.from('karnote_vehicles').upsert(vRows) : Promise.resolve(),
+    eRows.length ? sb.from('karnote_entries').upsert(eRows) : Promise.resolve(),
+    sb.from('karnote_settings').upsert(cRow)
   ]).catch(function(err){ console.warn('Sync error:', err); });
 }
 
@@ -2228,6 +2228,15 @@ function deleteFromSupabase(table, id){
   if(!_currentUserId || !window._supabase) return;
   window._supabase.from(table).delete().eq('id', id).eq('user_id', _currentUserId);
 }
+
+/* Whitelist: kalau Supabase nolak signup, balik ke app dengan error di URL */
+function readAuthUrlError(){
+  var raw = (location.hash || '').replace(/^#/, '') || (location.search || '').replace(/^\?/, '');
+  var d = new URLSearchParams(raw).get('error_description');
+  if (d) history.replaceState(null, '', location.pathname);
+  return d ? 'Akun ini tidak diizinkan. Pakai email yang terdaftar.' : '';
+}
+(function(){ var e = readAuthUrlError(); if (e) setTimeout(function(){ showToast(e); }, 300); })();
 </script>
 </body>
 </html>

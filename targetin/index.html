@@ -1711,16 +1711,6 @@ function settingsHTML() {
     </button>
   </div>
 
-  <div class="settings-card" style="margin-bottom:8px">
-    <button class="srow" onclick="confirmDeleteAccount()">
-      <div class="srow-icon" style="background:var(--bg3)"><svg viewBox="0 0 24 24" stroke="var(--text2)"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
-      <div class="srow-txt"><div class="srow-title">Hapus Akun dan Semua Data</div></div>
-    </button>
-  </div>
-
-  <div style="font-size:11px;color:var(--text3);font-weight:500;line-height:1.6;padding:6px 4px 4px;text-align:center">
-    Menghapus akun akan menghapus semua data secara permanen dan tidak bisa dibatalkan.
-  </div>
 
   <div style="text-align:center;padding:16px 0 28px;font-size:11px;color:var(--text3);font-weight:600">Targetin · Versi 2.0.0</div>`;
 }
@@ -2202,8 +2192,8 @@ document.getElementById('cf-bg').addEventListener('click', e => {
 /* ════════════════════════════════════════
    SUPABASE — AUTH & SYNC
 ════════════════════════════════════════ */
-const SUPA_URL  = 'https://waesrqcmwucuihmyhkbd.supabase.co';
-const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZXNycWNtd3VjdWlobXloa2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODIwMjYsImV4cCI6MjA4OTc1ODAyNn0.xsL-YdPxnqiLrhjmD1attWydgkLgWDpo5bEd34aKKLI';
+const SUPA_URL  = 'https://kkrphmvdxxpzdglljoqa.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrcnBobXZkeHhwemRnbGxqb3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NDExODIsImV4cCI6MjEwNzAxNzE4Mn0.eN7KzESeMbd2y-ZGq16G9WvFsYuvFOeHSAC72WPyGR0';
 const supa      = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let currentUser = null;   // null = tamu
@@ -2266,7 +2256,7 @@ function continueAsGuest() {
 async function loadFromSupabase() {
   try {
     const { data, error } = await supa
-      .from('habits')
+      .from('targetin_habits')
       .select('*')
       .eq('user_id', currentUser.id)
       .order('created_at', { ascending: true });
@@ -2349,7 +2339,7 @@ function dbToHabit(row) {
 async function pushAllToSupabase() {
   if (!currentUser || !habits.length) return;
   const rows = habits.map(habitToDb);
-  const { error } = await supa.from('habits').upsert(rows);
+  const { error } = await supa.from('targetin_habits').upsert(rows);
   if (error) console.error('Push all error:', error);
 }
 
@@ -2374,7 +2364,7 @@ async function syncToSupabase() {
     // Hapus dari Supabase dulu jika ada yang didelete
     if (_deletedIds.length) {
       const { error: delError } = await supa
-        .from('habits')
+        .from('targetin_habits')
         .delete()
         .in('id', _deletedIds)
         .eq('user_id', currentUser.id);
@@ -2384,7 +2374,7 @@ async function syncToSupabase() {
     // Upsert yang masih ada
     if (habits.length) {
       const rows = habits.map(habitToDb);
-      const { error } = await supa.from('habits').upsert(rows, { onConflict: 'id' });
+      const { error } = await supa.from('targetin_habits').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
     }
     updateSyncBadge('ok');
@@ -2472,9 +2462,8 @@ function confirmDeleteAccount() {
         try {
           if (currentUser) {
             // Hapus semua habit dari Supabase
-            await supa.from('habits').delete().eq('user_id', currentUser.id);
+            await supa.from('targetin_habits').delete().eq('user_id', currentUser.id);
             // Hapus akun user
-            await supa.rpc('delete_user');
             await supa.auth.signOut();
           }
           // Hapus lokal
@@ -2493,7 +2482,16 @@ function confirmDeleteAccount() {
 ════════════════════════════════════════ */
 // Auth screen tersembunyi dulu (ditampilkan oleh initAuth jika perlu)
 document.getElementById('auth-screen').style.display = 'none';
+
+/* Whitelist: kalau Supabase nolak signup, balik ke app dengan error di URL */
+function readAuthUrlError(){
+  var raw = (location.hash || '').replace(/^#/, '') || (location.search || '').replace(/^\?/, '');
+  var d = new URLSearchParams(raw).get('error_description');
+  if (d) history.replaceState(null, '', location.pathname);
+  return d ? 'Akun ini tidak diizinkan. Pakai email yang terdaftar.' : '';
+}
 initAuth();
+{ const _e = readAuthUrlError(); if (_e) setTimeout(() => showToast(_e), 300); }
 requestAnimationFrame(initIndicator);
 requestAnimationFrame(initSwipeListeners);
 window.addEventListener('resize', () => {
