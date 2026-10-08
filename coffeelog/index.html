@@ -800,6 +800,57 @@
   }
   .toast.show{ opacity:1; transform:translate(-50%, 0); }
 </style>
+<style id="ui-v2">
+/* ===== UI v2 — rounder, floating iOS tab bar, springy screen transitions (visual only) ===== */
+:root{--spring:cubic-bezier(.34,1.56,.64,1);--ease-out:cubic-bezier(.22,1,.36,1);--radius-cell:22px;--radius-lg:30px;--nav-height:96px;}
+body{background:radial-gradient(120% 45% at 80% -6%,rgba(217,119,87,.16),transparent 62%),radial-gradient(100% 40% at 0% 100%,rgba(217,119,87,.06),transparent 60%),var(--bg);background-attachment:fixed;}
+.header{padding-top:34px;}
+.month-title{font-size:30px;letter-spacing:-.8px;font-weight:800;}
+.eyebrow{font-size:13px;}
+
+/* round everything */
+.edit-toggle{border-radius:30px;padding:9px 16px;transition:background .25s,color .25s,transform .45s var(--spring);}
+.edit-toggle:active{transform:scale(.9);}
+.nav-btn{width:42px;height:42px;border-radius:50%;transition:transform .45s var(--spring),color .2s,background .2s;}
+.nav-btn:active{transform:scale(.82);}
+.cell{border-radius:var(--radius-cell);transition:transform .35s var(--spring),background .25s;}
+.cell:not(.empty):active{transform:scale(.92);}
+.summary-card{border-radius:var(--radius-lg);padding:20px 18px;}
+.detail-card{border-radius:26px;transition:transform .45s var(--spring);}
+.detail-card:active{transform:scale(.96);}
+.insight-card{border-radius:26px;}
+.track-bg{width:11px;border-radius:6px;}.track-fill{border-radius:6px;}
+.month-track.selected .track-bg{width:13px;}
+.track-tooltip{border-radius:16px;}
+.logout-btn,.google-btn{border-radius:30px;transition:transform .45s var(--spring),background .2s;}
+.logout-btn:active,.google-btn:active{transform:scale(.94);}
+.avatar{box-shadow:0 18px 40px -16px rgba(217,119,87,.5);}
+.toast{border-radius:30px;bottom:calc(var(--nav-height) + 10px);}
+
+/* screen "open" effect: each tab settles in with a soft spring, content staggers in */
+.screen{animation:screen-in .55s var(--ease-out) both;}
+@keyframes screen-in{from{opacity:0;transform:translateY(18px) scale(.975);}to{opacity:1;transform:none;}}
+.screen > *{animation:rise .6s var(--ease-out) both;}
+.screen > *:nth-child(1){animation-delay:.02s}.screen > *:nth-child(2){animation-delay:.07s}
+.screen > *:nth-child(3){animation-delay:.12s}.screen > *:nth-child(4){animation-delay:.17s}
+.screen > *:nth-child(5){animation-delay:.22s}.screen > *:nth-child(6){animation-delay:.27s}
+@keyframes rise{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
+.summary-icon-circle{animation:pop .7s var(--spring) .2s both;}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* floating iOS tab bar — bounce happens from the centre of each item */
+.bottom-nav{left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:calc(100% - 44px);max-width:386px;padding:8px;gap:4px;justify-content:space-between;border-radius:36px;background:rgba(36,24,19,.68);-webkit-backdrop-filter:blur(24px) saturate(1.7);backdrop-filter:blur(24px) saturate(1.7);border:1px solid rgba(242,232,226,.09);box-shadow:0 20px 46px -12px rgba(0,0,0,.7),inset 0 1px 0 rgba(242,232,226,.07);}
+.nav-item{position:relative;flex:1;padding:9px 0 8px;gap:4px;border-radius:28px;background:transparent;transform-origin:50% 50%;transition:color .3s,background .35s,transform .5s var(--spring);}
+.nav-item svg{width:23px;height:23px;transform-origin:50% 50%;}
+.nav-item:active{transform:scale(.88);}
+.nav-item.active{color:var(--accent);background:rgba(217,119,87,.17);animation:tab-pop .62s var(--spring);}
+.nav-item.active svg{animation:icon-pop .62s var(--spring);}
+@keyframes tab-pop{0%{transform:scale(.84)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes icon-pop{0%{transform:scale(.7)}55%{transform:scale(1.22)}100%{transform:scale(1)}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important;}}
+
+</style>
 </head>
 <body>
 
