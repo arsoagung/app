@@ -12,10 +12,10 @@
    SEBELUM script lain yang butuh sb / currentUser / dst.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ═══ SUPABASE CONFIG ═══ */
-const SUPABASE_URL = 'https://kkrphmvdxxpzdglljoqa.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrcnBobXZkeHhwemRnbGxqb3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NDExODIsImV4cCI6MjEwNzAxNzE4Mn0.eN7KzESeMbd2y-ZGq16G9WvFsYuvFOeHSAC72WPyGR0';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* ═══ SUPABASE ═══
+   Client + URL/key sekarang di ../shared/auth.js (login seragam semua app).
+   Pastikan <script src="../shared/auth.js"> dimuat SEBELUM file ini. */
+const sb = Auth.client;
 
 /* ═══ STATE UMUM ═══
    currentUser diisi otomatis begitu requireAuth() atau checkSession()
@@ -39,6 +39,13 @@ var currentUser = null;
 async function requireAuth() {
   const { data } = await sb.auth.getSession();
   if (!data.session) {
+    window.location.replace(getIndexPath());
+    return null;
+  }
+  /* sesi masih ada tapi email sudah dicabut dari whitelist → keluarkan */
+  const allowed = await Auth.isAllowed();
+  if (allowed === false) {
+    await Auth.signOut({ denied: true });
     window.location.replace(getIndexPath());
     return null;
   }

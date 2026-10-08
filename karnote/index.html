@@ -411,22 +411,6 @@ canvas{display:block;}
 <body>
 
 <!-- LOGIN SCREEN -->
-<div class="login-screen invisible" id="loginScreen">
-  <div class="login-logo">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>
-  </div>
-  <div class="login-appname">KarNote</div>
-  <div class="login-tagline">Catat servis, bensin, dan kondisi<br>kendaraanmu dengan mudah.</div>
-  <div class="login-btns">
-    <button class="btn-guest" onclick="loginAsGuest()">Masuk Tanpa Akun</button>
-    <button class="btn-google" onclick="loginWithGoogle()">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Masuk dengan Google
-    </button>
-  </div>
-  <div class="login-tos">Dengan menggunakan KarNote, kamu menyetujui <a href="#" onclick="openModal('privacyModal');return false;">Kebijakan Privasi</a> dan <a href="#" onclick="openModal('tosModal');return false;">Syarat &amp; Ketentuan</a> kami.</div>
-</div>
-
 <div class="app" id="mainApp" style="display:none">
 <div id="headerBeranda" class="header">
   <div class="header-top">
@@ -893,6 +877,8 @@ canvas{display:block;}
   </div>
 </div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../shared/auth.js"></script>
 <script>
 var CAR_COLORS=[
   {n:'Putih',h:'#f5f5f5'},{n:'Hitam',h:'#222'},{n:'Abu',h:'#9ca3af'},{n:'Silver',h:'#d1d5db'},
@@ -1017,6 +1003,9 @@ function ensureCompSettings(){
 function getComp(vid,name){var cs=compSettings[vid]||[];for(var i=0;i<cs.length;i++)if(cs[i].name===name)return cs[i];return null;}
 function getActiveComps(vid){return(compSettings[vid]||[]).filter(function(c){return c.active;});}
 
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+/* untuk teks yang masuk string JS di dalam atribut onclick='...' */
+function escJs(s){return esc(String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"));}
 function fKm(n){return Number(n).toLocaleString('id-ID')+' km';}
 function fRp(n){
   n=Number(n);
@@ -1086,8 +1075,8 @@ function renderVC(id){
     var a=v.id===activeVehicleId?'active':'';
     h+='<div class="vehicle-card '+a+'" onclick="selectVehicle(\''+v.id+'\')">';
     h+='<div class="vehicle-icon">'+SVG_EXTRA[v.type]+'</div>';
-    h+='<div class="vehicle-name">'+v.name+'</div>';
-    h+='<div class="vehicle-plate">'+v.plate+'</div></div>';
+    h+='<div class="vehicle-name">'+esc(v.name)+'</div>';
+    h+='<div class="vehicle-plate">'+esc(v.plate)+'</div></div>';
   });
   if(!isKomponenScroll){
     h+='<div class="vehicle-card vehicle-add" onclick="openVehicleModal()">'+SVG_EXTRA.plus+'<p>Tambah</p></div>';
@@ -1137,7 +1126,7 @@ function renderAlerts(){
     else if(st.kmRem!=null) desc=isLate?'Lewat target '+fKm(Math.abs(getCurKm(activeVehicleId)-st.kmNext)):'Sisa '+fKm(st.kmRem)+' lagi';
     return '<div class="alert-banner" onclick="showTab(\'pengingat\')">'
       +'<svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
-      +'<div style="flex:1"><div class="alert-title">'+(isLate?'⚠️ '+comp.name+' Terlambat!':'🔔 Segera '+comp.name)+'</div><div class="alert-desc">'+desc+'</div></div>'
+      +'<div style="flex:1"><div class="alert-title">'+(isLate?'⚠️ '+esc(comp.name)+' Terlambat!':'🔔 Segera '+esc(comp.name))+'</div><div class="alert-desc">'+desc+'</div></div>'
       +'<div class="alert-arr">›</div></div>';
   }).join('');
 }
@@ -1152,18 +1141,18 @@ function getAllEntries(vid){
 }
 
 function buildEntryHTML(entry,showDel){
-  var d=entry.data,v=getV(d.vehicleId),vname=v?v.name:'—';
+  var d=entry.data,v=getV(d.vehicleId),vname=v?esc(v.name):'—';
   var icon,col,name,detail,meta='';
   if(entry.kind==='service'){
     var comp=getComp(d.vehicleId,d.type);
     icon=SVG_PARTS[(comp&&comp.svgKey)||d.type]||SVG_PARTS['Lainnya'];
-    col=COMP_COLORS[d.type]||'lime';name=d.type;detail=vname+(d.place?' · '+d.place:'');
+    col=COMP_COLORS[d.type]||'lime';name=esc(d.type);detail=vname+(d.place?' · '+esc(d.place):'');
     meta='<span class="bd">'+fDate(d.date)+'</span>'+(d.cost?'<span class="bc">'+fRp(d.cost)+'</span>':'');
   }else if(entry.kind==='fuel'){
     icon=SVG_EXTRA.fuel;col='blue';name='Isi Bensin';detail=vname;
     meta='<span class="bd">'+fDate(d.date)+'</span>'+(d.liter?'<span class="bf">'+d.liter+' L</span>':'')+(d.cost?'<span class="bc">'+fRp(d.cost)+'</span>':'');
   }else{
-    icon=SVG_EXTRA.odo;col='orange';name='Update Odometer';detail=vname+(d.note?' · '+d.note:'');
+    icon=SVG_EXTRA.odo;col='orange';name='Update Odometer';detail=vname+(d.note?' · '+esc(d.note):'');
     meta='<span class="bd">'+fDate(d.date)+'</span>';
   }
   // always clickable → entry popup, no inline delete
@@ -1194,7 +1183,7 @@ function renderAllLogs(){
   var svcTypes=[];
   services.forEach(function(s){if((!activeVehicleId||s.vehicleId===activeVehicleId)&&svcTypes.indexOf(s.type)<0)svcTypes.push(s.type);});
   var baseOpts='<option value="Semua">Semua Catatan</option><option value="Servis">Servis</option><option value="Bensin">Bensin</option><option value="Odometer">Odometer</option>';
-  var customOpts=svcTypes.map(function(t){return '<option value="svc:'+t+'">↳ '+t+'</option>';}).join('');
+  var customOpts=svcTypes.map(function(t){return '<option value="svc:'+esc(t)+'">↳ '+esc(t)+'</option>';}).join('');
   sel.innerHTML=baseOpts+customOpts;
   sel.value=riwayatFilter;
   if(sel.value!==riwayatFilter)sel.value='Semua';
@@ -1229,9 +1218,9 @@ function renderReminders(){
     var bars='';
     if(comp.km){var kp=Math.min(100,Math.round(st.kmPct*100));bars+='<div class="rem-bar-row"><span class="rem-bar-label">km</span><div class="rem-bar-wrap"><div class="rem-bar '+st.cls+'" style="width:'+kp+'%"></div></div><span class="rem-bar-val">'+(st.kmRem!=null?fKm(st.kmRem):'—')+'</span></div>';}
     if(comp.mo){var mp=Math.min(100,Math.round(st.moPct*100)),mc=st.moPct>=1?'bad':st.moPct>=0.8?'warn':'ok';bars+='<div class="rem-bar-row"><span class="rem-bar-label">bln</span><div class="rem-bar-wrap"><div class="rem-bar '+mc+'" style="width:'+mp+'%"></div></div><span class="rem-bar-val">'+(st.moRem!=null?st.moRem+' bln':'—')+'</span></div>';}
-    return '<div class="rem-card" onclick="openRemPopup(\''+activeVehicleId+'\',\''+comp.name+'\')">'
+    return '<div class="rem-card" onclick="openRemPopup(\''+activeVehicleId+'\',\''+escJs(comp.name)+'\')">'
       +'<div class="rem-card-top"><div class="rem-dot '+col+'">'+svgIcon+'</div>'
-      +'<div class="rem-card-info"><div class="rem-name">'+comp.name+'</div></div>'
+      +'<div class="rem-card-info"><div class="rem-name">'+esc(comp.name)+'</div></div>'
       +'<span class="rem-badge '+st.cls+'">'+st.lbl+'</span></div>'
       +'<div class="rem-bars">'+bars+'</div></div>';
   }).join('');
@@ -1272,7 +1261,7 @@ function renderProfile(){
       +'<div class="drag-handle" title="Seret untuk urut ulang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/></svg></div>'
       +'<div class="settings-row-left" style="flex:1;cursor:pointer" onclick="openEditVehicleModal(\''+v.id+'\')">'
       +'<div class="settings-row-icon" style="background:'+hexAlpha(ac,.15)+'">'+getVehicleIconColored(v.type,ac,16)+'</div>'
-      +'<div class="settings-row-text"><div class="settings-row-label">'+v.name+'</div><div class="settings-row-sub">'+v.plate+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
+      +'<div class="settings-row-text"><div class="settings-row-label">'+esc(v.name)+'</div><div class="settings-row-sub">'+esc(v.plate)+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
       +'</div><div class="settings-row-arr" style="cursor:pointer" onclick="openEditVehicleModal(\''+v.id+'\')">›</div></div>';
   }).join('');
   initVehicleDragSort(el);
@@ -1284,7 +1273,7 @@ function renderProfile(){
     return '<div class="pv-item" onclick="openEditVehicleModal(\''+v.id+'\')">'
       +'<div class="pv-color-bar" style="background:'+ac+'"></div>'
       +'<div class="pv-icon" style="background:'+hexAlpha(ac,.12)+'">'+getVehicleIconColored(v.type,ac,18)+'</div>'
-      +'<div class="pv-info"><div class="pv-name">'+v.name+'</div><div class="pv-meta">'+v.plate+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
+      +'<div class="pv-info"><div class="pv-name">'+esc(v.name)+'</div><div class="pv-meta">'+esc(v.plate)+' · '+Number(getCurKm(v.id)).toLocaleString('id-ID')+' km · '+cnt+' servis</div></div>'
       +'<svg class="pv-arr" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>';
   }).join('');
 }
@@ -1387,7 +1376,7 @@ function openEntryPopup(eid){
   document.getElementById('epIcon').style.background=dotBg;
   document.getElementById('epTitle').textContent=title;
   document.getElementById('epSub').textContent=sub;
-  document.getElementById('epRows').innerHTML=rows.map(function(r){return '<div class="ep-row"><span class="ep-row-label">'+r[0]+'</span><span class="ep-row-val">'+r[1]+'</span></div>';}).join('');
+  document.getElementById('epRows').innerHTML=rows.map(function(r){return '<div class="ep-row"><span class="ep-row-label">'+r[0]+'</span><span class="ep-row-val">'+esc(r[1])+'</span></div>';}).join('');
   var noteEl=document.getElementById('epNote');
   if(d.note){noteEl.textContent=d.note;noteEl.style.display='';}else{noteEl.style.display='none';}
   document.getElementById('entryPopup').classList.add('open');
@@ -1505,7 +1494,7 @@ function renderCompSettings(){
     return '<div class="comp-card">'
       +'<div class="comp-card-header">'
       +'<div class="comp-icon" style="background:'+dotBg+'"><svg viewBox="0 0 24 24" fill="none" stroke="'+dotCol+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(svgIcon)+'</svg></div>'
-      +'<div class="comp-name">'+comp.name+'</div>'
+      +'<div class="comp-name">'+esc(comp.name)+'</div>'
       +'<label class="comp-toggle"><input type="checkbox"'+(comp.active?' checked':'')+' onchange="toggleComp(\''+activeVehicleId+'\','+idx+',this.checked)"><span class="comp-slider"></span></label>'
       +'<button class="comp-edit-btn" onclick="toggleCompEdit(\'ccd'+idx+'\')">'+SVG_EXTRA.pencil+'</button>'
       +'</div>'
@@ -1778,7 +1767,7 @@ function drawCostBars(vS,vF){
     var icon=isFuel?SVG_EXTRA.fuel:(SVG_PARTS[t]||SVG_PARTS['Lainnya']);
     var pct=Math.round((tMap[t]/maxC)*100);
     return '<div class="cbi"><div class="cbi-dot" style="background:'+bgC[col]+'"><svg viewBox="0 0 24 24" fill="none" stroke="'+svgC[col]+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(icon)+'</svg></div>'
-      +'<div class="cbi-info"><div class="cbi-name">'+t+'</div><div class="cbi-bar-bg"><div class="cbi-bar" style="width:'+pct+'%;background:'+svgC[col]+'"></div></div></div>'
+      +'<div class="cbi-info"><div class="cbi-name">'+esc(t)+'</div><div class="cbi-bar-bg"><div class="cbi-bar" style="width:'+pct+'%;background:'+svgC[col]+'"></div></div></div>'
       +'<div class="cbi-val">'+fRp(tMap[t])+'</div></div>';
   }).join('');
 }
@@ -1800,7 +1789,7 @@ function toggleAddPopup(){popupOpen=!popupOpen;document.getElementById('addPopup
 function closeAddPopup(){popupOpen=false;document.getElementById('addPopup').classList.remove('open');document.getElementById('navFab').classList.remove('open');}
 
 // MODALS
-function popVehicleSel(id){var h='<option value="">— Pilih —</option>';vehicles.forEach(function(v){h+='<option value="'+v.id+'"'+(v.id===activeVehicleId?' selected':'')+'>'+v.name+' ('+v.plate+')</option>';});document.getElementById(id).innerHTML=h;}
+function popVehicleSel(id){var h='<option value="">— Pilih —</option>';vehicles.forEach(function(v){h+='<option value="'+v.id+'"'+(v.id===activeVehicleId?' selected':'')+'>'+esc(v.name)+' ('+esc(v.plate)+')</option>';});document.getElementById(id).innerHTML=h;}
 function openModal(id){var el=document.getElementById(id);el.classList.add('open');el.onclick=function(e){if(e.target===el)closeModal(id);};}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
@@ -1815,7 +1804,7 @@ function openServiceModal(){
   comps.forEach(function(c){if(stdTypes.indexOf(c.name)<0&&c.name!=='Lainnya')stdTypes.push(c.name);});
   document.getElementById('svcTypeGrid').innerHTML=stdTypes.map(function(t){
     var svgK=t;var comp=getComp(activeVehicleId,t);if(comp&&comp.svgKey)svgK=comp.svgKey;
-    return '<div class="type-chip" data-type="'+t+'" onclick="toggleType(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(SVG_PARTS[svgK]||SVG_PARTS['Lainnya'])+'</svg>'+t+'</div>';
+    return '<div class="type-chip" data-type="'+esc(t)+'" onclick="toggleType(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+stripSvgTag(SVG_PARTS[svgK]||SVG_PARTS['Lainnya'])+'</svg>'+esc(t)+'</div>';
   }).join('');
   document.getElementById('customTypeInput').value='';
   document.getElementById('customTypeTags').innerHTML='';
@@ -1829,7 +1818,7 @@ function addCustomType(){
   if(!val)return;
   if(svcCustomTypes.indexOf(val)<0){
     svcCustomTypes.push(val);
-    var tag=document.createElement('div');tag.className='custom-tag';tag.innerHTML=val+'<span class="custom-tag-x" onclick="removeCustomType(this,\''+val+'\')">✕</span>';
+    var tag=document.createElement('div');tag.className='custom-tag';tag.innerHTML=esc(val)+'<span class="custom-tag-x" onclick="removeCustomType(this,\''+escJs(val)+'\')">✕</span>';
     document.getElementById('customTypeTags').appendChild(tag);
   }
   document.getElementById('customTypeInput').value='';
@@ -2005,7 +1994,7 @@ function renderProfileRow(){
       // Tampilkan foto di settings row juga
       var iconEl=profileRow.querySelector('.settings-row-icon');
       if(iconEl&&userProfile.picture){
-        iconEl.innerHTML='<img src="'+userProfile.picture+'" style="width:24px;height:24px;border-radius:7px;object-fit:cover;">';
+        iconEl.innerHTML='<img src="'+esc(userProfile.picture)+'" style="width:24px;height:24px;border-radius:7px;object-fit:cover;">';
       }
     } else {
       profileRow.onclick=openProfilePopup;
@@ -2031,66 +2020,21 @@ renderProfileRow();
 document.getElementById('sfYear').value=String(new Date().getFullYear());
 
 // =====================
-// LOGIN SCREEN — Supabase + Google SSO
+// LOGIN — shared/auth.js (Google SSO + whitelist)
 // =====================
-var SUPABASE_URL = 'https://kkrphmvdxxpzdglljoqa.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrcnBobXZkeHhwemRnbGxqb3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NDExODIsImV4cCI6MjEwNzAxNzE4Mn0.eN7KzESeMbd2y-ZGq16G9WvFsYuvFOeHSAC72WPyGR0';
-var REDIRECT_URL = 'https://arsoagung.github.io/app/karnote/';
+window._supabase = Auth.client;
 var _currentUserId = null;
 
-// Inject Supabase SDK
-(function(){
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  s.onload = function(){
-    window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    checkSession();
-  };
-  document.head.appendChild(s);
-})();
-
 function showApp(){
-  document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('loginScreen').classList.remove('invisible');
   document.getElementById('mainApp').style.display = '';
   renderAll();
 }
 
 function showLoginScreen(){
-  document.getElementById('loginScreen').classList.remove('hidden');
-  document.getElementById('loginScreen').classList.remove('invisible');
   document.getElementById('mainApp').style.display = 'none';
 }
 
-function checkSession(){
-  window._supabase.auth.getSession().then(function(res){
-    var session = res.data && res.data.session;
-    if(session){
-      applyUserFromSession(session);
-      loadFromSupabase(function(){ showApp(); });
-    } else if(localStorage.getItem('kn_session') === 'guest'){
-      showApp();
-    } else {
-      showLoginScreen();
-    }
-  });
-
-  window._supabase.auth.onAuthStateChange(function(event, session){
-    if(event === 'SIGNED_IN' && session){
-      applyUserFromSession(session);
-      loadFromSupabase(function(){ showApp(); });
-    } else if(event === 'SIGNED_OUT'){
-      // Data lokal sudah dihapus di logOut() untuk Google SSO
-      // Cukup reset state dan tampilkan login
-      _currentUserId = null;
-      localStorage.removeItem('kn_session');
-      showLoginScreen();
-    }
-  });
-}
-
-function applyUserFromSession(session){
-  var user = session.user;
+function applyUser(user){
   var meta = user.user_metadata || {};
   _currentUserId = user.id;
   userProfile.name = meta.full_name || meta.name || user.email || '';
@@ -2099,24 +2043,6 @@ function applyUserFromSession(session){
   localStorage.setItem('al_profile', JSON.stringify(userProfile));
   localStorage.setItem('kn_session', 'google:' + user.email);
   renderProfileRow();
-}
-
-function loginAsGuest(){
-  localStorage.setItem('kn_session', 'guest');
-  showApp();
-}
-
-function loginWithGoogle(){
-  if(!window._supabase){
-    showToast('⏳ Sedang memuat, coba lagi...');
-    return;
-  }
-  window._supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: REDIRECT_URL }
-  }).then(function(res){
-    if(res.error) showToast('❌ Gagal login: ' + res.error.message);
-  });
 }
 
 function clearLocalAppData(){
@@ -2129,20 +2055,27 @@ function clearLocalAppData(){
 }
 
 function logOut(){
-  if(localStorage.getItem('kn_session') === 'guest'){
-    // Guest logout: simpan data lokal, cukup hapus session marker
-    localStorage.removeItem('kn_session');
-    showLoginScreen();
-    return;
-  }
-  // Google SSO logout: hapus semua data lokal (akan diambil ulang dari Supabase saat login lagi)
-  window._supabase.auth.signOut().then(function(){
+  // hapus semua data lokal (akan diambil ulang dari Supabase saat login lagi)
+  Auth.signOut().then(function(){ clearLocalAppData(); });
+}
+
+Auth.init({
+  name: 'KarNote',
+  tagline: 'Catat servis, bensin, dan kondisi kendaraanmu dengan mudah.',
+  accent: '#9de041',
+  icon: '<svg viewBox="0 0 256 256" fill="currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v80a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16V184h96v16a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,200H40V184H64Zm128,0V184h24v16Zm24-32H40V120H216ZM56,144a8,8,0,0,1,8-8H80a8,8,0,0,1,0,16H64A8,8,0,0,1,56,144Zm112,0a8,8,0,0,1,8-8h16a8,8,0,0,1,0,16H176A8,8,0,0,1,168,144Z"/></svg>',
+  onSignIn: function(user){
+    applyUser(user);
+    // ada cache lokal: tampilkan langsung, data server menyusul (penting saat offline / sinyal jelek)
+    if(vehicles.length) showApp();
+    loadFromSupabase(function(){ showApp(); });
+  },
+  onSignOut: function(){
     _currentUserId = null;
     localStorage.removeItem('kn_session');
-    clearLocalAppData();
     showLoginScreen();
-  });
-}
+  }
+});
 
 // =====================
 // SUPABASE SYNC
@@ -2158,6 +2091,14 @@ function loadFromSupabase(callback){
     sb.from('karnote_settings').select('*').eq('user_id', _currentUserId).maybeSingle()
   ]).then(function(results){
     var vRes = results[0], eRes = results[1], cRes = results[2];
+
+    // Kalau salah satu query gagal, jangan timpa data lokal dengan hasil kosong
+    if(vRes.error || eRes.error || cRes.error){
+      console.warn('Load error:', (vRes.error || eRes.error || cRes.error).message);
+      showToast('Gagal memuat dari server, menampilkan data lokal');
+      callback();
+      return;
+    }
 
     // Reset in-memory state dulu sebelum load dari Supabase
     vehicles = []; services = []; fuels = []; odos = [];
@@ -2226,17 +2167,12 @@ function syncToSupabase(){
 // Hapus satu entry dari Supabase saat delete
 function deleteFromSupabase(table, id){
   if(!_currentUserId || !window._supabase) return;
-  window._supabase.from(table).delete().eq('id', id).eq('user_id', _currentUserId);
+  window._supabase.from(table).delete().eq('id', id).eq('user_id', _currentUserId)
+    .then(function(res){
+      if(res.error){ console.warn('Gagal hapus di server:', res.error.message); showToast('Gagal menghapus di server'); }
+    });
 }
 
-/* Whitelist: kalau Supabase nolak signup, balik ke app dengan error di URL */
-function readAuthUrlError(){
-  var raw = (location.hash || '').replace(/^#/, '') || (location.search || '').replace(/^\?/, '');
-  var d = new URLSearchParams(raw).get('error_description');
-  if (d) history.replaceState(null, '', location.pathname);
-  return d ? 'Akun ini tidak diizinkan. Pakai email yang terdaftar.' : '';
-}
-(function(){ var e = readAuthUrlError(); if (e) setTimeout(function(){ showToast(e); }, 300); })();
 </script>
 </body>
 </html>

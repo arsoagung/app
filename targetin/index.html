@@ -367,33 +367,10 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .sync-badge{display:none !important}
 </style>
 </head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../shared/auth.js"></script>
 <body>
 
-<!-- AUTH SCREEN -->
-<div class="auth-screen" id="auth-screen">
-  <div class="auth-logo">
-    <svg width="32" height="32" viewBox="0 0 256 256" fill="var(--lime)" xmlns="http://www.w3.org/2000/svg">
-      <path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12ZM74.36,80h42.33L77.16,119.52,40,114.34Zm74.41-9.45a76.65,76.65,0,0,1,59.11-22.47,76.46,76.46,0,0,1-22.42,59.16L128,164.68,91.32,128ZM176,181.64,141.67,216l-5.19-37.17L176,139.31Zm-74.16,9.5C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Z"/>
-    </svg>
-    <h1>Targetin</h1>
-  </div>
-  <p class="auth-tagline">Pantau kebiasaanmu,<br>capai targetmu.</p>
-
-  <button class="auth-btn-guest" onclick="continueAsGuest()">
-    Masuk tanpa Akun
-  </button>
-
-  <button class="auth-btn-google" onclick="signInGoogle()">
-    <img src="https://www.google.com/favicon.ico" alt="Google">
-    Masuk dengan Google
-  </button>
-
-  <div class="auth-tos">
-    Dengan menggunakan Targetin, kamu menyetujui<br>
-    <a onclick="openInfoModal('privasi')">Kebijakan Privasi</a> dan <a onclick="openInfoModal('syarat')">Syarat &amp; Ketentuan</a> kami.
-  </div>
-</div>
 <div class="app">
 
   <!-- TOPBAR -->
@@ -802,6 +779,10 @@ function iSvg(k, sz, col) {
    TOAST
 ════════════════════════════════════════ */
 let _toastT = null;
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+/* untuk teks yang masuk string JS di dalam atribut onclick='...' */
+function escJs(s){return esc(String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"));}
+
 function showToast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
@@ -918,7 +899,7 @@ function renderTarget(el) {
     const groups = {};
     archived.forEach(h => { const k = h.cat||'Umum'; if(!groups[k])groups[k]=[]; groups[k].push(h); });
     el.innerHTML = Object.entries(groups).map(([cat, hs]) =>
-      `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
+      `<div class="cat-group"><div class="cat-group-label">${esc(cat)}</div>${hs.map(rowHTML).join('')}</div>`
     ).join('');
     return;
   }
@@ -939,7 +920,7 @@ function renderTarget(el) {
     const g = {};
     active.forEach(h => { const k=h.cat||'Umum'; if(!g[k])g[k]=[]; g[k].push(h); });
     html += Object.entries(g).map(([cat,hs]) =>
-      `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
+      `<div class="cat-group"><div class="cat-group-label">${esc(cat)}</div>${hs.map(rowHTML).join('')}</div>`
     ).join('');
   } else {
     html += `<div style="padding:16px 2px 8px;font-size:13px;color:var(--text3);font-weight:500">Tidak ada target aktif.</div>`;
@@ -955,7 +936,7 @@ function renderTarget(el) {
       <div class="target-divider-line"></div>
     </div>`;
     html += Object.entries(g).map(([cat,hs]) =>
-      `<div class="cat-group"><div class="cat-group-label">${cat}</div>${hs.map(rowHTML).join('')}</div>`
+      `<div class="cat-group"><div class="cat-group-label">${esc(cat)}</div>${hs.map(rowHTML).join('')}</div>`
     ).join('');
   }
 
@@ -1054,7 +1035,7 @@ function rowHTML(h) {
       infoRows.push(`<div class="irow"><span class="irow-lab">Mulai</span><span class="irow-val">${fmtDate(h.start)}</span></div>`);
     }
     if (h.record > 0) {
-      infoRows.push(`<div class="irow"><span class="irow-lab">Rekor Terbaik</span><span class="irow-val" style="color:${h.color||'var(--lime)'}">${fmtFull(h.record)}</span></div>`);
+      infoRows.push(`<div class="irow"><span class="irow-lab">Rekor Terbaik</span><span class="irow-val" style="color:${esc(h.color||'var(--lime)')}">${fmtFull(h.record)}</span></div>`);
     }
     if (gms) {
       infoRows.push(`<div class="irow"><span class="irow-lab">Target</span><span class="irow-val">${fmtGoal(gms)}</span></div>`);
@@ -1070,9 +1051,9 @@ function rowHTML(h) {
     <div class="hrow${exp?' expanded':''}${!ia?' inactive':''}" id="row-${h.id}"
          data-id="${h.id}" data-active="${ia}" data-archived="${isArchived}">
     <div class="hrow-head" onclick="toggleRow('${h.id}')">
-      <div class="hrow-icon" style="background:${ia ? h.color+'18' : 'var(--bg3)'}">${iSvg(h.icon,18,iconCol)}</div>
+      <div class="hrow-icon" style="background:${ia ? esc(h.color)+'18' : 'var(--bg3)'}">${iSvg(h.icon,18,iconCol)}</div>
       <div class="hrow-info">
-        <div class="hrow-name" style="color:var(--text)">${h.name}</div>
+        <div class="hrow-name" style="color:var(--text)">${esc(h.name)}</div>
         ${!exp ? `<div class="hrow-sub" style="color:${ia?'var(--text2)':'var(--text3)'}">
           ${collapsedSub}
         </div>` : ''}
@@ -1257,7 +1238,7 @@ function riwayatHTML() {
     const catHabits = catMap[cat];
     const blocks = catHabits.map(h => riwayatHabitBlock(h)).join('');
     return `<div class="riw-section">
-      <div class="riw-section-label">${cat}</div>
+      <div class="riw-section-label">${esc(cat)}</div>
       ${blocks}
     </div>`;
   }).join('');
@@ -1278,9 +1259,9 @@ function riwayatHabitBlock(h) {
 
   return `<div class="riw-habit-block">
     <div class="riw-habit-head">
-      <div class="riw-habit-icon" style="background:${h.color}18">${iSvg(h.icon,16,h.color||'var(--lime)')}</div>
+      <div class="riw-habit-icon" style="background:${esc(h.color)}18">${iSvg(h.icon,16,h.color||'var(--lime)')}</div>
       <div class="riw-habit-info">
-        <div class="riw-habit-name">${h.name}</div>
+        <div class="riw-habit-name">${esc(h.name)}</div>
       </div>
       <button onclick="openAddRiwayatModal('${h.id}')" style="width:28px;height:28px;border-radius:8px;background:var(--bg3);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--text2);transition:background .12s" title="Tambah riwayat manual">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4"/></svg>
@@ -1325,8 +1306,8 @@ function renderRiwayatModal() {
   document.getElementById('riw-modal-content').innerHTML = `
     <div class="mpull"><div class="mpull-bar"></div></div>
     <div class="riw-modal-header">
-      <div class="riw-modal-icon" style="background:${h.color}18">${iSvg(h.icon,22,h.color||'var(--lime)')}</div>
-      <div class="riw-modal-title">${h.name}</div>
+      <div class="riw-modal-icon" style="background:${esc(h.color)}18">${iSvg(h.icon,22,h.color||'var(--lime)')}</div>
+      <div class="riw-modal-title">${esc(h.name)}</div>
     </div>
     <div class="sec-label">${hist.length} Entri Riwayat</div>
     <div class="riw-full-list">${rows}</div>
@@ -1474,7 +1455,7 @@ function statsHTML() {
   const perTargetBlocks = sortedCats.map(cat => {
     const blocks = catMap[cat].map(h => statsBlock(h)).join('');
     return `<div style="margin-bottom:20px">
-      <div class="stcat-label">${cat}</div>
+      <div class="stcat-label">${esc(cat)}</div>
       ${blocks}
     </div>`;
   }).join('');
@@ -1522,9 +1503,9 @@ function statsBlock(h) {
   if (!isOpen) {
     return `<div class="stblock" id="stb-${h.id}" onclick="toggleStats('${h.id}')">
       <div class="stblock-head">
-        <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,ac)}</div>
+        <div class="stblock-icon" style="background:${esc(h.color)}18">${iSvg(h.icon,18,ac)}</div>
         <div class="stblock-info">
-          <div class="stblock-name">${h.name}</div>
+          <div class="stblock-name">${esc(h.name)}</div>
           <div class="stblock-snap">${snap}</div>
         </div>
         <div class="stblock-right">
@@ -1575,9 +1556,9 @@ function statsBlock(h) {
 
   return `<div class="stblock open" id="stb-${h.id}">
     <div class="stblock-head" onclick="toggleStats('${h.id}')">
-      <div class="stblock-icon" style="background:${h.color}18">${iSvg(h.icon,18,ac)}</div>
+      <div class="stblock-icon" style="background:${esc(h.color)}18">${iSvg(h.icon,18,ac)}</div>
       <div class="stblock-info">
-        <div class="stblock-name">${h.name}</div>
+        <div class="stblock-name">${esc(h.name)}</div>
         <div class="stblock-snap">${snap}</div>
       </div>
       <div class="stblock-right">
@@ -1634,7 +1615,7 @@ function settingsHTML() {
 
   // ── Bagian profil ──
   const profileAvatarEl = isLoggedIn && avatarUrl
-    ? `<img src="${avatarUrl}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    ? `<img src="${esc(avatarUrl)}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
       + `<div style="display:none;width:48px;height:48px;border-radius:50%;background:var(--lime-dim);align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>`
     : `<div style="width:48px;height:48px;border-radius:50%;background:${isLoggedIn?'var(--lime-dim)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">${SVG_PROFILE}</div>`;
 
@@ -1642,8 +1623,8 @@ function settingsHTML() {
   <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
     ${profileAvatarEl}
     <div style="flex:1;min-width:0">
-      <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${profileName}</div>
-      <div style="font-size:11px;color:var(--text2);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${profileEmail}</div>
+      <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(profileName)}</div>
+      <div style="font-size:11px;color:var(--text2);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(profileEmail)}</div>
     </div>
   </div>` : `
   <div style="background:var(--bg2);border-radius:var(--r20);padding:18px;margin-bottom:20px">
@@ -1902,7 +1883,7 @@ function buildPickerUI() {
     `<div class="copt${c===fmColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`
   ).join('');
   document.getElementById('kchips').innerHTML = allCats().map(c =>
-    `<button class="kchip${c===fmCat?' sel':''}" onclick="pickCat('${c}',this)">${c}</button>`
+    `<button class="kchip${c===fmCat?' sel':''}" onclick="pickCat('${escJs(c)}',this)">${esc(c)}</button>`
   ).join('');
 }
 function pickIcon(k) { fmIcon = k; buildPickerUI(); }
@@ -2079,7 +2060,7 @@ function closeCatModal() {
   // refresh chips in add/edit modal if open
   const kc = document.getElementById('kchips');
   if (kc) kc.innerHTML = allCats().map(c =>
-    `<button class="kchip${c===fmCat?' sel':''}" onclick="pickCat('${c}',this)">${c}</button>`
+    `<button class="kchip${c===fmCat?' sel':''}" onclick="pickCat('${escJs(c)}',this)">${esc(c)}</button>`
   ).join('');
 }
 function renderCatList() {
@@ -2089,9 +2070,9 @@ function renderCatList() {
     const inUse = used.has(c);
     const cnt   = habits.filter(h=>h.cat===c).length;
     return `<div class="cat-item">
-      <div><div class="cat-item-name">${c}</div><div class="cat-item-sub">${cnt>0 ? cnt+' tracker' : isDef ? 'Default' : 'Belum dipakai'}</div></div>
+      <div><div class="cat-item-name">${esc(c)}</div><div class="cat-item-sub">${cnt>0 ? cnt+' tracker' : isDef ? 'Default' : 'Belum dipakai'}</div></div>
       ${!isDef
-        ? `<button class="cat-del" ${inUse?'disabled':''} onclick="deleteCat('${c}')">${inUse?'Dipakai':'Hapus'}</button>`
+        ? `<button class="cat-del" ${inUse?'disabled':''} onclick="deleteCat('${escJs(c)}')">${inUse?'Dipakai':'Hapus'}</button>`
         : `<span style="font-size:11px;color:var(--text3);font-weight:600">Default</span>`}
     </div>`;
   }).join('');
@@ -2192,65 +2173,13 @@ document.getElementById('cf-bg').addEventListener('click', e => {
 /* ════════════════════════════════════════
    SUPABASE — AUTH & SYNC
 ════════════════════════════════════════ */
-const SUPA_URL  = 'https://kkrphmvdxxpzdglljoqa.supabase.co';
-const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrcnBobXZkeHhwemRnbGxqb3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NDExODIsImV4cCI6MjEwNzAxNzE4Mn0.eN7KzESeMbd2y-ZGq16G9WvFsYuvFOeHSAC72WPyGR0';
-const supa      = supabase.createClient(SUPA_URL, SUPA_KEY);
+const supa      = Auth.client;
 
-let currentUser = null;   // null = tamu
-let isGuest     = false;
+let currentUser = null;   // diisi shared/auth.js setelah lolos whitelist
 let _syncTimer  = null;
 
-/* ── Auth screen ── */
-async function initAuth() {
-  // Cek session aktif (OAuth redirect kembali ke sini)
-  const { data: { session } } = await supa.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    hideAuthScreen();
-    await loadFromSupabase();
-    return;
-  }
-  // Cek apakah user sudah pilih Guest sebelumnya
-  if (localStorage.getItem('targetin_guest') === '1') {
-    isGuest = true;
-    hideAuthScreen();
-    hydrate();
-    return;
-  }
-  // Tampilkan auth screen
-  document.getElementById('auth-screen').style.display = 'flex';
-}
-
-function hideAuthScreen() {
-  const el = document.getElementById('auth-screen');
-  if (el) el.style.display = 'none';
-  updateSyncBadge('ok');
-}
-
-async function signInGoogle() {
-  const { error } = await supa.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: 'https://arsoagung.github.io/app/targetin' }
-  });
-  if (error) showToast('Gagal login: ' + error.message);
-}
-
-function continueAsGuest() {
-  isGuest = true;
-  localStorage.setItem('targetin_guest', '1');
-  hideAuthScreen();
-  // Cek apakah ada data lokal dari sesi sebelumnya
-  try {
-    const d = JSON.parse(localStorage.getItem('targetin1') || '{}');
-    const hasData = (d.habits || []).length > 0;
-    hydrate();
-    if (hasData) {
-      setTimeout(() => showToast('Ditemukan data lokal dari sesi sebelumnya.'), 400);
-    }
-  } catch(e) {
-    hydrate();
-  }
-}
+// Login ditangani shared/auth.js; fungsi ini cuma dipertahankan karena masih dirujuk template profil
+function signInGoogle() {}
 
 /* ── Load dari Supabase ── */
 async function loadFromSupabase() {
@@ -2434,22 +2363,15 @@ function showSyncInfo() {
   ]);
 }
 
-async function signOut() {
-  const wasLoggedIn = !!currentUser;
-  if (currentUser) await supa.auth.signOut();
+function signOut() { return Auth.signOut(); }
+
+function handleSignedOut() {
   currentUser = null;
-  isGuest = false;
-  localStorage.removeItem('targetin_guest');
-  // Hapus localStorage HANYA kalau keluar dari akun Google
-  // supaya data akun tidak bocor ke sesi Tamu berikutnya.
-  // Kalau keluar dari Tamu, data lokal tetap ada — masuk Tamu lagi = data masih ada.
-  if (wasLoggedIn) {
-    localStorage.removeItem('targetin1');
-  }
+  // data lokal akun dihapus supaya gak bocor ke sesi berikutnya
+  localStorage.removeItem('targetin1');
   habits = []; customCats = [];
   if (ticker) clearInterval(ticker);
   updateSyncBadge('ok');
-  document.getElementById('auth-screen').style.display = 'flex';
 }
 
 function confirmDeleteAccount() {
@@ -2480,18 +2402,19 @@ function confirmDeleteAccount() {
 /* ════════════════════════════════════════
    BOOT
 ════════════════════════════════════════ */
-// Auth screen tersembunyi dulu (ditampilkan oleh initAuth jika perlu)
-document.getElementById('auth-screen').style.display = 'none';
-
-/* Whitelist: kalau Supabase nolak signup, balik ke app dengan error di URL */
-function readAuthUrlError(){
-  var raw = (location.hash || '').replace(/^#/, '') || (location.search || '').replace(/^\?/, '');
-  var d = new URLSearchParams(raw).get('error_description');
-  if (d) history.replaceState(null, '', location.pathname);
-  return d ? 'Akun ini tidak diizinkan. Pakai email yang terdaftar.' : '';
-}
-initAuth();
-{ const _e = readAuthUrlError(); if (_e) setTimeout(() => showToast(_e), 300); }
+Auth.init({
+  name: 'Targetin',
+  tagline: 'Pantau kebiasaanmu, capai targetmu.',
+  accent: '#c8f135',
+  icon: '<svg viewBox="0 0 256 256" fill="currentColor"><path d="M223.85,47.12a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.41,27.07L132.69,64H74.36A15.91,15.91,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A15.91,15.91,0,0,0,192,181.64V123.31l4.77-4.77C223.45,91.86,224.6,59.71,223.85,47.12ZM74.36,80h42.33L77.16,119.52,40,114.34Zm74.41-9.45a76.65,76.65,0,0,1,59.11-22.47,76.46,76.46,0,0,1-22.42,59.16L128,164.68,91.32,128ZM176,181.64,141.67,216l-5.19-37.17L176,139.31Zm-74.16,9.5C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Z"/></svg>',
+  onSignIn: function (user) {
+    currentUser = user; updateSyncBadge('ok');
+    // ada cache lokal: tampilkan langsung, data server menyusul (penting saat offline / sinyal jelek)
+    try { const d = JSON.parse(localStorage.getItem('targetin1') || '{}'); if ((d.habits || []).length) hydrate(); } catch (e) {}
+    loadFromSupabase();
+  },
+  onSignOut: handleSignedOut
+});
 requestAnimationFrame(initIndicator);
 requestAnimationFrame(initSwipeListeners);
 window.addEventListener('resize', () => {
