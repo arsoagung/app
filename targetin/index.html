@@ -366,6 +366,28 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 /* sync badge */
 .sync-badge{display:none !important}
 </style>
+<style id="ui-v2">
+:root{--spring:cubic-bezier(.34,1.56,.64,1)}
+.scroll{padding-bottom:112px}
+.toast{bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:calc(100% - 44px);max-width:386px;padding:0;z-index:300;border-radius:36px;background:rgba(34,35,40,.72);-webkit-backdrop-filter:blur(24px) saturate(1.7);backdrop-filter:blur(24px) saturate(1.7);border:1px solid rgba(255,255,255,.09);box-shadow:0 20px 46px -12px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.07)}
+.bnav-track{background:transparent;box-shadow:none;padding:8px;gap:4px;border-radius:36px}
+.bnav-indicator{display:none}
+.bnav-item{height:auto;flex:1;flex-direction:column;gap:4px;padding:9px 0 8px;border-radius:28px;transform-origin:50% 50%;transition:color .3s,background .35s,transform .5s var(--spring)}
+.bnav-item:active{transform:scale(.88)}
+.bnav-icon{width:23px;height:23px;transform-origin:50% 50%}
+.bnav-icon svg,.bnav-icon .fi{width:22px;height:22px}
+.bnav-label{width:auto!important;opacity:1;overflow:visible;font-size:10px;font-weight:700;color:var(--text2);transition:color .3s}
+.bnav-item.active{background:rgba(200,241,53,.14);animation:tab-pop .62s var(--spring)}
+.bnav-item.active .bnav-label{color:var(--lime)}
+.bnav-item.active .bnav-icon svg{stroke:var(--lime)}
+.bnav-item.active .bnav-icon .fi{fill:var(--lime)}
+.bnav-item.active .bnav-icon{animation:icon-pop .62s var(--spring)}
+.bnav-icon.bounce{animation:none}
+@keyframes tab-pop{0%{transform:scale(.84)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes icon-pop{0%{transform:scale(.7)}55%{transform:scale(1.22)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
 <script src="../shared/auth.js"></script>
@@ -459,7 +481,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
         </button>
       </div>
       <input class="finput" id="stop-dt" type="datetime-local" style="display:none" onchange="validateStopDt()">
-      <div class="fwarn" id="stop-dt-warn">Waktu tidak boleh melebihi saat ini</div>
+      <div class="fwarn" id="stop-dt-warn">Waktu berhenti tidak boleh di masa depan.</div>
     </div>
     <div class="fbtns">
       <button class="fbtn-cancel" onclick="closeStopModal()">Batal</button>
@@ -516,7 +538,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
     <div class="fg">
       <label class="flbl">Mulai Dari</label>
       <input class="finput" id="f-start" type="datetime-local" onchange="onStartChange()">
-      <div class="fwarn" id="f-start-warn">Waktu tidak boleh melebihi saat ini</div>
+      <div class="fwarn" id="f-start-warn">Waktu berhenti tidak boleh di masa depan.</div>
     </div>
 
     <div class="fg">
@@ -715,8 +737,7 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 function allCats() { return [...new Set([...DEFAULT_CATS, ...customCats])]; }
 
 function seed() {
-  habits = [];
-  persist();
+  habits = []; // sengaja tidak persist(): jangan menandai 'dirty' untuk data kosong
 }
 
 /* ════════════════════════════════════════
@@ -1198,6 +1219,13 @@ function confirmArchive(id) {
     [
       { label:'Batal', cls:'cf-cancel' },
       { label:'Arsipkan', cls:'cf-ok', action:() => {
+        if (h.active) {
+          const ts = Date.now(), dur = ts - h.start;
+          if (dur > h.record) h.record = dur;
+          if (!h.history) h.history = [];
+          h.history.unshift({ id:uid(), stoppedAt:ts, dur });
+          h.stoppedAt = ts;
+        }
         h.archived = true; h.active = false;
         if (!h.stoppedAt) h.stoppedAt = Date.now();
         persist(); renderMain();
@@ -1777,9 +1805,23 @@ function submitMasukan() {
 /* ════════════════════════════════════════
    TICKER
 ════════════════════════════════════════ */
+function tickRows() {
+  const tmp = document.createElement('div');
+  habits.forEach(h => {
+    if (!h.active || h.archived) return;
+    const row = document.getElementById('row-' + h.id);
+    if (!row) return;
+    tmp.innerHTML = rowHTML(h);
+    ['.hrow-badge', '.big-time', '.big-sec', '.cpbar', '.hrow-mini-bar'].forEach(sel => {
+      const a = row.querySelector(sel), b = tmp.querySelector(sel);
+      if (a && b && a.innerHTML !== b.innerHTML) a.innerHTML = b.innerHTML;
+      if (a && b && a.getAttribute('style') !== b.getAttribute('style')) a.setAttribute('style', b.getAttribute('style') || '');
+    });
+  });
+}
 function startTicker() {
   if (ticker) clearInterval(ticker);
-  ticker = setInterval(() => { if (currentTab === 'target') renderMain(); }, 1000);
+  ticker = setInterval(() => { if (currentTab === 'target') tickRows(); }, 1000);
 }
 
 /* ════════════════════════════════════════
@@ -1793,6 +1835,7 @@ function openStopModal(id) {
   const dtEl = document.getElementById('stop-dt');
   dtEl.value = toInputDT(Date.now());
   dtEl.max   = toInputDT(Date.now());
+  { const hh = habits.find(x => x.id === id); if (hh) dtEl.min = toInputDT(hh.start); }
   dtEl.style.outline = 'none';
   document.getElementById('stop-dt-warn').style.display = 'none';
   selectStopOpt('now');
@@ -1814,9 +1857,14 @@ function selectStopOpt(v) {
 function validateStopDt() {
   const dtEl = document.getElementById('stop-dt');
   const warn = document.getElementById('stop-dt-warn');
-  const future = new Date(dtEl.value).getTime() > Date.now();
-  warn.style.display = future ? 'block' : 'none';
-  dtEl.style.outline = future ? '2px solid var(--red)' : 'none';
+  const t = new Date(dtEl.value).getTime();
+  const hh = habits.find(x => x.id === stopHabitId);
+  const future = t > Date.now();
+  const early = !!(hh && t <= hh.start);
+  if (early) warn.textContent = 'Waktu berhenti harus setelah waktu mulai.';
+  else if (future) warn.textContent = 'Waktu berhenti tidak boleh di masa depan.';
+  warn.style.display = (future || early) ? 'block' : 'none';
+  dtEl.style.outline = (future || early) ? '2px solid var(--red)' : 'none';
 }
 function doStopConfirm() {
   if (!stopHabitId) return;
@@ -1824,7 +1872,8 @@ function doStopConfirm() {
   if (stopOpt === 'custom') {
     const val = document.getElementById('stop-dt').value;
     if (val) ts = new Date(val).getTime();
-    if (ts > Date.now()) { validateStopDt(); return; }
+    const hc = habits.find(x => x.id === stopHabitId);
+    if (ts > Date.now() || (hc && ts <= hc.start)) { validateStopDt(); return; }
   }
   const h = habits.find(x => x.id === stopHabitId);
   if (!h) return;
@@ -1865,8 +1914,12 @@ function doRestartConfirm() {
   if (restartOpt === 'custom') {
     const val = document.getElementById('restart-dt').value;
     if (val) ts = new Date(val).getTime();
+    if (ts > Date.now()) { showToast('Waktu mulai tidak boleh di masa depan.'); return; }
   }
   const h = habits.find(x => x.id === restartHabitId);
+  if (!h) return;
+  // target tanggal lama sudah lewat -> pakai target durasi saja
+  if (h.goalUntil && h.goalUntil <= ts) h.goalUntil = 0;
   h.start = ts; h.active = true; h.stoppedAt = null; h.archived = false;
   persist(); closeRestartModal();
   switchTab('target', document.getElementById('bnav-target'));
@@ -2182,6 +2235,11 @@ let _syncTimer  = null;
 function signInGoogle() {}
 
 /* ── Load dari Supabase ── */
+function _lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch(e) { return d; } }
+function _localSnapshot() {
+  try { const d = JSON.parse(localStorage.getItem('targetin1') || '{}'); return { habits: d.habits || [], customCats: d.customCats || [] }; }
+  catch(e) { return { habits: [], customCats: [] }; }
+}
 async function loadFromSupabase() {
   try {
     const { data, error } = await supa
@@ -2189,30 +2247,31 @@ async function loadFromSupabase() {
       .select('*')
       .eq('user_id', currentUser.id)
       .order('created_at', { ascending: true });
-
     if (error) throw error;
 
-    if (data && data.length > 0) {
-      habits = data.map(dbToHabit);
-      // load customCats dari localStorage (nanti bisa juga disimpan di DB)
-      try {
-        const d = JSON.parse(localStorage.getItem('targetin1') || '{}');
-        customCats = d.customCats || [];
-      } catch(e) { customCats = []; }
-    } else {
-      // DB kosong — bisa akun baru atau user sudah hapus semua data.
-      // Jangan seed otomatis agar tidak memunculkan sampel ke user yang
-      // sengaja mengosongkan datanya.
-      habits = [];
-      customCats = [];
-      // Hanya push ke Supabase kalau ini akun baru (belum pernah punya data),
-      // ditandai dengan tidak adanya flag 'targetin_seeded_<uid>' di localStorage.
-      const seededKey = 'targetin_seeded_' + currentUser.id;
-      if (!localStorage.getItem(seededKey)) {
-        // Akun benar-benar baru — tidak perlu seed, biarkan kosong
-        localStorage.setItem(seededKey, '1');
-      }
+    const seededKey = 'targetin_seeded_' + currentUser.id;
+    const local = _localSnapshot();
+    const dirty = _lsGet('targetin_dirty', '') === '1' || _lsGet('targetin_pending_del', '[]') !== '[]';
+    const firstSync = !_lsGet(seededKey, '');
+
+    // Perubahan lokal yang belum terkirim, atau cloud kosong tapi lokal ada data (migrasi pertama): lokal menang, dikirim ke cloud
+    if (dirty || (!(data && data.length) && local.habits.length && firstSync)) {
+      habits = local.habits; customCats = local.customCats;
+      localStorage.setItem(seededKey, '1');
+      renderMain(); startTicker();
+      persist();
+      return;
     }
+
+    habits = (data || []).map(dbToHabit);
+    // kategori kustom dari cloud (tabel targetin_settings); kalau belum ada, pakai lokal
+    customCats = local.customCats;
+    try {
+      const { data: st, error: stErr } = await supa.from('targetin_settings').select('data').eq('user_id', currentUser.id).maybeSingle();
+      if (!stErr && st && st.data && Array.isArray(st.data.customCats)) customCats = st.data.customCats;
+    } catch(e) {}
+    try { localStorage.setItem('targetin1', JSON.stringify({ habits, customCats })); } catch(e) {}
+    localStorage.setItem(seededKey, '1');
 
     renderMain();
     startTicker();
@@ -2221,7 +2280,6 @@ async function loadFromSupabase() {
     console.error('Load error:', e);
     showToast('Gagal memuat data dari cloud.');
     updateSyncBadge('error');
-    // Fallback ke lokal
     hydrate();
   }
 }
@@ -2272,15 +2330,19 @@ async function pushAllToSupabase() {
   if (error) console.error('Push all error:', error);
 }
 
-// Track IDs yang dihapus selama sesi ini agar bisa didelete dari Supabase
-let _deletedIds = [];
+// ID yang dihapus disimpan di localStorage supaya tetap terkirim walau app ditutup sebelum sync
+function _pendingDel() { try { return JSON.parse(localStorage.getItem('targetin_pending_del') || '[]'); } catch(e) { return []; } }
+function _setPendingDel(a) { try { localStorage.setItem('targetin_pending_del', JSON.stringify(a)); } catch(e) {} }
+let _deletedIds = _pendingDel();
+let _rev = 0;
 
 /* ── Persist — override fungsi lama ── */
 function persist() {
-  // Selalu simpan lokal
   try { localStorage.setItem('targetin1', JSON.stringify({ habits, customCats })); } catch(e) {}
-  // Kalau login, sync ke Supabase (debounce 800ms)
   if (currentUser) {
+    _rev++;
+    try { localStorage.setItem('targetin_dirty', '1'); } catch(e) {}
+    _setPendingDel(_deletedIds);
     updateSyncBadge('syncing');
     if (_syncTimer) clearTimeout(_syncTimer);
     _syncTimer = setTimeout(syncToSupabase, 800);
@@ -2289,23 +2351,29 @@ function persist() {
 
 async function syncToSupabase() {
   if (!currentUser) return;
+  const rev = _rev;
+  const delSnap = _deletedIds.slice();
   try {
-    // Hapus dari Supabase dulu jika ada yang didelete
-    if (_deletedIds.length) {
+    if (delSnap.length) {
       const { error: delError } = await supa
         .from('targetin_habits')
         .delete()
-        .in('id', _deletedIds)
+        .in('id', delSnap)
         .eq('user_id', currentUser.id);
       if (delError) throw delError;
-      _deletedIds = [];
+      _deletedIds = _deletedIds.filter(x => !delSnap.includes(x));
+      _setPendingDel(_deletedIds);
     }
-    // Upsert yang masih ada
     if (habits.length) {
       const rows = habits.map(habitToDb);
       const { error } = await supa.from('targetin_habits').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
     }
+    // kategori kustom (gagal di sini tidak membatalkan sync utama, mis. tabel belum dibuat)
+    try {
+      await supa.from('targetin_settings').upsert({ user_id: currentUser.id, data: { customCats }, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    } catch(e) {}
+    if (rev === _rev && !_deletedIds.length) { try { localStorage.removeItem('targetin_dirty'); } catch(e) {} }
     updateSyncBadge('ok');
   } catch(e) {
     console.error('Sync error:', e);
@@ -2369,6 +2437,8 @@ function handleSignedOut() {
   currentUser = null;
   // data lokal akun dihapus supaya gak bocor ke sesi berikutnya
   localStorage.removeItem('targetin1');
+  localStorage.removeItem('targetin_dirty'); localStorage.removeItem('targetin_pending_del');
+  _deletedIds = [];
   habits = []; customCats = [];
   if (ticker) clearInterval(ticker);
   updateSyncBadge('ok');
@@ -2385,6 +2455,7 @@ function confirmDeleteAccount() {
           if (currentUser) {
             // Hapus semua habit dari Supabase
             await supa.from('targetin_habits').delete().eq('user_id', currentUser.id);
+            try { await supa.from('targetin_settings').delete().eq('user_id', currentUser.id); } catch(e) {}
             // Hapus akun user
             await supa.auth.signOut();
           }
