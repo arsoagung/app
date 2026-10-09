@@ -384,6 +384,22 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .bnav-item.active .bnav-icon .fi{fill:var(--lime)}
 .bnav-item.active .bnav-icon{animation:icon-pop .62s var(--spring)}
 .bnav-icon.bounce{animation:none}
+/* ── v3: header, shape, ring, label ── */
+:root{--r-lg:28px;--r-md:16px}
+.topbar{position:relative;padding-top:54px}
+.topbar-brand{display:none}
+.topbar-sub{font-size:30px;font-weight:800;letter-spacing:-1px;padding-bottom:14px}
+.topbar-fab{position:absolute;top:54px;right:16px;width:40px;height:40px;padding:0;border-radius:50%;box-shadow:0 6px 16px -4px rgba(0,0,0,.6);transition:transform .45s var(--spring)}
+.topbar-fab svg{width:18px;height:18px}
+.fpill.active{background:#fff;color:#111}
+.cat-group-label,.sec-label,.riw-section-label,.stcat-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:none;letter-spacing:0;margin-bottom:8px}
+.target-divider-lbl{font-size:12px;color:var(--text2);text-transform:none;letter-spacing:0}
+.hrow,.hrow-wrap,.hrow-wrap .hrow,.swipe-bg,.riw-habit-block,.scard{border-radius:var(--r-lg)}
+.hrow-icon{width:42px;height:42px;border-radius:50%}
+.hrow-mini-bar{display:none}
+.hrow-icon.ring{width:42px;height:42px;border-radius:50%;position:relative;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.09) 0)!important}
+.hrow-icon.ring::before{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--bg2)}
+.hrow-icon.ring svg{position:relative}
 @keyframes tab-pop{0%{transform:scale(.84)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
 @keyframes icon-pop{0%{transform:scale(.7)}55%{transform:scale(1.22)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
@@ -757,16 +773,16 @@ function fmtFull(ms) {
 }
 function fmtBadge(ms) {
   const { d, h, m } = decompose(ms);
-  if (d) return `${d}h ${h}j`;
-  if (h) return `${h}j ${m}m`;
-  return `${m}m`;
+  if (d) return h ? `${d} hari ${h} jam` : `${d} hari`;
+  if (h) return m ? `${h} jam ${m} mnt` : `${h} jam`;
+  return `${m} mnt`;
 }
 function fmtCompact(ms) {
   const { d, h, m, s } = decompose(ms);
-  if (d) return `${d}h ${h}j ${m}m`;
-  if (h) return `${h}j ${m}m ${s}d`;
-  if (m) return `${m}m ${s}d`;
-  return `${s}d`;
+  if (d) return `${d} hari ${h} jam ${m} mnt`;
+  if (h) return `${h} jam ${m} mnt ${s} dtk`;
+  if (m) return `${m} mnt ${s} dtk`;
+  return `${s} dtk`;
 }
 function fmtGoal(ms) {
   if (!ms) return 'Tanpa target';
@@ -1072,7 +1088,7 @@ function rowHTML(h) {
     <div class="hrow${exp?' expanded':''}${!ia?' inactive':''}" id="row-${h.id}"
          data-id="${h.id}" data-active="${ia}" data-archived="${isArchived}">
     <div class="hrow-head" onclick="toggleRow('${h.id}')">
-      <div class="hrow-icon" style="background:${ia ? esc(h.color)+'18' : 'var(--bg3)'}">${iSvg(h.icon,18,iconCol)}</div>
+      <div class="hrow-icon${ia && gms && p !== null ? ' ring' : ''}" style="background:${ia ? esc(h.color)+'22' : 'var(--bg3)'};--p:${p === null ? 0 : p};--c:${esc(h.color)}">${iSvg(h.icon,18,iconCol)}</div>
       <div class="hrow-info">
         <div class="hrow-name" style="color:var(--text)">${esc(h.name)}</div>
         ${!exp ? `<div class="hrow-sub" style="color:${ia?'var(--text2)':'var(--text3)'}">
@@ -1812,7 +1828,7 @@ function tickRows() {
     const row = document.getElementById('row-' + h.id);
     if (!row) return;
     tmp.innerHTML = rowHTML(h);
-    ['.hrow-badge', '.big-time', '.big-sec', '.cpbar', '.hrow-mini-bar'].forEach(sel => {
+    ['.hrow-badge', '.big-time', '.big-sec', '.cpbar', '.hrow-icon'].forEach(sel => {
       const a = row.querySelector(sel), b = tmp.querySelector(sel);
       if (a && b && a.innerHTML !== b.innerHTML) a.innerHTML = b.innerHTML;
       if (a && b && a.getAttribute('style') !== b.getAttribute('style')) a.setAttribute('style', b.getAttribute('style') || '');
@@ -2032,7 +2048,7 @@ function setTargetUI(goalMs, goalUntil) {
 }
 
 function openAddModal() {
-  editingId = null; fmIcon = ICON_KEYS[0]; fmColor = COLORS[0]; fmCat = '';
+  editingId = null; fmIcon = ICON_KEYS[0]; fmColor = COLORS[habits.length % COLORS.length]; fmCat = '';
   document.getElementById('modal-h2').textContent = 'Tambah Target';
   document.getElementById('f-name').value = '';
   const now = toInputDT(Date.now() - new Date().getSeconds()*1000);
