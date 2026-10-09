@@ -280,8 +280,6 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
 .iopt{padding:10px 6px;border-radius:var(--r12);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;transition:background .1s}
 .iopt svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .iopt.sel{background:var(--lime-dim)}
-.igroup-lbl{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--text2);padding:8px 2px 0}
-.igroup-lbl:first-child{padding-top:0}
 .iopt.sel svg{stroke:var(--lime)}
 .cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .copt{height:32px;border-radius:var(--r8);cursor:pointer;border:none;transition:transform .1s}
@@ -680,7 +678,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100
    ICONS
 ════════════════════════════════════════ */
 const ICONS = {
-  rokok:       `<svg viewBox="0 0 24 24"><rect x="2" y="16" width="14" height="4" rx="1"/><path d="M12 16v4M19 16v4M22 16v4"/><path d="M18 12c0-1.8 2-1.8 2-3.6S18 6.6 18 4.8"/></svg>`,
+  fasting:     `<svg viewBox="0 0 24 24"><path d="M5 3v5a3 3 0 0 0 6 0V3M8 3v18"/><path d="M19 21V3c-3 1.5-4.5 4-4.5 7.5 0 1.5.8 2.5 4.5 2.5"/></svg>`,
   gula:        `<svg viewBox="0 0 24 24"><path d="M6 8h12l-1.4 12H7.4L6 8z"/><path d="M5 8h14"/><path d="M13.5 8L15 3h3"/><path d="M8.5 13.5h7"/></svg>`,
   junkfood:    `<svg viewBox="0 0 24 24"><path d="M4 11a8 6.5 0 0 1 16 0H4z"/><path d="M3 14.5h18"/><path d="M5 17.5h14l-.9 2.2a1.5 1.5 0 0 1-1.4 1H7.3a1.5 1.5 0 0 1-1.4-1L5 17.5z"/></svg>`,
   begadang:    `<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/><path d="M18 3v4M16 5h4"/></svg>`,
@@ -698,16 +696,10 @@ const ICONS = {
   book:        `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/></svg>`,
 };
 // ikon lama (data yang sudah tersimpan) dipetakan ke ikon terdekat
-const ICON_LEGACY = { fast:'target', angry:'marah', ice:'kafein', run:'olahraga', muscle:'olahraga', phone:'nonton', drink:'gula', smoke:'rokok', sleep:'begadang', water:'target', yoga:'olahraga', coffee:'kafein', sugar:'gula', money:'jajan', walk:'olahraga', brain:'overthinking', social:'target', sun:'target', spicy:'junkfood' };
+const ICON_LEGACY = { fast:'fasting', angry:'marah', ice:'kafein', run:'olahraga', muscle:'olahraga', phone:'nonton', drink:'gula', smoke:'target', sleep:'begadang', water:'target', yoga:'olahraga', coffee:'kafein', sugar:'gula', money:'jajan', walk:'olahraga', brain:'overthinking', social:'target', sun:'target', spicy:'junkfood' };
 // nama otomatis saat ikon dipilih (bisa diedit)
-const ICON_LABELS = { rokok:'Tanpa Rokok', gula:'Tanpa Gula', junkfood:'Tanpa Junk Food', begadang:'Tanpa Begadang', kafein:'Tanpa Kafein', olahraga:'Rajin Olahraga', marah:'Tanpa Marah', overthinking:'Tanpa Overthinking', game:'Tanpa Main Game', nonton:'Tanpa Nonton Berlebihan', jajan:'Tanpa Jajan Impulsif', belanja:'Tanpa Belanja Online' };
-const ICON_GROUPS = [
-  { t:'Kesehatan',     k:['rokok','gula','junkfood','begadang','kafein','olahraga'] },
-  { t:'Emosi',         k:['marah','overthinking'] },
-  { t:'Produktivitas', k:['game','nonton'] },
-  { t:'Keuangan',      k:['jajan','belanja'] },
-  { t:'Umum',          k:['target','star','heart','book'] },
-];
+const ICON_LABELS = { fasting:'Intermittent Fasting', gula:'No Sugar', junkfood:'No Junk Food', begadang:'No Late Nights', kafein:'No Caffeine', olahraga:'Exercise', marah:'No Anger', overthinking:'No Overthinking', game:'No Gaming', nonton:'No Binge-Watching', jajan:'No Impulse Spending', belanja:'No Online Shopping' };
+const ICON_ORDER = ['fasting','gula','junkfood','begadang','kafein','olahraga','marah','overthinking','game','nonton','jajan','belanja','target','star','heart','book'];
 const ICON_KEYS = Object.keys(ICONS);
 const COLORS = ['#c8f135','#9b72f8','#60a5fa','#3dd68c','#ff6060','#f5c030','#f472b6','#fb923c','#6ee7b7','#a78bfa','#38bdf8','#e879a0'];
 const DEFAULT_CATS = ['Kesehatan','Emosi','Produktivitas','Keuangan'];
@@ -1950,10 +1942,8 @@ function doRestartConfirm() {
    ADD / EDIT MODAL
 ════════════════════════════════════════ */
 function buildPickerUI() {
-  document.getElementById('igrid').innerHTML = ICON_GROUPS.map(g =>
-    `<div class="igroup-lbl">${g.t}</div>` + g.k.map(k =>
-      `<div class="iopt${k===fmIcon?' sel':''}" title="${esc(ICON_LABELS[k]||k)}" onclick="pickIcon('${k}')">${iSvg(k,20,k===fmIcon?'var(--purple)':'#fff')}</div>`
-    ).join('')
+  document.getElementById('igrid').innerHTML = ICON_ORDER.map(k =>
+    `<div class="iopt${k===fmIcon?' sel':''}" title="${esc(ICON_LABELS[k]||k)}" onclick="pickIcon('${k}')">${iSvg(k,20,k===fmIcon?'var(--purple)':'#fff')}</div>`
   ).join('');
   document.getElementById('cgrid').innerHTML = COLORS.map(c =>
     `<div class="copt${c===fmColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`
