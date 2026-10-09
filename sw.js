@@ -11,7 +11,7 @@
 
    Naikkan VERSION kalau mau buang semua cache lama.
    ═══════════════════════════════════════════════════════════════════ */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = 'shell-' + VERSION;
 const LIB   = 'lib-' + VERSION;
 const NET_TIMEOUT = 4000;
@@ -25,7 +25,7 @@ const PRECACHE = [
   'coffeelog/', 'coffeelog/index.html',
   'targetin/', 'targetin/index.html',
   'karnote/',  'karnote/index.html',
-  'sehatin/',  'sehatin/index.html', 'sehatin/app.html',
+  'sehatin/',  'sehatin/index.html',
   'sehatin/js/shared.js', 'sehatin/js/data.js'
 ];
 const LIB_PRECACHE = [SDK, XLSX];

@@ -270,7 +270,7 @@
     else go();
   }
 
-  /* dipakai halaman yang cuma butuh guard (mis. sehatin/app.html) */
+  /* keluar (dipakai tombol Keluar di tiap app) */
   async function signOut(o) {
     if (o && o.denied) { try { sessionStorage.setItem(DENIED_FLAG, '1'); } catch (e) {} }
     return client.auth.signOut();

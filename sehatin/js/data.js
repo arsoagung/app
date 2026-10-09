@@ -30,7 +30,7 @@ function curKey() {
 }
 
 /* ═══ BACA DATA ═══
-   Panggil setelah requireAuth() berhasil. Habis selesai, otomatis
+   Panggil dari onSignIn Auth.init() (user sudah lolos whitelist). Habis selesai, otomatis
    manggil renderAll() — jadi tiap halaman WAJIB punya fungsi
    renderAll() sendiri (isinya beda-beda tergantung halaman itu
    mau nampilin apa: beranda beda sama statistik, dst). */

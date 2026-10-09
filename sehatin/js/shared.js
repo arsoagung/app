@@ -1,9 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════
    SHARED.JS — Sehatin
-   Dipakai di index.html dan app.html.
+   Dipakai di index.html.
    Isinya cuma hal-hal umum yang dibutuhin dimana-mana:
    - koneksi ke Supabase
-   - cek "udah login belum" (auth guard)
    - dark mode
    - utils tanggal
    - toast & helper kecil
@@ -18,50 +17,17 @@
 const sb = Auth.client;
 
 /* ═══ STATE UMUM ═══
-   currentUser diisi otomatis begitu requireAuth() atau checkSession()
-   berhasil. Halaman lain (data.js, script masing-masing halaman)
+   currentUser diisi di index.html begitu Auth.init() meloloskan user. Halaman lain (data.js, script masing-masing halaman)
    tinggal baca variabel ini, gak perlu getSession() ulang. */
 var currentUser = null;
 
-/* ═══ AUTH GUARD ═══
-   Panggil requireAuth() di AWAL script tiap halaman yang butuh login
-   (app.html). Kalau belum login, otomatis
-   ditendang balik ke index.html. Kalau udah login, currentUser keisi
-   dan halaman lanjut jalan normal.
-
-   Contoh pakai di halaman lain:
-     (async function () {
-       var user = await requireAuth();
-       if (!user) return;   // udah di-redirect, stop di sini
-       // lanjut render halaman...
-     })();
-*/
-async function requireAuth() {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) {
-    window.location.replace(getIndexPath());
-    return null;
-  }
-  /* sesi masih ada tapi email sudah dicabut dari whitelist → keluarkan */
-  const allowed = await Auth.isAllowed();
-  if (allowed === false) {
-    await Auth.signOut({ denied: true });
-    window.location.replace(getIndexPath());
-    return null;
-  }
-  currentUser = data.session.user;
-  return currentUser;
-}
-
-/* Path balik ke halaman login. */
-function getIndexPath() {
-  return 'index.html';
-}
-
+/* ═══ LOGOUT ═══
+   Login/whitelist diurus Auth.init() di index.html. Setelah keluar,
+   halaman dimuat ulang supaya layar login tampil dan state bersih. */
 async function doLogout() {
-  await sb.auth.signOut();
+  await Auth.signOut();
   currentUser = null;
-  window.location.replace(getIndexPath());
+  window.location.reload();
 }
 
 /* ═══ DARK MODE ═══ */
