@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#121211">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arso Apps">
+<title>Arso Apps</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#121211;--text:#f2f0ea;--text2:#8d8b84;--spring:cubic-bezier(.34,1.56,.64,1);--ease:cubic-bezier(.22,1,.36,1);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;-webkit-font-smoothing:antialiased;}
+body{display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));background:radial-gradient(90% 50% at 50% 0%,rgba(255,255,255,.07),transparent 65%),var(--bg);}
+main{width:100%;max-width:380px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:26px 22px;}
+.app{display:flex;flex-direction:column;align-items:center;gap:11px;text-decoration:none;color:inherit;animation:in .7s var(--ease) both;animation-delay:calc(var(--i) * 70ms + 60ms);}
+.tile{width:100%;aspect-ratio:1;border-radius:34%;display:flex;align-items:center;justify-content:center;background:var(--bgc);color:var(--fg);box-shadow:0 20px 36px -18px var(--glow),inset 0 1px 0 rgba(255,255,255,.18);transition:transform .5s var(--spring),box-shadow .3s;}
+.tile svg{width:46%;height:46%;}
+.app:active .tile{transform:scale(.88);}
+.name{font-size:13.5px;font-weight:700;letter-spacing:-.1px;}
+@keyframes in{from{opacity:0;transform:translateY(22px) scale(.9);}to{opacity:1;transform:none;}}
+@media (hover:hover){.app:hover .tile{transform:scale(1.05);}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important;}}
+</style>
+</head>
+<body>
+<main>
+  <div class="grid">
+    <a class="app" href="coffeelog/" style="--i:0">
+      <div class="tile" style="--bgc:#D97757;--fg:#1c0f08;--glow:rgba(217,119,87,.6)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>
+      </div>
+      <span class="name">Coffeelog</span>
+    </a>
+    <a class="app" href="targetin/" style="--i:1">
+      <div class="tile" style="--bgc:#c8f135;--fg:#161a05;--glow:rgba(200,241,53,.5)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      </div>
+      <span class="name">Targetin</span>
+    </a>
+    <a class="app" href="karnote/" style="--i:2">
+      <div class="tile" style="--bgc:#e6ff3d;--fg:#151513;--glow:rgba(230,255,61,.5)">
+        <svg viewBox="0 0 256 256" fill="currentColor"><path d="M240,104H229.2L201.42,41.5A16,16,0,0,0,186.8,32H69.2a16,16,0,0,0-14.62,9.5L26.8,104H16a8,8,0,0,0,0,16h8v72a16,16,0,0,0,16,16H64a16,16,0,0,0,16-16v-8h96v8a16,16,0,0,0,16,16h24a16,16,0,0,0,16-16V120h8a8,8,0,0,0,0-16ZM69.2,48H186.8l24.89,56H44.31ZM64,192H40V120H216v72H192V176a8,8,0,0,0-8-8H72a8,8,0,0,0-8,8Zm24-40a12,12,0,1,1-12-12A12,12,0,0,1,88,152Zm104,0a12,12,0,1,1-12-12A12,12,0,0,1,192,152Z"/></svg>
+      </div>
+      <span class="name">KarNote</span>
+    </a>
+    <a class="app" href="sehatin/" style="--i:3">
+      <div class="tile" style="--bgc:#FCD1E6;--fg:#E53935;--glow:rgba(252,209,230,.45)">
+        <svg viewBox="0 0 256 256" fill="currentColor"><path d="M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0c-3.35-1.8-63.55-34.69-92.68-80.89A4,4,0,0,1,34.92,144H72a8,8,0,0,0,6.66-3.56l9.34-14,25.34,38a8,8,0,0,0,9.16,3.16,8.23,8.23,0,0,0,4.28-3.34L140.28,144H160a8,8,0,0,0,8-8.53,8.18,8.18,0,0,0-8.25-7.47H136a8,8,0,0,0-6.66,3.56l-9.34,14-25.34-38a8,8,0,0,0-9.17-3.16,8.25,8.25,0,0,0-4.27,3.34L67.72,128H23.53a4,4,0,0,1-3.83-2.81A76.93,76.93,0,0,1,16,102,62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z"/></svg>
+      </div>
+      <span class="name">Sehatin</span>
+    </a>
+  </div>
+</main>
+</body>
+</html>

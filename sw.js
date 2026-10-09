@@ -21,6 +21,7 @@ const XLSX = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 
 /* relatif terhadap lokasi sw.js */
 const PRECACHE = [
+  './', 'index.html',
   'shared/auth.js',
   'coffeelog/', 'coffeelog/index.html',
   'targetin/', 'targetin/index.html',
