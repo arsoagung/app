@@ -376,7 +376,7 @@ canvas{display:block;}
 .svg-chip.selected svg{color:var(--lime);}
 
 /* TOAST */
-.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:#1d1d1a;border-radius:12px;padding:11px 18px;font-size:12px;font-weight:600;color:var(--text);z-index:700;opacity:0;transition:opacity .3s;pointer-events:none;max-width:340px;text-align:center;border:1px solid rgba(230,255,61,.2);}
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:#1d1d1a;border-radius:12px;padding:11px 18px;font-size:12px;font-weight:600;color:var(--text);z-index:100000;opacity:0;transition:opacity .3s;pointer-events:none;max-width:340px;text-align:center;border:1px solid rgba(230,255,61,.2);}
 .toast.show{opacity:1;}
 
 .page{display:none;}
@@ -862,10 +862,10 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
   </div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="svcDate"></div>
-    <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="svcKm" placeholder="15000"></div>
+    <div class="form-group"><label class="form-label">KM Odometer</label><input type="text" inputmode="numeric" class="form-input" id="svcKm" placeholder="15000"></div>
   </div>
   <div class="form-row">
-    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="svcCost" placeholder="150000"></div>
+    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="text" inputmode="numeric" class="form-input" id="svcCost" placeholder="150000"></div>
     <div class="form-group"><label class="form-label">Tempat Servis</label><input type="text" class="form-input" id="svcPlace" placeholder="Bengkel ABC"></div>
   </div>
   <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="svcNote" placeholder="Detail pekerjaan..."></textarea></div>
@@ -878,9 +878,9 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
   <div class="form-group"><label class="form-label">Kendaraan</label><select class="form-select" id="fuelVehicle"></select></div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="fuelDate"></div>
-    <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="fuelKm"></div>
+    <div class="form-group"><label class="form-label">KM Odometer</label><input type="text" inputmode="numeric" class="form-input" id="fuelKm"></div>
   </div>
-  <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="fuelCost" placeholder="80000"></div>
+  <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="text" inputmode="numeric" class="form-input" id="fuelCost" placeholder="80000"></div>
   <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="fuelNote" style="min-height:60px" placeholder="SPBU, full tank..."></textarea></div>
   <button class="btn-primary" onclick="saveFuel()">Simpan</button>
 </div></div>
@@ -891,7 +891,7 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
   <div class="form-group"><label class="form-label">Kendaraan</label><select class="form-select" id="odoVehicle"></select></div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="odoDate"></div>
-    <div class="form-group"><label class="form-label">KM Saat Ini</label><input type="number" class="form-input" id="odoKm"></div>
+    <div class="form-group"><label class="form-label">KM Saat Ini</label><input type="text" inputmode="numeric" class="form-input" id="odoKm"></div>
   </div>
   <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="odoNote" style="min-height:60px" placeholder="Pulang mudik, dll..."></textarea></div>
   <button class="btn-primary" onclick="saveOdo()">Simpan</button>
@@ -903,7 +903,7 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
   <div class="form-group"><label class="form-label">Kendaraan</label><select class="form-select" id="washVehicle"></select></div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="washDate"></div>
-    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="number" class="form-input" id="washCost" placeholder="Opsional"></div>
+    <div class="form-group"><label class="form-label">Biaya (Rp)</label><input type="text" inputmode="numeric" class="form-input" id="washCost" placeholder="Opsional"></div>
   </div>
   <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="washNote" style="min-height:60px" placeholder="Tempat cuci, snow wash, dll..."></textarea></div>
   <button class="btn-primary" onclick="saveWash()">Simpan</button>
@@ -944,7 +944,7 @@ body{background:radial-gradient(120% 50% at 85% -8%,rgba(230,255,61,.09),transpa
     <div class="form-group"><label class="form-label">Plat Nomor</label><input type="text" class="form-input" id="evPlate" style="text-transform:uppercase"></div>
     <div class="form-group"><label class="form-label">Tahun</label><select class="form-select" id="evYear"></select></div>
   </div>
-  <div class="form-group"><label class="form-label">KM Odometer</label><input type="number" class="form-input" id="evKm"></div>
+  <div class="form-group"><label class="form-label">KM Awal</label><input type="text" inputmode="numeric" class="form-input" id="evKm"></div>
   <button class="btn-primary" onclick="saveEditVehicle()">Simpan Perubahan</button>
 </div></div>
 
@@ -1066,7 +1066,10 @@ var odoPeriod='year',odoOffset=0;
 
 var hr=new Date().getHours();
 document.getElementById('greetingText').textContent=hr<12?'Selamat Pagi':hr<17?'Selamat Siang':hr<20?'Selamat Sore':'Selamat Malam';
-var todayStr=new Date().toISOString().split('T')[0];
+/* tanggal lokal (toISOString = UTC, jadi di WIB sebelum jam 07.00 kebaca "kemarin") */
+var todayStr=(function(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(new Date());
+/* "45.230" / "45,230" / "45 230" → "45230"; kosong → "" */
+function numVal(id){return String(document.getElementById(id).value||'').replace(/\D/g,'');}
 ['svcDate','fuelDate','odoDate'].forEach(function(id){document.getElementById(id).value=todayStr;});
 
 // Build year dropdown
@@ -1126,6 +1129,7 @@ function saveData(){
   localStorage.setItem('sk9_f',JSON.stringify(fuels));
   localStorage.setItem('sk9_o',JSON.stringify(odos));
   localStorage.setItem('sk9_cs',JSON.stringify(compSettings));
+  try{localStorage.setItem('kn_dirty',String(Date.now()));}catch(e){}
   syncToSupabase();
 }
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
@@ -1166,7 +1170,20 @@ function getCurKm(vid){
   services.forEach(function(s){if(s.vehicleId===vid&&s.km)all.push(+s.km);});
   fuels.forEach(function(f){if(f.vehicleId===vid&&f.km)all.push(+f.km);});
   odos.forEach(function(o){if(o.vehicleId===vid&&o.km)all.push(+o.km);});
-  return all.length?Math.max.apply(null,all):+v.km;
+  // baseKm = KM awal kendaraan; kendaraan lama tanpa baseKm pakai v.km hanya kalau belum ada catatan
+  var base=v.baseKm!=null?+v.baseKm:(all.length?0:+v.km);
+  all.push(base||0);
+  return Math.max.apply(null,all);
+}
+/* batas KM yang masuk akal untuk tanggal tertentu (urut waktu), abaikan entri yang sedang diedit */
+function kmBounds(vid,date,skipId){
+  var v=getV(vid),lo=v&&v.baseKm!=null?+v.baseKm:0,hi=Infinity;
+  [services,fuels,odos].forEach(function(a){a.forEach(function(e){
+    if(e.vehicleId!==vid||!e.km||e.id===skipId)return;
+    if(e.date<=date){if(+e.km>lo)lo=+e.km;}
+    else if(+e.km<hi)hi=+e.km;
+  });});
+  return{lo:lo,hi:hi};
 }
 function nextMilestone(lastKm,interval){if(!interval)return 0;return Math.ceil((lastKm+1)/interval)*interval;}
 function getRemStatus(vid,comp){
@@ -1540,10 +1557,12 @@ function findEntry(kind,id){
 }
 function deleteCurrentEntry(){
   if(!confirm('Hapus catatan ini?'))return;
+  var _f=findEntry(currentEntryKind,currentEntryId),_del=_f&&_f.data;
   if(currentEntryKind==='service')services=services.filter(function(x){return x.id!==currentEntryId;});
   else if(currentEntryKind==='fuel')fuels=fuels.filter(function(x){return x.id!==currentEntryId;});
   else odos=odos.filter(function(x){return x.id!==currentEntryId;});
   deleteFromSupabase('karnote_entries',currentEntryId);
+  if(_del&&_del.km)recalcVehicleKm(_del.vehicleId,_del.km);
   saveData();closeEntryPopup();renderAll();
 }
 var _editingEntryId=null,_editingEntryKind=null;
@@ -1565,6 +1584,8 @@ function editCurrentEntry(){
     document.querySelectorAll('.type-chip').forEach(function(el){
       if(el.dataset.type===d.type){el.classList.add('selected');selectedType=[d.type];}
     });
+    // jenis custom gak ada di grid → masukkan sebagai tag supaya tetap bisa disimpan
+    if(!selectedType.length&&d.type){document.getElementById('customTypeInput').value=d.type;addCustomType();}
   } else if(editKind==='fuel'){
     openFuelModal();
     document.getElementById('fuelVehicle').value=d.vehicleId;
@@ -1979,7 +2000,7 @@ function openFuelModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleS
 function openWashModal(){_editingEntryId=null;_editingEntryKind=null;popVehicleSel('washVehicle');['washCost','washNote'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('washDate').value=todayStr;openModal('washModal');}
 function saveWash(){
   var vid=document.getElementById('washVehicle').value,date=document.getElementById('washDate').value;
-  var cost=document.getElementById('washCost').value,note=document.getElementById('washNote').value.trim();
+  var cost=numVal('washCost'),note=document.getElementById('washNote').value.trim();
   if(!vid){showToast('⚠️ Pilih kendaraan!');return;}
   if(!date){showToast('⚠️ Isi tanggal!');return;}
   services.push({id:'s'+Date.now()+'_'+Math.floor(Math.random()*9999),vehicleId:vid,type:'Cuci',date:date,km:null,cost:cost||null,place:'',note:note});
@@ -1994,7 +2015,7 @@ function openEditVehicleModal(id){
   document.getElementById('evtype-mobil').classList.toggle('selected',v.type==='mobil');
   document.getElementById('evName').value=v.name;document.getElementById('evPlate').value=v.plate;
   document.getElementById('evYear').value=v.year||new Date().getFullYear();
-  document.getElementById('evKm').value=v.km||0;
+  document.getElementById('evKm').value=(v.baseKm!=null?v.baseKm:v.km)||0;
   openModal('editVehicleModal');
 }
 function selectVType(t){selectedVType=t;document.getElementById('vtype-motor').classList.toggle('selected',t==='motor');document.getElementById('vtype-mobil').classList.toggle('selected',t==='mobil');}
@@ -2003,7 +2024,7 @@ function selectEVType(t){selectedEVType=t;document.getElementById('evtype-motor'
 // SAVES
 function saveService(){
   var vid=document.getElementById('svcVehicle').value,date=document.getElementById('svcDate').value;
-  var km=document.getElementById('svcKm').value,cost=document.getElementById('svcCost').value;
+  var km=numVal('svcKm'),cost=numVal('svcCost');
   var place=document.getElementById('svcPlace').value.trim(),note=document.getElementById('svcNote').value.trim();
   if(!vid){showToast('⚠️ Pilih kendaraan!');return;}
   var allTypes=selectedType.concat(svcCustomTypes);
@@ -2035,8 +2056,8 @@ function saveService(){
 }
 function saveFuel(){
   var vid=document.getElementById('fuelVehicle').value,date=document.getElementById('fuelDate').value;
-  var km=document.getElementById('fuelKm').value;
-  var cost=document.getElementById('fuelCost').value;
+  var km=numVal('fuelKm');
+  var cost=numVal('fuelCost');
   var note=document.getElementById('fuelNote').value.trim();
   if(!vid){showToast('⚠️ Pilih kendaraan!');return;}
   if(!date){showToast('⚠️ Isi tanggal!');return;}
@@ -2056,15 +2077,15 @@ function saveFuel(){
   saveData();closeModal('fuelModal');activeVehicleId=vid;renderAll();
 }
 function saveOdo(){
-  var vid=document.getElementById('odoVehicle').value,km=document.getElementById('odoKm').value;
+  var vid=document.getElementById('odoVehicle').value,km=numVal('odoKm');
   var date=document.getElementById('odoDate').value,note=document.getElementById('odoNote').value.trim();
   if(!vid){showToast('⚠️ Pilih kendaraan!');return;}if(!km){showToast('⚠️ Isi KM!');return;}
-  // Validasi: KM tidak boleh lebih rendah dari odometer terakhir (kecuali sedang edit entry yang sama)
-  var curKm=getCurKm(vid);
+  if(!date){showToast('⚠️ Isi tanggal!');return;}
   var isEditingSelf=(_editingEntryKind==='odo'&&_editingEntryId);
-  if(!isEditingSelf&&curKm>0&&+km<curKm){
-    showToast('⚠️ KM tidak boleh lebih rendah dari odometer saat ini ('+Number(curKm).toLocaleString('id-ID')+' km)');return;
-  }
+  // Validasi berdasarkan urutan tanggal: gak boleh di bawah catatan sebelumnya / di atas catatan sesudahnya
+  var b=kmBounds(vid,date,isEditingSelf?_editingEntryId:null);
+  if(+km<b.lo){showToast('⚠️ KM di tanggal ini minimal '+fKm(b.lo)+' (catatan sebelumnya)');return;}
+  if(+km>b.hi){showToast('⚠️ KM di tanggal ini maksimal '+fKm(b.hi)+' (ada catatan sesudahnya)');return;}
   // Edit mode
   if(isEditingSelf){
     var idx=odos.findIndex(function(o){return o.id===_editingEntryId;});
@@ -2171,7 +2192,7 @@ function heroEmptyTap(){
 
 function saveVehicle(){
   var name=document.getElementById('vName').value.trim(),plate=document.getElementById('vPlate').value.trim().toUpperCase();
-  var year=document.getElementById('vYear').value,km=document.getElementById('vKm').value||'0';
+  var year=document.getElementById('vYear').value,km=numVal('vKm')||'0';
   if(!selectedVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
   if(!_pendingPhoto['v']){alert('Tambah foto kendaraan dulu!');return;}
   var v={id:'v'+Date.now(),type:selectedVType,name:name,plate:plate,year:year,km:+km,baseKm:+km,color:selectedColor};
@@ -2180,10 +2201,10 @@ function saveVehicle(){
 }
 function saveEditVehicle(){
   var name=document.getElementById('evName').value.trim(),plate=document.getElementById('evPlate').value.trim().toUpperCase();
-  var year=document.getElementById('evYear').value,km=document.getElementById('evKm').value||'0';
+  var year=document.getElementById('evYear').value,km=numVal('evKm')||'0';
   if(!selectedEVType){alert('Pilih tipe!');return;}if(!name){alert('Isi nama!');return;}if(!plate){alert('Isi plat!');return;}
   var newPhoto=_pendingPhoto['ev']?commitPhoto(editingVehicleId,_pendingPhoto['ev'],(getV(editingVehicleId)||{}).photo):null;
-  vehicles.forEach(function(v){if(v.id===editingVehicleId){v.type=selectedEVType;v.name=name;v.plate=plate;v.year=year;v.km=+km;v.baseKm=+km;v.color=selectedEColor;if(newPhoto)v.photo=newPhoto;}});
+  vehicles.forEach(function(v){if(v.id===editingVehicleId){v.type=selectedEVType;v.name=name;v.plate=plate;v.year=year;v.baseKm=+km;v.km=getCurKm(v.id);v.color=selectedEColor;if(newPhoto)v.photo=newPhoto;}});
   saveData();closeModal('editVehicleModal');renderAll();
 }
 function deleteVehicle(){
@@ -2218,11 +2239,25 @@ document.getElementById('evPlate').addEventListener('input',function(){this.valu
 // CLEAR ALL DATA
 function confirmClearAllData(){openModal('clearDataModal');}
 function clearAllData(){
+  // hapus juga di server, kalau nggak data balik lagi pas loadFromSupabase
+  vehicles.forEach(function(v){if(v.photo)removePhoto(v.photo);});
+  if(_currentUserId&&window._supabase){
+    var sb=window._supabase,uid=_currentUserId;
+    Promise.all([
+      sb.from('karnote_entries').delete().eq('user_id',uid),
+      sb.from('karnote_vehicles').delete().eq('user_id',uid),
+      sb.from('karnote_settings').delete().eq('user_id',uid)
+    ]).then(function(rs){
+      var err=rs.filter(function(r){return r&&r.error;})[0];
+      if(err)showToast('Gagal menghapus di server: '+err.error.message);
+    });
+  }
   vehicles=[];services=[];fuels=[];odos=[];compSettings={};
   activeVehicleId=null;
   localStorage.removeItem('sk9_v');localStorage.removeItem('sk9_s');
   localStorage.removeItem('sk9_f');localStorage.removeItem('sk9_o');
   localStorage.removeItem('sk9_cs');
+  localStorage.removeItem('kn_dirty');
   // Reset banner
   document.getElementById('bannerKm').textContent='— km';
   document.getElementById('bannerSub').textContent='Ketuk untuk statistik';
@@ -2307,6 +2342,7 @@ function clearLocalAppData(){
   localStorage.removeItem('sk9_o');
   localStorage.removeItem('sk9_cs');
   localStorage.removeItem('al_profile');
+  localStorage.removeItem('kn_dirty');
 }
 
 function logOut(){
@@ -2355,11 +2391,21 @@ function loadFromSupabase(callback){
       return;
     }
 
+    // Ada perubahan lokal yang belum masuk server (offline / sync gagal / user nyimpan pas loading):
+    // jangan ditimpa, kirim ulang aja
+    if(localStorage.getItem('kn_dirty')){
+      syncToSupabase();
+      callback();
+      return;
+    }
+
     // Reset in-memory state dulu sebelum load dari Supabase
     vehicles = []; services = []; fuels = []; odos = [];
 
     if(vRes.data && vRes.data.length){
       vehicles = vRes.data.map(function(r){ return r.data; });
+      // urutan hasil query gak dijamin → pakai urutan yang disimpan (drag-sort)
+      vehicles.sort(function(a, b){ return (a.ord == null ? 1e9 : a.ord) - (b.ord == null ? 1e9 : b.ord); });
     }
     if(eRes.data && eRes.data.length){
       eRes.data.forEach(function(r){
@@ -2392,9 +2438,11 @@ function syncToSupabase(){
   var uid = _currentUserId;
 
   // Vehicles
-  var vRows = vehicles.map(function(v){
+  var vRows = vehicles.map(function(v, i){
+    v.ord = i;   // simpan urutan kendaraan
     return { id: v.id, user_id: uid, data: v, updated_at: new Date().toISOString() };
   });
+  var stamp = localStorage.getItem('kn_dirty');
 
   // Entries
   var eRows = [];
@@ -2416,7 +2464,16 @@ function syncToSupabase(){
     vRows.length ? sb.from('karnote_vehicles').upsert(vRows) : Promise.resolve(),
     eRows.length ? sb.from('karnote_entries').upsert(eRows) : Promise.resolve(),
     sb.from('karnote_settings').upsert(cRow)
-  ]).catch(function(err){ console.warn('Sync error:', err); });
+  ]).then(function(rs){
+    var err = rs.filter(function(r){ return r && r.error; })[0];
+    if(err){
+      console.warn('Sync error:', err.error.message);
+      showToast('Belum tersimpan ke server — akan dicoba lagi');
+      return;
+    }
+    // hanya bersihkan penanda kalau gak ada simpanan baru selama sync berjalan
+    if(localStorage.getItem('kn_dirty') === stamp) localStorage.removeItem('kn_dirty');
+  }).catch(function(err){ console.warn('Sync error:', err); });
 }
 
 // Hapus satu entry dari Supabase saat delete
