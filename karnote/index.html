@@ -1177,13 +1177,13 @@ function getCurKm(vid){
 }
 /* batas KM yang masuk akal untuk tanggal tertentu (urut waktu), abaikan entri yang sedang diedit */
 function kmBounds(vid,date,skipId){
-  var v=getV(vid),lo=v&&v.baseKm!=null?+v.baseKm:0,hi=Infinity;
+  var v=getV(vid),lo=v&&v.baseKm!=null?+v.baseKm:0,hi=Infinity,fromBase=lo>0;
   [services,fuels,odos].forEach(function(a){a.forEach(function(e){
     if(e.vehicleId!==vid||!e.km||e.id===skipId)return;
-    if(e.date<=date){if(+e.km>lo)lo=+e.km;}
+    if(e.date<=date){if(+e.km>lo){lo=+e.km;fromBase=false;}}
     else if(+e.km<hi)hi=+e.km;
   });});
-  return{lo:lo,hi:hi};
+  return{lo:lo,hi:hi,fromBase:fromBase};
 }
 function nextMilestone(lastKm,interval){if(!interval)return 0;return Math.ceil((lastKm+1)/interval)*interval;}
 function getRemStatus(vid,comp){
@@ -2084,7 +2084,7 @@ function saveOdo(){
   var isEditingSelf=(_editingEntryKind==='odo'&&_editingEntryId);
   // Validasi berdasarkan urutan tanggal: gak boleh di bawah catatan sebelumnya / di atas catatan sesudahnya
   var b=kmBounds(vid,date,isEditingSelf?_editingEntryId:null);
-  if(+km<b.lo){showToast('⚠️ KM di tanggal ini minimal '+fKm(b.lo)+' (catatan sebelumnya)');return;}
+  if(+km<b.lo){showToast(b.fromBase?'⚠️ KM lebih rendah dari KM Awal kendaraan ('+fKm(b.lo)+'). Ubah di Pengaturan → Kendaraan kalau KM Awal-nya salah.':'⚠️ KM di tanggal ini minimal '+fKm(b.lo)+' (catatan sebelumnya)');return;}
   if(+km>b.hi){showToast('⚠️ KM di tanggal ini maksimal '+fKm(b.hi)+' (ada catatan sesudahnya)');return;}
   // Edit mode
   if(isEditingSelf){
