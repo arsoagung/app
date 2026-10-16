@@ -66,7 +66,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .pill{display:block;margin-top:2px;font-size:12px;font-weight:600}
 .pill.pos{color:var(--accent)}.pill.neg{color:var(--neg)}.pill.mut{color:var(--faint)}
 
-.alloc{padding:16px}
+.alloc-old{padding:16px}
 .abar{display:flex;gap:3px;height:10px;border-radius:6px;overflow:hidden;margin-bottom:14px}
 .abar i{display:block;height:100%;min-width:3px}
 .arow{display:flex;align-items:center;gap:10px;padding:5px 0}
@@ -129,10 +129,23 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .btn:active{transform:scale(.985)}
 
 /* nav */
-.tabbar{position:fixed;bottom:calc(10px + var(--safe-b));left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),380px);display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px;background:rgba(21,29,24,.82);box-shadow:0 14px 40px rgba(0,0,0,.55);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border-radius:28px;box-shadow:0 12px 36px rgba(0,0,0,.5);z-index:20}
+.tabbar{position:fixed;bottom:calc(10px + var(--safe-b));left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),380px);display:grid;grid-template-columns:1fr 1fr 58px 1fr 1fr;align-items:center;gap:2px;padding:6px;background:rgba(21,29,24,.82);box-shadow:0 14px 40px rgba(0,0,0,.55);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border-radius:28px;box-shadow:0 12px 36px rgba(0,0,0,.5);z-index:20}
 .tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 7px;border-radius:22px;font-size:10.5px;font-weight:600;color:var(--faint);transition:color .2s,background .2s}
 .tab .i{width:22px;height:22px}
 .tab.on{color:var(--accent);background:var(--surface-3)}
+.addbtn{width:48px;height:48px;border-radius:50%;margin:0 auto;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);box-shadow:0 6px 18px rgba(45,212,143,.28);transition:transform .12s}
+.addbtn:active{transform:scale(.92)}.addbtn .i{width:22px;height:22px;stroke-width:2.4}
+.dnwrap{position:relative;width:220px;height:220px;margin:6px auto 0}
+.dnwrap svg{width:220px;height:220px;display:block}
+.seg-arc{cursor:pointer;transition:opacity .2s,stroke-width .2s}
+.dnc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 46px}
+.dnc small{font-size:11.5px;color:var(--muted);font-weight:600}.dnc b{font-size:16px;font-weight:800;letter-spacing:-.01em;margin:1px 0}.dnc span{font-size:11.5px;font-weight:600}
+.dnlist{padding:6px 10px 10px}
+.dnrow{display:flex;align-items:center;gap:10px;width:100%;padding:11px 8px;border-radius:14px;transition:background .15s}
+.dnrow.on{background:var(--surface-3)}
+.dnrow .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.dnrow .n{flex:1;font-weight:600}.dnrow .p{font-weight:700;width:54px;text-align:right}.dnrow .v{width:106px;text-align:right;color:var(--muted)}
+.dninfo{padding:2px 14px 14px}
 .iconbtn{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);transition:transform .12s}
 .iconbtn:active{transform:scale(.94)}.iconbtn .i{width:20px;height:20px;stroke-width:2.4}
 .cwrap{overflow-x:auto;scrollbar-width:none;padding:6px 0 4px}
@@ -174,6 +187,7 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-6h4v6"/></symbol>
   <symbol id="i-hist" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-5.5 8-5.5s6.5 1.5 8 5.5"/></symbol>
+  <symbol id="i-goal" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15.5 3.6A9 9 0 0 1 20.4 8.5H15.5z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5"/></symbol>
@@ -193,6 +207,8 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
   <main id="view"></main>
   <nav class="tabbar">
     <button class="tab" data-act="nav" data-v="home"><svg class="i"><use href="#i-home"/></svg>Beranda</button>
+    <button class="tab" data-act="nav" data-v="tujuan"><svg class="i"><use href="#i-goal"/></svg>Tujuan</button>
+    <button class="addbtn" data-act="fab" aria-label="Tambah"><svg class="i"><use href="#i-plus"/></svg></button>
     <button class="tab" data-act="nav" data-v="riwayat"><svg class="i"><use href="#i-hist"/></svg>Riwayat</button>
     <button class="tab" data-act="nav" data-v="profil"><svg class="i"><use href="#i-user"/></svg>Profil</button>
   </nav>
@@ -362,27 +378,24 @@ function drawCandles(wrap,info,P,lab){
 /* =====================================================================
    State & router
    ===================================================================== */
-const S={gmode:'ret',auth:false,view:'home',goal:null,range:'YTD',gRange:'AT',sheet:false,mode:'topup',filter:'Semua'};
+const S={sel:null,from:'home',gmode:'ret',auth:false,view:'home',goal:null,range:'YTD',gRange:'AT',sheet:false,mode:'topup',filter:'Semua'};
 const $=s=>document.querySelector(s);
 const view=$('#view');
 const RANGES=['1M','3M','YTD','AT'];
 
-function go(v,goal){S.view=v;S.goal=goal||null;render();window.scrollTo(0,0)}
+function go(v,goal){if(v==='detail'&&(S.view==='home'||S.view==='tujuan'))S.from=S.view;S.view=v;S.goal=goal||null;render();window.scrollTo(0,0)}
 function render(){
   if(!S.auth)return;
-  const fn={home:renderHome,detail:renderDetail,riwayat:renderRiwayat,profil:renderProfil}[S.view];
+  const fn={home:renderHome,tujuan:renderTujuan,detail:renderDetail,riwayat:renderRiwayat,profil:renderProfil}[S.view];
   fn();
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===(S.view==='detail'?'home':S.view)));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===(S.view==='detail'?(S.from||'tujuan'):S.view)));
 }
 const chipsHTML=(cur,act)=>`<div class="chips">${RANGES.map(k=>`<button class="chip${cur===k?' on':''}" data-act="${act}" data-k="${k}">${k}</button>`).join('')}<button class="chip" disabled title="Data belum cukup 1 tahun">1Y</button></div>`;
 const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'down')}${rpS(d)}${p==null?'':' ('+pct(p)+')'}</span><span class="since">${since}</span>`;
 
 /* ---------- Beranda ---------- */
-function renderHome(){
-  const idx=M.idxFor(S.range),pts=M.total.slice(idx),base=pts[0],last=pts[pts.length-1];
-  const d=last.v-base.v,p=base.v?d/base.v:null,since='sejak '+dlabel(base.t);
-  const tot=last.v;
-  const goals=M.tujuan.map(g=>{
+function goalRows(){
+  return M.tujuan.map(g=>{
     let chip='<span class="pill mut">Tanpa return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
       if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.r)}">${pct(lp.r)} bulan ini</span>`}
@@ -390,14 +403,49 @@ function renderHome(){
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
       <div><div class="gname">${g.name}</div><div class="gsub">${g.meta.sub}</div></div>
       <div class="gright"><div class="gval">${rp(g.now)}</div>${chip}</div></button>`}).join('');
-  const alloc=M.tujuan.slice().sort((a,b)=>b.now-a.now);
-  const abar=alloc.map(g=>`<i style="width:${g.now/tot*100}%;background:${g.meta.color}"></i>`).join('');
-  const arows=alloc.map(g=>`<div class="arow"><span class="dot" style="background:${g.meta.color}"></span><span class="n">${g.name}</span><span class="p">${(g.now/tot*100).toFixed(1).replace('.',',')}%</span><span class="v">${rp(g.now)}</span></div>`).join('');
+}
+const pctS=x=>(x*100).toFixed(1).replace('.',',')+'%';
+function drawDonut(){
+  const el=$('#dn');if(!el)return;
+  const items=M.tujuan.filter(g=>g.now>0).slice().sort((a,b)=>b.now-a.now),tot=items.reduce((s,g)=>s+g.now,0);
+  const R=84,SW=26,C=2*Math.PI*R,gap=items.length>1?4:0;let off=0,arcs='';
+  items.forEach(g=>{const share=g.now/tot*C,len=Math.max(1,share-gap);
+    arcs+=`<circle class="seg-arc" data-g="${esc(g.name)}" cx="110" cy="110" r="${R}" fill="none" stroke="${g.meta.color}" stroke-width="${SW}" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 110 110)"/>`;off+=share});
+  el.innerHTML=`<svg viewBox="0 0 220 220" role="img" aria-label="Komposisi tujuan">${arcs}</svg><div class="dnc" id="dnc"></div>`;
+  $('#dnList').innerHTML=items.map(g=>`<button class="dnrow" data-act="dsel" data-g="${esc(g.name)}"><span class="dot" style="background:${g.meta.color}"></span><span class="n">${esc(g.name)}</span><span class="p">${pctS(g.now/tot)}</span><span class="v">${rp(g.now)}</span></button>`).join('');
+  el.querySelectorAll('.seg-arc').forEach(c=>{
+    c.addEventListener('click',()=>{S.sel=S.sel===c.dataset.g?null:c.dataset.g;updateDonut()});
+    c.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')updateDonut(c.dataset.g)});
+    c.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')updateDonut()});
+  });
+  if(S.sel&&!items.some(g=>g.name===S.sel))S.sel=null;
+  updateDonut();
+}
+function updateDonut(preview){
+  const el=$('#dn');if(!el)return;
+  const hot=preview||S.sel,tot=M.tujuan.reduce((s,g)=>s+g.now,0),g=hot?M.tujuan.find(x=>x.name===hot):null;
+  el.querySelectorAll('.seg-arc').forEach(c=>{const on=!hot||c.dataset.g===hot;c.setAttribute('stroke-opacity',on?'1':'.28');c.setAttribute('stroke-width',hot&&on?'32':'26')});
+  $('#dnList').querySelectorAll('.dnrow').forEach(r=>r.classList.toggle('on',r.dataset.g===S.sel));
+  $('#dnc').innerHTML=g?`<small>${esc(g.name)}</small><b>${rp(g.now)}</b><span style="color:${g.meta.color}">${pctS(g.now/tot)} dari total</span>`:`<small>Total</small><b>${rp(tot)}</b><span style="color:var(--muted)">${M.tujuan.length} tujuan</span>`;
+  const sg=S.sel?M.tujuan.find(x=>x.name===S.sel):null;
+  $('#dnInfo').innerHTML=sg?`<button class="btn primary" style="margin-top:8px" data-act="go" data-g="${esc(sg.name)}">Lihat detail ${esc(sg.name)}</button>`:'';
+}
+function renderTujuan(){
+  const tot=M.tujuan.reduce((s,g)=>s+g.now,0);
+  view.innerHTML=`
+  <div class="topbar"><div class="brand">Tujuan</div></div>
+  <section class="hero"><div class="eyebrow">Total semua tujuan</div><div class="big">${rp(tot)}</div><div class="hint">Ketuk tujuan untuk lihat detail</div></section>
+  <section style="margin-top:14px">${goalRows()}</section>`;
+}
+function renderHome(){
+  const idx=M.idxFor(S.range),pts=M.total.slice(idx),base=pts[0],last=pts[pts.length-1];
+  const d=last.v-base.v,p=base.v?d/base.v:null,since='sejak '+dlabel(base.t);
+  const tot=last.v;
   const GP=S.gmode==='nw'
     ?M.total.slice(1).map((p,i)=>({e:p.t,r:M.total[i].v?(p.v-M.total[i].v)/M.total[i].v:0,profit:p.v-M.total[i].v,partial:p.t===TODAY_T&&!isMonthEnd(p.t)}))
     :M.periodsFor(M.allRet,M.allStart);
   view.innerHTML=`
-  <div class="topbar"><div class="brand"><span class="logo">${icon('logo')}</span>Jurnal Keuangan</div><button class="iconbtn" data-act="fab" aria-label="Tambah">${icon('plus')}</button></div>
+  <div class="topbar"><div class="brand"><span class="logo">${icon('logo')}</span>Jurnal Keuangan</div></div>
   <section class="hero">
     <div class="eyebrow">Net Worth · ${dlabel(TODAY_T)}</div>
     <div class="big" id="hBig">${rp(tot)}</div>
@@ -406,11 +454,11 @@ function renderHome(){
     <div class="chart" id="hChart"></div>
     ${chipsHTML(S.range,'range')}
   </section>
-  <section><h2>Tujuan</h2>${goals}</section>
-  <section><h2>Komposisi</h2><div class="card alloc"><div class="abar">${abar}</div>${arows}</div></section>
+  <section><h2>Tujuan <small>Ketuk bagian grafik</small></h2><div class="card"><div class="dnwrap" id="dn"></div><div class="dnlist" id="dnList"></div><div class="dninfo" id="dnInfo"></div></div></section>
   <section><h2>Growth bulanan <small>${S.gmode==='nw'?'Total net worth':'Total investasi'}</small></h2>
     <div class="card"><div class="ctabs"><button class="ctab${S.gmode==='nw'?'':' on'}" data-act="gmode" data-k="ret">Return investasi</button><button class="ctab${S.gmode==='nw'?' on':''}" data-act="gmode" data-k="nw">Net worth</button></div><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div>
     <div class="note">${S.gmode==='nw'?'Perubahan total net worth per bulan, termasuk setoran. Sama seperti baris Growth di GSheet.':'Return investasi saja, tanpa setoran. Dihitung sejak Agu 2026, saat topup mulai dicatat.'} Tiap batang = persen bulan itu. Hijau naik, merah turun. Geser untuk bulan lain.${GP.some(x=>x.partial)?' *Bulan berjalan, s/d '+dlabel(TODAY_T)+'.':''}</div></section>`;
+  drawDonut();
   drawCandles($('#cWrap'),$('#cInfo'),GP,S.gmode==='nw'?'perubahan':'profit');
   drawChart($('#hChart'),[{pts:pts,color:'#2dd48f'}],{label:'Grafik net worth',onHover:pt=>{
     if(!pt){$('#hBig').textContent=rp(tot);$('#hDelta').innerHTML=deltaHTML(d,p,since);return}
@@ -499,7 +547,7 @@ function renderRiwayat(){
     list+=txRow(x)});
   if(cur)list+='</div>';
   view.innerHTML=`
-  <div class="topbar"><div class="brand">Riwayat topup</div><button class="iconbtn" data-act="fab" aria-label="Tambah">${icon('plus')}</button></div>
+  <div class="topbar"><div class="brand">Riwayat topup</div></div>
   <section class="hero"><div class="eyebrow">Total setoran</div><div class="big">${rp(total)}</div>
     <div class="hint">${tx.length} transaksi sejak Agu 2026</div></section>
   <section><h2>Setoran per bulan</h2><div class="card cols">${bars}</div></section>
@@ -594,7 +642,8 @@ document.addEventListener('click',e=>{
   else if(a==='retry')enter()
   else if(a==='nav')go(el.dataset.v);
   else if(a==='go')go('detail',el.dataset.g);
-  else if(a==='back')go('home');
+  else if(a==='back')go(S.from||'tujuan');
+  else if(a==='dsel'){S.sel=S.sel===el.dataset.g?null:el.dataset.g;updateDonut()}
   else if(a==='range'){S.range=el.dataset.k;render()}
   else if(a==='grange'){S.gRange=el.dataset.k;render()}
   else if(a==='gmode'){S.gmode=el.dataset.k;render()}
