@@ -27,6 +27,7 @@ const PRECACHE = [
   'targetin/', 'targetin/index.html',
   'karnote/',  'karnote/index.html',
   'sehatin/',  'sehatin/index.html',
+  'jurnal-keuangan/', 'jurnal-keuangan/index.html',
   'sehatin/js/shared.js', 'sehatin/js/data.js'
 ];
 const LIB_PRECACHE = [SDK, XLSX];
