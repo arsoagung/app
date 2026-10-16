@@ -334,24 +334,27 @@ function drawChart(el,series,o){
 }
 
 
-/* Candle bulanan: badan = kumulatif return awal -> akhir bulan (tanpa wick, data cuma akhir bulan) */
+/* Growth bulanan: satu garis dasar di 0%, tiap bulan satu batang (gaya Pluang) */
 function drawCandles(wrap,info,P,lab){
-  const step=56,bw=30,pl=44,pr=14,pt=30,pb=26,H=210,W=Math.max(wrap.clientWidth,pl+pr+P.length*step);
-  let cum=0;const C=P.map(x=>{const o=cum;cum=(1+cum)*(1+(x.r||0))-1;return {x,o,c:cum}});
-  let lo=Math.min(0,...C.map(k=>Math.min(k.o,k.c))),hi=Math.max(0,...C.map(k=>Math.max(k.o,k.c)));
-  const pad=(hi-lo)*.12||.01;hi+=pad;if(lo<0)lo-=pad;
-  const Y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pt-pb),X=i=>pl+step*i+step/2;
+  const step=58,bw=36,pl=46,pr=14,pt=30,pb=28,H=220,W=Math.max(wrap.clientWidth,pl+pr+P.length*step);
+  let cum=0;const C=P.map(x=>{const r=x.r||0;cum=(1+cum)*(1+r)-1;return {x,r,c:cum}});
+  const rs=C.map(k=>k.r);
+  let lo=Math.min(0,...rs),hi=Math.max(0,...rs);
+  const raw=(hi-lo)/3||.01,mag=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,2,2.5,5,10].map(m=>m*mag).find(v=>v>=raw)||raw;
+  lo=Math.floor(lo/st)*st;hi=Math.ceil(hi/st)*st;if(hi===lo)hi=lo+st;
+  const Y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pt-pb),X=i=>pl+step*i+step/2,y0=Y(0);
+  const f=v=>(v<0?'\u2212':'')+Math.abs(v*100).toFixed(2).replace('.',',')+'%';
   let g='';
-  for(let i=0;i<4;i++){const v=lo+(hi-lo)*i/3,y=Y(v);g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#17211b"/><text x="${pl-10}" y="${y+3.5}" fill="#5d6c65" font-size="10" text-anchor="end">${(v*100).toFixed(0)}%</text>`}
-  g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2c3b34"/>`;
-  C.forEach((k,i)=>{const up=k.c>=k.o,col=up?'#2dd48f':'#f0786d',y1=Y(Math.max(k.o,k.c)),y2=Y(Math.min(k.o,k.c)),h=Math.max(3,y2-y1);
-    g+=`<g class="cand" data-i="${i}"><rect x="${X(i)-step/2}" y="0" width="${step}" height="${H}" fill="transparent"/><rect class="cb" x="${X(i)-bw/2}" y="${y1}" width="${bw}" height="${h}" rx="6" fill="${col}" fill-opacity=".9"/>
-      <text x="${X(i)}" y="${y1-8}" fill="${col}" font-size="10.5" font-weight="700" text-anchor="middle">${pct(k.x.r||0,1)}</text>
-      <text x="${X(i)}" y="${H-7}" fill="#8b9b93" font-size="11" text-anchor="middle">${MON[new Date(k.x.e).getUTCMonth()]}${k.x.partial?'*':''}</text></g>`});
-  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Growth bulanan total investasi">${g}</svg>`;
+  for(let v=lo;v<=hi+st/2;v+=st){const y=Y(v);if(Math.abs(v)<st/1000)continue;g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#141d18"/><text x="${pl-10}" y="${y+3.5}" fill="#5d6c65" font-size="10" text-anchor="end">${f(v)}</text>`}
+  g+=`<text x="${pl-10}" y="${y0+3.5}" fill="#8b9b93" font-size="10" text-anchor="end">0%</text><line x1="${pl-6}" x2="${W-pr}" y1="${y0}" y2="${y0}" stroke="#2c3b34"/>`;
+  C.forEach((k,i)=>{const up=k.r>=0,col=up?'#2dd48f':'#f0786d',yv=Y(k.r),top=Math.min(y0,yv),h=Math.max(3,Math.abs(yv-y0));
+    g+=`<g class="cand" data-i="${i}"><rect x="${X(i)-step/2}" y="0" width="${step}" height="${H}" fill="transparent"/><rect class="cb" x="${X(i)-bw/2}" y="${top}" width="${bw}" height="${h}" rx="5" fill="${col}"/>
+      <text x="${X(i)}" y="${up?top-8:top+h+15}" fill="#e9f1ed" font-size="10.5" font-weight="700" text-anchor="middle">${f(k.r)}</text>
+      <text x="${X(i)}" y="${H-8}" fill="#8b9b93" font-size="11" text-anchor="middle">${MON[new Date(k.x.e).getUTCMonth()]}${k.x.partial?'*':''}</text></g>`});
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Growth bulanan">${g}</svg>`;
   const sel=i=>{const k=C[i],x=k.x;
-    info.innerHTML=`<b>${MONF[new Date(x.e).getUTCMonth()]}${x.partial?'*':''} <span style="color:${(x.r||0)>=0?'var(--accent)':'var(--neg)'};font-weight:700">${pct(x.r||0)}</span></b><span>${lab} ${rpS(x.profit)} · kumulatif ${pct(k.c)}</span>`;
-    wrap.querySelectorAll('.cb').forEach((r,j)=>r.setAttribute('fill-opacity',j===i?'1':'.4'))};
+    info.innerHTML=`<b>${MONF[new Date(x.e).getUTCMonth()]}${x.partial?'*':''} <span style="color:${k.r>=0?'var(--accent)':'var(--neg)'};font-weight:700">${pct(k.r)}</span></b><span>${lab} ${rpS(x.profit)} \u00b7 kumulatif ${pct(k.c)}</span>`;
+    wrap.querySelectorAll('.cb').forEach((r,j)=>r.setAttribute('fill-opacity',j===i?'1':'.45'))};
   wrap.querySelectorAll('.cand').forEach(el=>el.addEventListener('click',()=>sel(+el.dataset.i)));
   sel(C.length-1);wrap.scrollLeft=wrap.scrollWidth;
 }
@@ -407,7 +410,7 @@ function renderHome(){
   <section><h2>Komposisi</h2><div class="card alloc"><div class="abar">${abar}</div>${arows}</div></section>
   <section><h2>Growth bulanan <small>${S.gmode==='nw'?'Total net worth':'Total investasi'}</small></h2>
     <div class="card"><div class="ctabs"><button class="ctab${S.gmode==='nw'?'':' on'}" data-act="gmode" data-k="ret">Return investasi</button><button class="ctab${S.gmode==='nw'?' on':''}" data-act="gmode" data-k="nw">Net worth</button></div><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div>
-    <div class="note">${S.gmode==='nw'?'Perubahan total net worth per bulan, termasuk setoran. Sama seperti baris Growth di GSheet.':'Return investasi saja, tanpa setoran. Dihitung sejak Agu 2026, saat topup mulai dicatat.'} Hijau naik, merah turun. Geser untuk bulan lain.${GP.some(x=>x.partial)?' *Bulan berjalan, s/d '+dlabel(TODAY_T)+'.':''}</div></section>`;
+    <div class="note">${S.gmode==='nw'?'Perubahan total net worth per bulan, termasuk setoran. Sama seperti baris Growth di GSheet.':'Return investasi saja, tanpa setoran. Dihitung sejak Agu 2026, saat topup mulai dicatat.'} Tiap batang = persen bulan itu. Hijau naik, merah turun. Geser untuk bulan lain.${GP.some(x=>x.partial)?' *Bulan berjalan, s/d '+dlabel(TODAY_T)+'.':''}</div></section>`;
   drawCandles($('#cWrap'),$('#cInfo'),GP,S.gmode==='nw'?'perubahan':'profit');
   drawChart($('#hChart'),[{pts:pts,color:'#2dd48f'}],{label:'Grafik net worth',onHover:pt=>{
     if(!pt){$('#hBig').textContent=rp(tot);$('#hDelta').innerHTML=deltaHTML(d,p,since);return}
