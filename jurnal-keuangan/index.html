@@ -433,7 +433,7 @@ function renderDetail(){
     chartSeries=[{pts:vals,color:meta.color},{pts:mp,color:'#8b9b93',dashed:true}];
     stats=`<div class="stats"><div class="card stat"><div class="l">Modal</div><div class="v">${rp(modal)}</div></div>
       <div class="card stat"><div class="l">Profit</div><div class="v ${sgn(profit)==='pos'?'pos-t':'neg-t'}">${rpS(profit)}</div></div>
-      <div class="card stat"><div class="l">Return</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>
+      <div class="card stat"><div class="l">Return ${key==='AT'?'total':key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>
       <div class="hint" style="margin-top:8px">Garis putus-putus = modal (saldo awal + topup).</div>`;
     onHover=pt=>{if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
       $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`};
