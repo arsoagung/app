@@ -95,12 +95,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .badge{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface);color:var(--muted)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
 .stat{padding:12px 10px}.stat .l{font-size:11.5px;color:var(--muted)}.stat .v{font-weight:800;margin-top:3px;font-size:12.5px;white-space:nowrap}
-.brow{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:9px 0}
-.btrack{height:8px;border-radius:5px;background:var(--surface-3);overflow:hidden}
-.btrack i{display:block;height:100%;border-radius:5px}
-.blist{padding:6px 14px}
 
-.bval{text-align:right;font-weight:700;min-width:96px}.bval small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
 .acc{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
 
 .acc .tag{font-size:11px;color:var(--faint);margin-left:6px}
@@ -535,12 +530,10 @@ function renderDetail(){
       $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`};
   }
   /* growth bulanan */
-  let growth='';
+  let growth='',GP=null;
   if(g.hasReturn){
-    const P=M.periodsFor(g.retAccs,g.retStart),mx=Math.max(...P.map(x=>Math.abs(x.r||0)),.0001);
-    growth=`<section><h2>Monthly growth</h2><div class="card blist">${P.map(x=>`<div class="brow"><span style="font-weight:600">${MON[new Date(x.e).getUTCMonth()]}</span>
-      <div class="btrack"><i style="width:${Math.max(3,Math.abs(x.r||0)/mx*100)}%;background:${(x.r||0)>=0?'var(--accent)':'var(--neg)'}"></i></div>
-      <div class="bval ${(x.r||0)>=0?'pos-t':'neg-t'}">${x.r==null?'–':pct(x.r)}<small>${rpS(x.profit)}</small></div></div>`).join('')}</div></section>`;
+    GP=M.periodsFor(g.retAccs,g.retStart);
+    growth=`<section><h2>Monthly growth</h2><div class="card"><div class="cinfo" id="dInfo"></div><div class="cwrap" id="dWrap"></div></div></section>`;
   }
   /* rekening */
   const accRows=g.accs.map(a=>{const ak=M.byAkun[a],lu=ak.aktif?lastUpd(a):null;return `<div class="acc"><span>${ak.nama}${ak.aktif?'':'<span class="tag">history</span>'}${lu?`<small>Updated ${updLabel(lu)}</small>`:''}</span><b>${rp(M.val(a,TODAY_T))}</b></div>`}).join('');
@@ -561,6 +554,7 @@ function renderDetail(){
   <section><h2>Accounts</h2><div class="card">${accRows}</div></section>
   <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>`;
   drawChart($('#hChart'),chartSeries,{label:'Chart '+g.name,onHover});
+  if(GP)drawCandles($('#dWrap'),$('#dInfo'),GP,'profit');
 }
 function txRow(x,g){
   g=g||M.tujuan.find(t=>t.accs.includes(x.ke));const t=T(x.tanggal);
