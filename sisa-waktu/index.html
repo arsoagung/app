@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1216">
+<meta name="description" content="Kalkulator sisa waktu hidup berdasarkan angka harapan hidup Indonesia. Satu dot satu bulan atau satu hari. Tanpa login, tanpa menyimpan data.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e1216'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23ffcf70'/%3E%3C/svg%3E">
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#0e1216}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Sisa Waktu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+  /* Layout: satu kolom mobile. Judul + toggle Bulan/Hari, banner BPS, pilihan cara isi (usia / tanggal lahir), angka persen sisa, lalu grid dot dengan sumbu berpercik di posisi hari ini. Dot yang sudah lewat abu, dot sisa menyala. */
+  :root {
+    --bg: #0e1216;
+    --field: #1d242c;
+    --field-focus: #28313b;
+    --ink: #e8edf2;
+    --muted: #8b96a5;
+    --lit: #ffcf70;
+    --lit-glow: rgba(255, 207, 112, 0.5);
+    --lit-now: #fff0c8;
+    --spent: #353d47;
+    --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-block: 18px 24px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 440px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+  .sub { margin: 2px 0 0; font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* Toggle */
+  .seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--field); border-radius: 12px; flex: none; }
+  .seg button {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 9px;
+    cursor: pointer;
+    outline: none;
+    white-space: nowrap;
+  }
+  .seg button[aria-pressed="true"] { background: var(--field-focus); color: var(--ink); }
+  .seg button:focus-visible { background: var(--field-focus); color: var(--ink); }
+
+  /* Banner BPS */
+  .info {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--field);
+    border-radius: 14px;
+    padding: 10px 14px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .info svg { flex: none; margin-top: 2px; color: var(--lit); }
+  .info p { margin: 0; }
+  .info b { color: var(--ink); font-weight: 700; }
+  .info a { color: var(--lit); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* Input */
+  .input { display: flex; flex-direction: column; gap: 10px; }
+  .modes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .fields { display: grid; gap: 10px; }
+  .ages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dob { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 1.1fr); }
+
+  .num {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+    background: var(--field);
+    border-radius: 14px;
+    padding: 10px 14px;
+  }
+  .num:focus-within { background: var(--field-focus); }
+  .num b { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.5; white-space: nowrap; }
+  .num b.ph { color: var(--muted); font-size: 16px; font-weight: 600; }
+  .num span { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .num svg { margin-left: auto; align-self: center; color: var(--muted); flex: none; }
+  .num select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: 0;
+    font-size: 16px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  /* Angka */
+  .hero { display: flex; flex-direction: column; gap: 2px; }
+  .hero-label { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .pct {
+    margin: 0;
+    font-size: 52px;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--lit);
+  }
+  .pct small { font-size: 0.5em; font-weight: 700; margin-left: 2px; letter-spacing: 0; color: var(--muted); }
+  .countdown { margin: 0; font-size: 14px; font-weight: 500; color: var(--muted); }
+  .countdown b { color: var(--ink); font-weight: 700; }
+
+  /* Dot */
+  .stage { position: relative; }
+  .grid { display: grid; grid-template-columns: repeat(36, minmax(0, 1fr)); }
+  .grid > i { display: grid; place-items: center; aspect-ratio: 1; }
+  .dot { width: 68%; aspect-ratio: 1; border-radius: 50%; display: block; }
+  .dot.l { background: var(--spent); }
+  .dot.r { background: var(--lit); box-shadow: 0 0 5px var(--lit-glow); }
+  .dot.n {
+    background: linear-gradient(90deg, var(--spent) var(--f, 0%), var(--lit) var(--f, 0%));
+    box-shadow: 0 0 8px 1px var(--lit-glow);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.45); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dot.n { animation: none; }
+  }
+  #days { display: block; max-width: 100%; }
+  #spark { position: absolute; pointer-events: none; }
+
+  .foot { margin: 0; font-size: 11.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <header>
+    <div>
+      <h1>Sisa Waktu</h1>
+      <p class="sub" id="sub">900 dot, 1 dot = 1 bulan</p>
+    </div>
+    <div class="seg" role="group" aria-label="Satuan dot">
+      <button type="button" id="u-month" aria-pressed="true">Bulan</button>
+      <button type="button" id="u-day" aria-pressed="false">Hari</button>
+    </div>
+  </header>
+
+  <aside class="info">
+    <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.18"/><path d="M8 7.2v4M8 4.9v.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <p>Harapan hidup rata-rata orang Indonesia <b>74,47 tahun</b> (BPS, 2025). Di sini dibulatkan jadi <b>75 tahun</b>. <a href="https://ekonomi.bisnis.com/read/20251105/9/1926368/usia-harapan-hidup-warga-ri-naik-pengeluaran-per-kapita-rp128-juta" target="_blank" rel="noopener">Sumber</a></p>
+  </aside>
+
+  <div class="input">
+    <div class="modes">
+      <span>Isi dengan</span>
+      <div class="seg" role="group" aria-label="Cara mengisi">
+        <button type="button" id="m-age" aria-pressed="true">Usia</button>
+        <button type="button" id="m-dob" aria-pressed="false">Tanggal lahir</button>
+      </div>
+    </div>
+
+    <div class="fields ages" id="f-age">
+      <div class="num">
+        <b id="yv">–</b><span>tahun</span>
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <select id="yy" aria-label="Usia, tahun"></select>
+      </div>
+      <div class="num">
+        <b id="mv">–</b><span>bulan</span>
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <select id="mm" aria-label="Usia, bulan"></select>
+      </div>
+    </div>
+
+    <div class="fields dob" id="f-dob" hidden>
+      <div class="num">
+        <b id="dv" class="ph">Tgl</b>
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <select id="dd" aria-label="Tanggal lahir, tanggal"></select>
+      </div>
+      <div class="num">
+        <b id="bv" class="ph">Bln</b>
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <select id="bm" aria-label="Tanggal lahir, bulan"></select>
+      </div>
+      <div class="num">
+        <b id="rv" class="ph">Thn</b>
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <select id="by" aria-label="Tanggal lahir, tahun"></select>
+      </div>
+    </div>
+  </div>
+
+  <section class="hero" aria-live="polite">
+    <p class="hero-label">Sisa waktu</p>
+    <p class="pct" id="pct">–<small>%</small></p>
+    <p class="countdown" id="countdown">Pilih usia dulu.</p>
+  </section>
+
+  <div class="stage" id="stage">
+    <div class="grid" id="grid" role="img" aria-label="Satu dot satu bulan"></div>
+    <canvas id="days" role="img" aria-label="Satu dot satu hari" hidden></canvas>
+    <canvas id="spark" aria-hidden="true"></canvas>
+  </div>
+
+  <p class="foot">Dihitung di browser kamu. Tanpa login, tidak ada data yang disimpan.</p>
+</div>
+
+<script>
+(function () {
+  var LIFE = 75, TOTAL = LIFE * 12, COLS = 36;
+  var MON = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return n.toLocaleString("id-ID"); };
+
+  // Versi lama sempat menyimpan data di browser. Dibersihkan, dan sekarang tidak ada yang disimpan.
+  try { ["bulan900.dob", "bulan900.age", "bulan900.unit"].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+
+  // 900 dot (mode bulan)
+  var grid = $("grid"), dots = [];
+  for (var i = 0; i < TOTAL; i++) {
+    var cell = document.createElement("i");
+    var d = document.createElement("span");
+    d.className = "dot r";
+    d.dataset.s = "r";
+    cell.appendChild(d);
+    grid.appendChild(cell);
+    dots.push(d);
+  }
+
+  function addMonths(date, n) {
+    var y = date.getFullYear(), m = date.getMonth() + n, day = date.getDate();
+    var last = new Date(y, m + 1, 0).getDate();
+    return new Date(y, m, Math.min(day, last));
+  }
+
+  function ymd(a, b) {
+    var y = b.getFullYear() - a.getFullYear();
+    var m = b.getMonth() - a.getMonth();
+    var d = b.getDate() - a.getDate();
+    if (d < 0) { m--; d += new Date(b.getFullYear(), b.getMonth(), 0).getDate(); }
+    if (m < 0) { y--; m += 12; }
+    return { y: y, m: m, d: d };
+  }
+
+  // start = titik awal hitung. Dari tanggal lahir, atau dari hari ini dikurangi usia yang dipilih.
+  var start = null, lastLived = -1, unit = "month", inMode = "age", dayKey = "", cur = null;
+
+  function monthsLived(now) {
+    var m = (now.getFullYear() - start.getFullYear()) * 12 + now.getMonth() - start.getMonth();
+    if (addMonths(start, m) > now) m--;
+    return Math.max(0, Math.min(m, TOTAL));
+  }
+
+  // l = sudah lewat (abu), n = bulan ini (sumbu), r = sisa (nyala)
+  function setDots(lived, frac) {
+    for (var i = 0; i < TOTAL; i++) {
+      var cls = i < lived ? "l" : (i === lived ? "n" : "r");
+      var el = dots[i];
+      if (el.dataset.s !== cls || lastLived !== lived) {
+        el.className = "dot " + cls;
+        el.dataset.s = cls;
+      }
+      if (cls === "n") el.style.setProperty("--f", (frac * 100).toFixed(1) + "%");
+    }
+    lastLived = lived;
+  }
+
+  // ---- Percikan di titik hari ini ----
+  var stage = $("stage"), sp = $("spark"), sx = sp.getContext("2d");
+  var PADX = 12, PADY = 36, parts = [], sparkOn = false, lastT = 0, acc = 0;
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  function clearSpark() {
+    sx.save(); sx.setTransform(1, 0, 0, 1, 0, 0); sx.clearRect(0, 0, sp.width, sp.height); sx.restore();
+  }
+
+  function glow(t) {
+    var k = reduce ? 1 : 0.8 + 0.2 * Math.sin(t / 150) + 0.08 * Math.sin(t / 53);
+    var g = sx.createRadialGradient(cur.x, cur.y, 0, cur.x, cur.y, 18);
+    g.addColorStop(0, "rgba(255,240,200," + (0.75 * k).toFixed(3) + ")");
+    g.addColorStop(0.35, "rgba(255,190,90," + (0.35 * k).toFixed(3) + ")");
+    g.addColorStop(1, "rgba(255,150,40,0)");
+    sx.fillStyle = g;
+    sx.beginPath(); sx.arc(cur.x, cur.y, 18, 0, Math.PI * 2); sx.fill();
+  }
+
+  function sizeSpark() {
+    var W = stage.clientWidth, H = stage.offsetHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    sp.width = Math.round((W + PADX * 2) * dpr);
+    sp.height = Math.round((H + PADY * 2) * dpr);
+    sp.style.width = (W + PADX * 2) + "px";
+    sp.style.height = (H + PADY * 2) + "px";
+    sp.style.left = (-PADX) + "px";
+    sp.style.top = (-PADY) + "px";
+    sx.setTransform(dpr, 0, 0, dpr, PADX * dpr, PADY * dpr);
+    if (cur && reduce) glow(0);
+  }
+
+  function emit() {
+    var a = Math.random() * Math.PI * 2, s = 25 + Math.random() * 85;
+    parts.push({
+      x: cur.x + Math.cos(a) * 1.5, y: cur.y + Math.sin(a) * 1.5,
+      vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30,
+      age: 0, life: 0.3 + Math.random() * 0.55, w: 0.8 + Math.random() * 0.9
+    });
+  }
+
+  function frame(t) {
+    if (!cur) { sparkOn = false; parts.length = 0; clearSpark(); return; }
+    var dt = Math.min(0.05, (t - lastT) / 1000 || 0.016);
+    lastT = t;
+    clearSpark();
+    sx.globalCompositeOperation = "lighter";
+    glow(t);
+    acc += dt * 80;
+    while (acc >= 1) { acc -= 1; if (parts.length < 160) emit(); }
+    sx.lineCap = "round";
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.age += dt;
+      if (p.age >= p.life) { parts.splice(i, 1); continue; }
+      var px = p.x, py = p.y;
+      p.vy += 170 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      var k = 1 - p.age / p.life;
+      sx.strokeStyle = "hsla(" + (28 + 22 * k).toFixed(0) + ",100%," + (55 + 35 * k).toFixed(0) + "%," + k.toFixed(2) + ")";
+      sx.lineWidth = p.w * (0.5 + 0.5 * k);
+      sx.beginPath(); sx.moveTo(px, py); sx.lineTo(p.x, p.y); sx.stroke();
+    }
+    sx.globalCompositeOperation = "source-over";
+    requestAnimationFrame(frame);
+  }
+
+  function setCur(c) {
+    cur = c;
+    if (!c) { parts.length = 0; clearSpark(); return; }
+    if (reduce) { clearSpark(); glow(0); return; }
+    if (!sparkOn) { sparkOn = true; lastT = performance.now(); requestAnimationFrame(frame); }
+  }
+
+  if (window.ResizeObserver) new ResizeObserver(sizeSpark).observe(stage);
+  else window.addEventListener("resize", sizeSpark);
+  sizeSpark();
+
+  // ---- Canvas mode hari ----
+  var cv = $("days"), cx = cv.getContext("2d");
+  var cs = getComputedStyle(document.documentElement);
+  var C_LIT = cs.getPropertyValue("--lit").trim() || "#ffcf70";
+  var C_NOW = cs.getPropertyValue("--lit-now").trim() || "#fff0c8";
+  var C_SPENT = cs.getPropertyValue("--spent").trim() || "#353d47";
+  var ASPECT = 0.78;
+
+  function drawDays(N, lived, force) {
+    var W = stage.clientWidth;
+    if (W <= 0) return;
+    var key = W + "|" + N + "|" + lived;
+    if (!force && key === dayKey) return;
+    dayKey = key;
+    var cols = Math.ceil(Math.sqrt(N / ASPECT));
+    var rows = Math.ceil(N / cols);
+    var pitch = W / cols;
+    var H = Math.ceil(rows * pitch);
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+    cv.style.width = W + "px";
+    cv.style.height = H + "px";
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.clearRect(0, 0, W, H);
+    var r = pitch * 0.4, TAU = Math.PI * 2;
+
+    cx.fillStyle = C_SPENT;
+    cx.beginPath();
+    for (var i = 0; i < N && i < lived; i++) {
+      var x = (i % cols + 0.5) * pitch, y = (Math.floor(i / cols) + 0.5) * pitch;
+      cx.moveTo(x + r, y); cx.arc(x, y, r, 0, TAU);
+    }
+    cx.fill();
+
+    cx.fillStyle = C_LIT;
+    cx.beginPath();
+    for (var j = Math.max(lived + 1, 0); j < N; j++) {
+      var x2 = (j % cols + 0.5) * pitch, y2 = (Math.floor(j / cols) + 0.5) * pitch;
+      cx.moveTo(x2 + r, y2); cx.arc(x2, y2, r, 0, TAU);
+    }
+    cx.fill();
+
+    if (lived >= 0 && lived < N) {
+      var xc = (lived % cols + 0.5) * pitch, yc = (Math.floor(lived / cols) + 0.5) * pitch;
+      cx.fillStyle = C_NOW;
+      cx.beginPath(); cx.arc(xc, yc, r * 1.9, 0, TAU); cx.fill();
+      setCur({ x: xc, y: yc, r: r });
+    } else {
+      setCur(null);
+    }
+  }
+
+  function estDays() { return Math.round(LIFE * 365.2425); }
+
+  function renderUnit() {
+    var month = unit === "month";
+    $("u-month").setAttribute("aria-pressed", month ? "true" : "false");
+    $("u-day").setAttribute("aria-pressed", month ? "false" : "true");
+    grid.hidden = !month;
+    cv.hidden = month;
+    var n = TOTAL;
+    if (!month) n = start ? Math.round((addMonths(start, TOTAL) - start) / 864e5) : estDays();
+    $("sub").textContent = fmt(n) + " dot, 1 dot = 1 " + (month ? "bulan" : "hari");
+  }
+
+  function renderEmpty(msg) {
+    $("pct").innerHTML = "–<small>%</small>";
+    $("countdown").textContent = msg || (inMode === "age" ? "Pilih usia dulu." : "Pilih tanggal lahir dulu.");
+    if (unit === "month") { setDots(-1, 0); } else { drawDays(estDays(), -1, true); }
+    setCur(null);
+  }
+
+  function tick() {
+    if (!start) return;
+    var now = new Date();
+    var end = addMonths(start, TOTAL);
+    var total = end - start, elapsed = now - start;
+
+    var left = Math.max(0, 100 * (1 - elapsed / total));
+    $("pct").innerHTML = left.toFixed(2).replace(".", ",") + "<small>%</small>";
+
+    if (now >= end) {
+      $("countdown").textContent = "Sudah lewat 75 tahun. Sisanya bonus.";
+    } else {
+      var r = ymd(now, end);
+      $("countdown").innerHTML = "<b>" + r.y + " tahun " + r.m + " bulan " + r.d + " hari</b> lagi";
+    }
+
+    if (unit === "month") {
+      var lived = monthsLived(now);
+      var frac = 0;
+      if (lived < TOTAL) {
+        var a = addMonths(start, lived), b = addMonths(start, lived + 1);
+        frac = (now - a) / (b - a);
+      }
+      setDots(lived, frac);
+      if (lived < TOTAL) {
+        var cw = grid.clientWidth / COLS;
+        setCur({ x: (lived % COLS + 0.5) * cw, y: (Math.floor(lived / COLS) + 0.5) * cw, r: cw * 0.34 });
+      } else {
+        setCur(null);
+      }
+    } else {
+      var totalDays = Math.round(total / 864e5);
+      var livedDays = Math.min(totalDays, Math.floor(elapsed / 864e5));
+      drawDays(totalDays, livedDays, false);
+    }
+  }
+
+  // ---- Pilihan ----
+  var yy = $("yy"), mm = $("mm"), dd = $("dd"), bm = $("bm"), by = $("by");
+
+  function fill(sel, ph, items) {
+    var o = document.createElement("option");
+    o.value = ""; o.textContent = ph;
+    sel.appendChild(o);
+    items.forEach(function (it) {
+      var op = document.createElement("option");
+      op.value = it.v; op.textContent = it.t;
+      sel.appendChild(op);
+    });
+  }
+  function range(a, b) {
+    var out = [], k;
+    if (a <= b) for (k = a; k <= b; k++) out.push({ v: k, t: String(k) });
+    else for (k = a; k >= b; k--) out.push({ v: k, t: String(k) });
+    return out;
+  }
+  var thisYear = new Date().getFullYear();
+  fill(yy, "–", range(0, 100));
+  fill(mm, "–", range(0, 11));
+  fill(dd, "Tgl", range(1, 31));
+  fill(bm, "Bln", MON.map(function (t, k) { return { v: k + 1, t: t }; }));
+  fill(by, "Thn", range(thisYear, thisYear - 110));
+
+  function syncPills() {
+    [[yy, "yv"], [mm, "mv"], [dd, "dv"], [bm, "bv"], [by, "rv"]].forEach(function (p) {
+      var sel = p[0], b = $(p[1]);
+      b.textContent = sel.options[sel.selectedIndex].textContent;
+      if (p[0] === yy || p[0] === mm) b.classList.remove("ph");
+      else b.classList.toggle("ph", sel.value === "");
+    });
+  }
+
+  function recompute() {
+    var msg = "";
+    start = null;
+    var today = new Date();
+    today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    if (inMode === "age") {
+      if (yy.value !== "") {
+        if (mm.value === "") mm.value = "0";
+        start = addMonths(today, -(parseInt(yy.value, 10) * 12 + parseInt(mm.value, 10)));
+      }
+    } else if (dd.value !== "" && bm.value !== "" && by.value !== "") {
+      var y = +by.value, mo = +bm.value, day = +dd.value;
+      var last = new Date(y, mo, 0).getDate();
+      if (day > last) { day = last; dd.value = String(day); }
+      var dt = new Date(y, mo - 1, day);
+      if (dt > today) msg = "Tanggal itu belum terjadi.";
+      else start = dt;
+    }
+    syncPills();
+    lastLived = -1;
+    dayKey = "";
+    renderUnit();
+    if (start) tick(); else renderEmpty(msg);
+  }
+
+  [yy, mm, dd, bm, by].forEach(function (s) { s.addEventListener("change", recompute); });
+
+  function setMode(m) {
+    inMode = m;
+    $("m-age").setAttribute("aria-pressed", m === "age" ? "true" : "false");
+    $("m-dob").setAttribute("aria-pressed", m === "dob" ? "true" : "false");
+    $("f-age").hidden = m !== "age";
+    $("f-dob").hidden = m !== "dob";
+    recompute();
+  }
+  $("m-age").addEventListener("click", function () { setMode("age"); });
+  $("m-dob").addEventListener("click", function () { setMode("dob"); });
+
+  function setUnit(u) {
+    unit = u;
+    lastLived = -1;
+    dayKey = "";
+    renderUnit();
+    if (start) tick(); else renderEmpty("");
+  }
+  $("u-month").addEventListener("click", function () { setUnit("month"); });
+  $("u-day").addEventListener("click", function () { setUnit("day"); });
+
+  var rt = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () { dayKey = ""; if (start) tick(); else renderEmpty(""); }, 150);
+  });
+
+  recompute();
+  setInterval(tick, 30000);
+})();
+</script>
+
+</body>
+</html>
