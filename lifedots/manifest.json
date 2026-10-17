@@ -1,0 +1,24 @@
+{
+  "name": "Lifedots",
+  "short_name": "Lifedots",
+  "description": "Kalkulator angka harapan hidup: 1 dot = 1 bulan atau 1 hari.",
+  "start_url": "/app/lifedots/",
+  "display": "standalone",
+  "background_color": "#0e1216",
+  "theme_color": "#0e1216",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
