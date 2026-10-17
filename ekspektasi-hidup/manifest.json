@@ -1,8 +1,8 @@
 {
-  "name": "Lifedots",
-  "short_name": "Lifedots",
-  "description": "Kalkulator angka harapan hidup: 1 dot = 1 bulan atau 1 hari.",
-  "start_url": "/app/lifedots/",
+  "name": "Kalkulator Ekspektasi Hidup",
+  "short_name": "Ekspektasi Hidup",
+  "description": "Kalkulator ekspektasi hidup: 1 titik = 1 bulan atau 1 hari.",
+  "start_url": "/app/ekspektasi-hidup/",
   "display": "standalone",
   "background_color": "#0e1216",
   "theme_color": "#0e1216",

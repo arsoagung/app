@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e1216">
-<meta name="description" content="Kalkulator angka harapan hidup Indonesia. Satu dot satu bulan atau satu hari. Tanpa login, tanpa menyimpan data.">
+<meta name="description" content="Kalkulator ekspektasi hidup Indonesia. Satu titik satu bulan atau satu hari. Tanpa login, tanpa menyimpan data.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lifedots">
+<meta name="apple-mobile-web-app-title" content="Ekspektasi Hidup">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="icon" href="favicon.ico" sizes="any">
 <style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#0e1216}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<title>Lifedots</title>
+<title>Kalkulator Ekspektasi Hidup</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
@@ -185,14 +186,35 @@
   #days { display: block; max-width: 100%; }
   #spark { position: absolute; pointer-events: none; }
 
+  h1 { white-space: normal; text-wrap: balance; }
+  header h1 { font-size: 17px; line-height: 1.2; }
+  header > div:first-child { min-width: 0; }
+  #setup { min-height: min(100svh - 42px, 720px); justify-content: center; gap: 18px; }
+  .brand { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding-top: 6px; }
+  .brand h1 { font-size: 28px; line-height: 1.12; max-width: 12em; }
+  .purpose { margin: 0; max-width: 28em; font-size: 14px; color: var(--muted); }
+  .mark .d { fill: var(--lit); }
+  .mark .d.s { fill: var(--spent); }
+  .mark .d.now { fill: var(--lit-now); filter: drop-shadow(0 0 4px var(--lit-glow)); transform-origin: 28px 28px; animation: pulse 1.6s ease-in-out infinite; }
+  .info { align-items: center; gap: 14px; padding: 12px 16px; }
+  .info .big { flex: none; font-size: 30px; line-height: 1; font-weight: 800; letter-spacing: -0.02em; color: var(--lit); font-variant-numeric: tabular-nums; display: flex; flex-direction: column; }
+  .info .big small { font-size: 11px; font-weight: 700; letter-spacing: 0; color: var(--muted); margin-top: 3px; }
+  .card { background: var(--field); border-radius: 22px; padding: 16px; gap: 12px; }
+  .card .lead { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .card .seg { display: flex; background: var(--bg); }
+  .card .seg button { flex: 1; padding: 9px 10px; }
+  .card .num { background: var(--bg); }
+  .card .num:focus-within { background: var(--field-focus); }
+  .card .hint { text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .mark .d.now { animation: none; } }
   .view { display: flex; flex-direction: column; gap: 16px; }
-  .titlerow { display: flex; align-items: center; gap: 6px; }
-  .iconbtn {
-    display: grid; place-items: center; width: 32px; height: 32px; margin-top: 2px;
-    border: 0; border-radius: 10px; background: var(--field); color: var(--muted);
-    cursor: pointer; outline: none; flex: none;
+  .edit {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: 0; border-radius: 14px; padding: 12px 16px;
+    background: var(--field); color: var(--muted);
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; outline: none;
   }
-  .iconbtn:hover, .iconbtn:focus-visible { background: var(--field-focus); color: var(--ink); }
+  .edit:hover, .edit:focus-visible { background: var(--field-focus); color: var(--ink); }
   .lead { margin: 4px 0 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
   .hint { margin: 0; min-height: 1.2em; font-size: 12.5px; color: var(--lit); }
   .cta {
@@ -208,27 +230,28 @@
 
 <div class="wrap" id="wrap">
   <div class="view" id="setup">
-  <header>
-    <div>
-      <h1>Lifedots</h1>
-      <p class="sub">1 dot = 1 bulan atau 1 hari</p>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 56 56" width="60" height="60" aria-hidden="true">
+        <rect width="56" height="56" rx="17" fill="#1d242c"/>
+        <circle class="d s" cx="16" cy="16" r="3.4"/><circle class="d s" cx="28" cy="16" r="3.4"/><circle class="d s" cx="40" cy="16" r="3.4"/>
+        <circle class="d s" cx="16" cy="28" r="3.4"/><circle class="d now" cx="28" cy="28" r="4.4"/><circle class="d" cx="40" cy="28" r="3.4"/>
+        <circle class="d" cx="16" cy="40" r="3.4"/><circle class="d" cx="28" cy="40" r="3.4"/><circle class="d" cx="40" cy="40" r="3.4"/>
+      </svg>
+      <h1>Kalkulator Ekspektasi Hidup</h1>
+      <p class="purpose">Lihat berapa banyak waktu yang masih ada. Satu titik mewakili satu bulan/hari.</p>
     </div>
-  </header>
 
-  <aside class="info">
-    <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.18"/><path d="M8 7.2v4M8 4.9v.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-    <p>Harapan hidup rata-rata orang Indonesia <b>74,47 tahun</b> (BPS, 2025). Di sini dibulatkan jadi <b>75 tahun</b>. <a href="https://ekonomi.bisnis.com/read/20251105/9/1926368/usia-harapan-hidup-warga-ri-naik-pengeluaran-per-kapita-rp128-juta" target="_blank" rel="noopener">Sumber</a></p>
-  </aside>
+    <aside class="info">
+      <div class="big">74,47<small>tahun</small></div>
+      <p>Angka harapan hidup rata-rata orang Indonesia menurut BPS 2025.</p>
+    </aside>
 
-  <div class="input">
-    <p class="lead">Masukkan usia atau tanggal lahir</p>
-    <div class="modes">
-      <span>Isi dengan</span>
+    <div class="card input">
+      <p class="lead" id="lead">Masukkan usia</p>
       <div class="seg" role="group" aria-label="Cara mengisi">
-        <button type="button" id="m-age" aria-pressed="true">Usia</button>
+        <button type="button" id="m-age" aria-pressed="true">Usia saat ini</button>
         <button type="button" id="m-dob" aria-pressed="false">Tanggal lahir</button>
       </div>
-    </div>
 
     <div class="fields ages" id="f-age">
       <div class="num">
@@ -261,20 +284,15 @@
       </div>
     </div>
     <p class="hint" id="hint" aria-live="polite"></p>
-    <button type="button" class="cta" id="go" disabled>Lihat dot-ku</button>
+    <button type="button" class="cta" id="go" disabled>Lihat hasil</button>
   </div>
   </div>
 
   <div class="view" id="result" hidden>
     <header>
       <div>
-        <div class="titlerow">
-          <h1>Lifedots</h1>
-          <button type="button" class="iconbtn" id="reset" aria-label="Reset, isi ulang usia atau tanggal lahir" title="Reset">
-            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 2.6v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-        <p class="sub" id="sub">900 dot, 1 dot = 1 bulan</p>
+        <h1>Kalkulator Ekspektasi Hidup</h1>
+        <p class="sub" id="sub">900 titik, 1 titik = 1 bulan</p>
       </div>
       <div class="seg" role="group" aria-label="Satuan dot">
         <button type="button" id="u-month" aria-pressed="true">Bulan</button>
@@ -293,6 +311,11 @@
       <canvas id="days" role="img" aria-label="Satu dot satu hari" hidden></canvas>
       <canvas id="spark" aria-hidden="true"></canvas>
     </div>
+
+    <button type="button" class="edit" id="edit">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M10.5 3.2l2.3 2.3M3 13l.6-2.7 7-7 2.1 2.1-7 7L3 13z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Ubah data
+    </button>
   </div>
 </div>
 
@@ -496,7 +519,7 @@
     cv.hidden = month;
     var n = TOTAL;
     if (!month) n = start ? Math.round((addMonths(start, TOTAL) - start) / 864e5) : estDays();
-    $("sub").textContent = fmt(n) + " dot, 1 dot = 1 " + (month ? "bulan" : "hari");
+    $("sub").textContent = fmt(n) + " titik, 1 titik = 1 " + (month ? "bulan" : "hari");
   }
 
   function tick() {
@@ -613,9 +636,7 @@
     }
   }
   $("go").addEventListener("click", function () { if (start) show(true); });
-  $("reset").addEventListener("click", function () {
-    [yy, mm, dd, bm, by].forEach(function (s) { s.value = ""; });
-    unit = "month";
+  $("edit").addEventListener("click", function () {
     show(false);
     recompute();
     window.scrollTo(0, 0);
@@ -629,6 +650,7 @@
     $("m-dob").setAttribute("aria-pressed", m === "dob" ? "true" : "false");
     $("f-age").hidden = m !== "age";
     $("f-dob").hidden = m !== "dob";
+    $("lead").textContent = m === "age" ? "Masukkan usia" : "Masukkan tanggal lahir";
     recompute();
   }
   $("m-age").addEventListener("click", function () { setMode("age"); });
