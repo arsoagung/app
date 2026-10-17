@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080c0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Jurnal Keuangan</title>
+<title>Finance Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -130,8 +130,8 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 
 /* nav */
 .tabbar{position:fixed;bottom:calc(10px + var(--safe-b));left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),380px);display:grid;grid-template-columns:1fr 1fr 58px 1fr 1fr;align-items:center;gap:2px;padding:6px;background:rgba(21,29,24,.82);box-shadow:0 14px 40px rgba(0,0,0,.55);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border-radius:28px;box-shadow:0 12px 36px rgba(0,0,0,.5);z-index:20}
-.tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 7px;border-radius:22px;font-size:10.5px;font-weight:600;color:var(--faint);transition:color .2s,background .2s}
-.tab .i{width:22px;height:22px}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:46px;border-radius:23px;font-size:10.5px;font-weight:600;color:var(--faint);transition:color .2s,background .2s}
+.tab .i{width:24px;height:24px}
 .tab.on{color:var(--accent);background:var(--surface-3)}
 .addbtn{width:48px;height:48px;border-radius:50%;margin:0 auto;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);box-shadow:0 6px 18px rgba(45,212,143,.28);transition:transform .12s}
 .addbtn:active{transform:scale(.92)}.addbtn .i{width:22px;height:22px;stroke-width:2.4}
@@ -206,11 +206,11 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 <div id="shell" hidden>
   <main id="view"></main>
   <nav class="tabbar">
-    <button class="tab" data-act="nav" data-v="home"><svg class="i"><use href="#i-home"/></svg>Beranda</button>
-    <button class="tab" data-act="nav" data-v="tujuan"><svg class="i"><use href="#i-goal"/></svg>Tujuan</button>
-    <button class="addbtn" data-act="fab" aria-label="Tambah"><svg class="i"><use href="#i-plus"/></svg></button>
-    <button class="tab" data-act="nav" data-v="riwayat"><svg class="i"><use href="#i-hist"/></svg>Riwayat</button>
-    <button class="tab" data-act="nav" data-v="profil"><svg class="i"><use href="#i-user"/></svg>Profil</button>
+    <button class="tab" data-act="nav" data-v="home" aria-label="Home"><svg class="i"><use href="#i-home"/></svg></button>
+    <button class="tab" data-act="nav" data-v="tujuan" aria-label="Goals"><svg class="i"><use href="#i-goal"/></svg></button>
+    <button class="addbtn" data-act="fab" aria-label="Add"><svg class="i"><use href="#i-plus"/></svg></button>
+    <button class="tab" data-act="nav" data-v="riwayat" aria-label="History"><svg class="i"><use href="#i-hist"/></svg></button>
+    <button class="tab" data-act="nav" data-v="profil" aria-label="Profile"><svg class="i"><use href="#i-user"/></svg></button>
   </nav>
 </div>
 
@@ -220,7 +220,7 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 
 <script>
 /* =====================================================================
-   Data TIDAK ada di file ini: diambil dari Google Sheets lewat GAS setelah login.
+   No data lives in this file: it is fetched from Google Sheets via GAS after login.
    ===================================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWJVS3zitZBVDVIKooqOEJ56pW4D34gWFNVw6unK164FmsYeHAtVS9YADXemOMphbeyg/exec';
 const sb = Auth.client;   // login + whitelist: shared/auth.js (sama kayak app lain)
@@ -230,33 +230,33 @@ function setToday(iso){TODAY=iso;TODAY_T=T(iso);YEAR=+iso.slice(0,4)}
 
 /* meta tampilan per tujuan (bukan dari sheet) */
 const TMETA = {
-  'Pendidikan Kael':{icon:'cap',    color:'#2dd48f', sub:'Dana pendidikan',            badge:'Jangka panjang'},
-  'Dana Darurat':   {icon:'shield', color:'#38b6a8', sub:'Cadangan darurat',           badge:'Dana darurat'},
-  'Dana Abadi':     {icon:'sprout', color:'#a3e635', sub:'Saham USD · hold 10+ tahun', badge:'10+ tahun'},
-  'Cash':           {icon:'wallet', color:'#7d8f86', sub:'Cair, dipakai harian',       badge:'Tanpa return'}
+  "Kael's Education":{icon:'cap',    color:'#2dd48f', sub:'Education fund',              badge:'Long term'},
+  'Emergency Fund': {icon:'shield', color:'#38b6a8', sub:'Emergency reserve',           badge:'Emergency'},
+  'Endowment Fund': {icon:'sprout', color:'#a3e635', sub:'US stocks \u00b7 10+ year hold', badge:'10+ years'},
+  'Cash':           {icon:'wallet', color:'#7d8f86', sub:'Liquid, for daily use',       badge:'No return'}
 };
 
 /* =====================================================================
    Util
    ===================================================================== */
 const DAY=86400000;
-const MON=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-const MONF=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONF=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const T=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10));
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const isoOf=t=>new Date(t).toISOString().slice(0,10);
 const isMonthEnd=t=>new Date(t+DAY).getUTCDate()===1;
-const rp=n=>'Rp '+Math.round(Math.abs(n)).toLocaleString('id-ID');
+const rp=n=>'Rp '+Math.round(Math.abs(n)).toLocaleString('en-US');
 const rpS=n=>(n<0?'−':'+')+rp(n);
 const rpN=n=>(n<0?'−':'')+rp(n);
-const pct=(x,d=2)=>(x<0?'−':'+')+Math.abs(x*100).toFixed(d).replace('.',',')+'%';
-const cmp=n=>{const a=Math.abs(n);let s;if(a>=1e9)s=(n/1e9).toFixed(1).replace(/\.0$/,'').replace('.',',')+' M';else if(a>=1e6)s=(n/1e6).toFixed(a>=1e8?0:1).replace(/\.0$/,'').replace('.',',')+' jt';else if(a>=1e3)s=Math.round(n/1e3)+' rb';else s=''+Math.round(n);return s};
+const pct=(x,d=2)=>(x<0?'−':'+')+Math.abs(x*100).toFixed(d)+'%';
+const cmp=n=>{const a=Math.abs(n);let s;if(a>=1e9)s=(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';else if(a>=1e6)s=(n/1e6).toFixed(a>=1e8?0:1).replace(/\.0$/,'')+'M';else if(a>=1e3)s=Math.round(n/1e3)+'K';else s=''+Math.round(n);return s};
 const dlabel=t=>{const d=new Date(t);return d.getUTCDate()+' '+MON[d.getUTCMonth()]+(d.getUTCFullYear()!==YEAR?' '+d.getUTCFullYear():'')};
 const sgn=n=>n>=0?'pos':'neg';
 const icon=n=>`<svg class="i"><use href="#i-${n}"/></svg>`;
 
 /* =====================================================================
-   Model — semua hitungan di sini
+   Model: all calculations live here
    ===================================================================== */
 let M;
 function build(){
@@ -271,7 +271,7 @@ function build(){
 
   const flows=accs=>{const out=[];DATA.transaksi.forEach(x=>{let a=0;if(accs.includes(x.ke))a+=x.nominal;if(x.dari&&accs.includes(x.dari))a-=x.nominal;if(a)out.push({t:T(x.tanggal),amt:a,x})});return out};
 
-  /* Modified Dietz per periode (antar titik saldo) */
+  /* Modified Dietz per period (between balance points) */
   const periodsFor=(accs,start)=>{
     const fl=flows(accs),P=[];
     for(let i=1;i<dates.length;i++){
@@ -284,7 +284,8 @@ function build(){
     return P;
   };
   const idxFor=key=>{
-    if(key==='AT')return 0;
+    if(key==='ALL')return 0;
+    if(key==='1Y'){let i=0;dates.forEach((t,k)=>{if(t<=TODAY_T-365*DAY)i=k});return i}
     if(key==='YTD'){let i=0;dates.forEach((t,k)=>{if(new Date(t).getUTCFullYear()<YEAR)i=k});return i}
     return Math.max(0,dates.length-1-parseInt(key));
   };
@@ -300,7 +301,7 @@ function build(){
   });
   const total=dates.map(t=>({t,v:akun.reduce((s,a)=>s+val(a.akun,t),0)}));
 
-  /* total investasi (semua akun ikut_return) */
+  /* all investment accounts (ikut_return) */
   const allRet=akun.filter(a=>a.ikutReturn&&a.returnMulai).map(a=>a.akun);
   const allStart=Math.min(...akun.filter(a=>a.ikutReturn&&a.returnMulai).map(a=>T(a.returnMulai)));
 
@@ -309,7 +310,7 @@ function build(){
 }
 
 /* =====================================================================
-   Chart (SVG buatan sendiri, tanpa library)
+   Chart (hand-made SVG, no library)
    ===================================================================== */
 let gid=0;
 function drawChart(el,series,o){
@@ -359,17 +360,17 @@ function drawCandles(wrap,info,P,lab){
   const raw=(hi-lo)/3||.01,mag=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,2,2.5,5,10].map(m=>m*mag).find(v=>v>=raw)||raw;
   lo=Math.floor(lo/st)*st;hi=Math.ceil(hi/st)*st;if(hi===lo)hi=lo+st;
   const Y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pt-pb),X=i=>pl+step*i+step/2,y0=Y(0);
-  const f=v=>(v<0?'\u2212':'')+Math.abs(v*100).toFixed(2).replace('.',',')+'%';
+  const f=v=>(v<0?'\u2212':'')+Math.abs(v*100).toFixed(2)+'%';
   let g='';
   for(let v=lo;v<=hi+st/2;v+=st){const y=Y(v);if(Math.abs(v)<st/1000)continue;g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#141d18"/><text x="${pl-10}" y="${y+3.5}" fill="#5d6c65" font-size="10" text-anchor="end">${f(v)}</text>`}
   g+=`<text x="${pl-10}" y="${y0+3.5}" fill="#8b9b93" font-size="10" text-anchor="end">0%</text><line x1="${pl-6}" x2="${W-pr}" y1="${y0}" y2="${y0}" stroke="#2c3b34"/>`;
   C.forEach((k,i)=>{const up=k.r>=0,col=up?'#2dd48f':'#f0786d',yv=Y(k.r),top=Math.min(y0,yv),h=Math.max(3,Math.abs(yv-y0));
     g+=`<g class="cand" data-i="${i}"><rect x="${X(i)-step/2}" y="0" width="${step}" height="${H}" fill="transparent"/><rect class="cb" x="${X(i)-bw/2}" y="${top}" width="${bw}" height="${h}" rx="5" fill="${col}"/>
       <text x="${X(i)}" y="${up?top-8:top+h+15}" fill="#e9f1ed" font-size="10.5" font-weight="700" text-anchor="middle">${f(k.r)}</text>
-      <text x="${X(i)}" y="${H-8}" fill="#8b9b93" font-size="11" text-anchor="middle">${MON[new Date(k.x.e).getUTCMonth()]}${k.x.partial?'*':''}</text></g>`});
-  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Growth bulanan">${g}</svg>`;
+      <text x="${X(i)}" y="${H-8}" fill="#8b9b93" font-size="11" text-anchor="middle">${MON[new Date(k.x.e).getUTCMonth()]}</text></g>`});
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Monthly growth">${g}</svg>`;
   const sel=i=>{const k=C[i],x=k.x;
-    info.innerHTML=`<b>${MONF[new Date(x.e).getUTCMonth()]}${x.partial?'*':''} <span style="color:${k.r>=0?'var(--accent)':'var(--neg)'};font-weight:700">${pct(k.r)}</span></b><span>${lab} ${rpS(x.profit)} \u00b7 kumulatif ${pct(k.c)}</span>`;
+    info.innerHTML=`<b>${MONF[new Date(x.e).getUTCMonth()]}${x.partial?' (to '+dlabel(x.e)+')':''} <span style="color:${k.r>=0?'var(--accent)':'var(--neg)'};font-weight:700">${pct(k.r)}</span></b><span>${lab} ${rpS(x.profit)} \u00b7 cumulative ${pct(k.c)}</span>`;
     wrap.querySelectorAll('.cb').forEach((r,j)=>r.setAttribute('fill-opacity',j===i?'1':'.45'))};
   wrap.querySelectorAll('.cand').forEach(el=>el.addEventListener('click',()=>sel(+el.dataset.i)));
   sel(C.length-1);wrap.scrollLeft=wrap.scrollWidth;
@@ -378,10 +379,10 @@ function drawCandles(wrap,info,P,lab){
 /* =====================================================================
    State & router
    ===================================================================== */
-const S={sel:null,from:'home',gmode:'ret',auth:false,view:'home',goal:null,range:'YTD',gRange:'AT',sheet:false,mode:'topup',filter:'Semua'};
+const S={sel:null,from:'home',gmode:'nw',auth:false,view:'home',goal:null,range:'YTD',gRange:'ALL',sheet:false,mode:'topup',filter:'All'};
 const $=s=>document.querySelector(s);
 const view=$('#view');
-const RANGES=['1M','3M','YTD','AT'];
+const RANGES=['1M','3M','YTD','1Y','ALL'];
 
 function go(v,goal){if(v==='detail'&&(S.view==='home'||S.view==='tujuan'))S.from=S.view;S.view=v;S.goal=goal||null;render();window.scrollTo(0,0)}
 function render(){
@@ -390,28 +391,28 @@ function render(){
   fn();
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===(S.view==='detail'?(S.from||'tujuan'):S.view)));
 }
-const chipsHTML=(cur,act)=>`<div class="chips">${RANGES.map(k=>`<button class="chip${cur===k?' on':''}" data-act="${act}" data-k="${k}">${k}</button>`).join('')}<button class="chip" disabled title="Data belum cukup 1 tahun">1Y</button></div>`;
+const chipsHTML=(cur,act)=>`<div class="chips">${RANGES.map(k=>{const off=k==='1Y'&&M.dates[0]>TODAY_T-365*DAY;return `<button class="chip${cur===k?' on':''}"${off?' disabled':''} data-act="${act}" data-k="${k}">${k}</button>`}).join('')}</div>`;
 const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'down')}${rpS(d)}${p==null?'':' ('+pct(p)+')'}</span><span class="since">${since}</span>`;
 
 /* ---------- Beranda ---------- */
 function goalRows(){
   return M.tujuan.map(g=>{
-    let chip='<span class="pill mut">Tanpa return</span>';
+    let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
-      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.r)}">${pct(lp.r)} bulan ini</span>`}
+      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.r)}">${pct(lp.r)} this month</span>`}
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
       <div><div class="gname">${g.name}</div><div class="gsub">${g.meta.sub}</div></div>
       <div class="gright"><div class="gval">${rp(g.now)}</div>${chip}</div></button>`}).join('');
 }
-const pctS=x=>(x*100).toFixed(1).replace('.',',')+'%';
+const pctS=x=>(x*100).toFixed(1)+'%';
 function drawDonut(){
   const el=$('#dn');if(!el)return;
   const items=M.tujuan.filter(g=>g.now>0).slice().sort((a,b)=>b.now-a.now),tot=items.reduce((s,g)=>s+g.now,0);
   const R=84,SW=26,C=2*Math.PI*R,gap=items.length>1?4:0;let off=0,arcs='';
   items.forEach(g=>{const share=g.now/tot*C,len=Math.max(1,share-gap);
     arcs+=`<circle class="seg-arc" data-g="${esc(g.name)}" cx="110" cy="110" r="${R}" fill="none" stroke="${g.meta.color}" stroke-width="${SW}" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 110 110)"/>`;off+=share});
-  el.innerHTML=`<svg viewBox="0 0 220 220" role="img" aria-label="Komposisi tujuan">${arcs}</svg><div class="dnc" id="dnc"></div>`;
+  el.innerHTML=`<svg viewBox="0 0 220 220" role="img" aria-label="Goal allocation">${arcs}</svg><div class="dnc" id="dnc"></div>`;
   $('#dnList').innerHTML=items.map(g=>`<button class="dnrow" data-act="dsel" data-g="${esc(g.name)}"><span class="dot" style="background:${g.meta.color}"></span><span class="n">${esc(g.name)}</span><span class="p">${pctS(g.now/tot)}</span><span class="v">${rp(g.now)}</span></button>`).join('');
   el.querySelectorAll('.seg-arc').forEach(c=>{
     c.addEventListener('click',()=>{S.sel=S.sel===c.dataset.g?null:c.dataset.g;updateDonut()});
@@ -426,41 +427,39 @@ function updateDonut(preview){
   const hot=preview||S.sel,tot=M.tujuan.reduce((s,g)=>s+g.now,0),g=hot?M.tujuan.find(x=>x.name===hot):null;
   el.querySelectorAll('.seg-arc').forEach(c=>{const on=!hot||c.dataset.g===hot;c.setAttribute('stroke-opacity',on?'1':'.28');c.setAttribute('stroke-width',hot&&on?'32':'26')});
   $('#dnList').querySelectorAll('.dnrow').forEach(r=>r.classList.toggle('on',r.dataset.g===S.sel));
-  $('#dnc').innerHTML=g?`<small>${esc(g.name)}</small><b>${rp(g.now)}</b><span style="color:${g.meta.color}">${pctS(g.now/tot)} dari total</span>`:`<small>Total</small><b>${rp(tot)}</b><span style="color:var(--muted)">${M.tujuan.length} tujuan</span>`;
+  $('#dnc').innerHTML=g?`<small>${esc(g.name)}</small><b>${rp(g.now)}</b><span style="color:${g.meta.color}">${pctS(g.now/tot)} of total</span>`:`<small>Total</small><b>${rp(tot)}</b><span style="color:var(--muted)">${M.tujuan.length} goals</span>`;
   const sg=S.sel?M.tujuan.find(x=>x.name===S.sel):null;
-  $('#dnInfo').innerHTML=sg?`<button class="btn primary" style="margin-top:8px" data-act="go" data-g="${esc(sg.name)}">Lihat detail ${esc(sg.name)}</button>`:'';
+  $('#dnInfo').innerHTML=sg?`<button class="btn primary" style="margin-top:8px" data-act="go" data-g="${esc(sg.name)}">View ${esc(sg.name)}</button>`:'';
 }
 function renderTujuan(){
   const tot=M.tujuan.reduce((s,g)=>s+g.now,0);
   view.innerHTML=`
-  <div class="topbar"><div class="brand">Tujuan</div></div>
-  <section class="hero"><div class="eyebrow">Total semua tujuan</div><div class="big">${rp(tot)}</div><div class="hint">Ketuk tujuan untuk lihat detail</div></section>
+  <div class="topbar"><div class="brand">Goals</div></div>
+  <section class="hero"><div class="eyebrow">All goals</div><div class="big">${rp(tot)}</div></section>
   <section style="margin-top:14px">${goalRows()}</section>`;
 }
 function renderHome(){
   const idx=M.idxFor(S.range),pts=M.total.slice(idx),base=pts[0],last=pts[pts.length-1];
-  const d=last.v-base.v,p=base.v?d/base.v:null,since='sejak '+dlabel(base.t);
+  const d=last.v-base.v,p=base.v?d/base.v:null,since='since '+dlabel(base.t);
   const tot=last.v;
   const GP=S.gmode==='nw'
     ?M.total.slice(1).map((p,i)=>({e:p.t,r:M.total[i].v?(p.v-M.total[i].v)/M.total[i].v:0,profit:p.v-M.total[i].v,partial:p.t===TODAY_T&&!isMonthEnd(p.t)}))
     :M.periodsFor(M.allRet,M.allStart);
   view.innerHTML=`
-  <div class="topbar"><div class="brand"><span class="logo">${icon('logo')}</span>Jurnal Keuangan</div></div>
+  <div class="topbar"><div class="brand"><span class="logo">${icon('logo')}</span>Finance Journal</div></div>
   <section class="hero">
-    <div class="eyebrow">Net Worth · ${dlabel(TODAY_T)}</div>
+    <div class="eyebrow">Net worth \u00b7 ${dlabel(TODAY_T)}</div>
     <div class="big" id="hBig">${rp(tot)}</div>
     <div class="drow" id="hDelta">${deltaHTML(d,p,since)}</div>
-    <div class="hint">Perubahan nilai, termasuk setoran baru</div>
     <div class="chart" id="hChart"></div>
     ${chipsHTML(S.range,'range')}
   </section>
-  <section><h2>Tujuan <small>Ketuk bagian grafik</small></h2><div class="card"><div class="dnwrap" id="dn"></div><div class="dnlist" id="dnList"></div><div class="dninfo" id="dnInfo"></div></div></section>
-  <section><h2>Growth bulanan <small>${S.gmode==='nw'?'Total net worth':'Total investasi'}</small></h2>
-    <div class="card"><div class="ctabs"><button class="ctab${S.gmode==='nw'?'':' on'}" data-act="gmode" data-k="ret">Return investasi</button><button class="ctab${S.gmode==='nw'?' on':''}" data-act="gmode" data-k="nw">Net worth</button></div><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div>
-    <div class="note">${S.gmode==='nw'?'Perubahan total net worth per bulan, termasuk setoran. Sama seperti baris Growth di GSheet.':'Return investasi saja, tanpa setoran. Dihitung sejak Agu 2026, saat topup mulai dicatat.'} Tiap batang = persen bulan itu. Hijau naik, merah turun. Geser untuk bulan lain.${GP.some(x=>x.partial)?' *Bulan berjalan, s/d '+dlabel(TODAY_T)+'.':''}</div></section>`;
+  <section><h2>Goals</h2><div class="card"><div class="dnwrap" id="dn"></div><div class="dnlist" id="dnList"></div><div class="dninfo" id="dnInfo"></div></div></section>
+  <section><h2>Monthly growth</h2>
+    <div class="card"><div class="ctabs"><button class="ctab${S.gmode==='nw'?' on':''}" data-act="gmode" data-k="nw">Net worth</button><button class="ctab${S.gmode==='nw'?'':' on'}" data-act="gmode" data-k="ret">Investment return</button></div><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>`;
   drawDonut();
-  drawCandles($('#cWrap'),$('#cInfo'),GP,S.gmode==='nw'?'perubahan':'profit');
-  drawChart($('#hChart'),[{pts:pts,color:'#2dd48f'}],{label:'Grafik net worth',onHover:pt=>{
+  drawCandles($('#cWrap'),$('#cInfo'),GP,S.gmode==='nw'?'change':'profit');
+  drawChart($('#hChart'),[{pts:pts,color:'#2dd48f'}],{label:'Net worth chart',onHover:pt=>{
     if(!pt){$('#hBig').textContent=rp(tot);$('#hDelta').innerHTML=deltaHTML(d,p,since);return}
     const dd=pt.v-base.v;$('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=deltaHTML(dd,base.v?dd/base.v:null,dlabel(pt.t))}});
 }
@@ -477,19 +476,18 @@ function renderDetail(){
     M.flows(g.retAccs).filter(f=>f.t>base).sort((a,b)=>a.t-b.t).forEach(f=>{mp.push({t:f.t,v:modal});modal+=f.amt;mp.push({t:f.t,v:modal})});
     mp.push({t:TODAY_T,v:modal});
     const now=vals[vals.length-1].v,profit=now-modal,r=M.chain(M.periodsFor(g.retAccs,base));
-    heroBig=rp(now);heroDelta=deltaHTML(profit,r,'profit sejak '+dlabel(base));
+    heroBig=rp(now);heroDelta=deltaHTML(profit,r,'profit since '+dlabel(base));
     chartSeries=[{pts:vals,color:meta.color},{pts:mp,color:'#8b9b93',dashed:true}];
-    stats=`<div class="stats"><div class="card stat"><div class="l">Modal</div><div class="v">${rp(modal)}</div></div>
+    stats=`<div class="stats"><div class="card stat"><div class="l">Principal</div><div class="v">${rp(modal)}</div></div>
       <div class="card stat"><div class="l">Profit</div><div class="v ${sgn(profit)==='pos'?'pos-t':'neg-t'}">${rpS(profit)}</div></div>
-      <div class="card stat"><div class="l">Return ${key==='AT'?'total':key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>
-      <div class="hint" style="margin-top:8px">Garis putus-putus = modal (saldo awal + topup).</div>`;
+      <div class="card stat"><div class="l">${key==='ALL'?'Total return':'Return '+key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>`;
     onHover=pt=>{if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
       $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`};
   }else{
     const pts=g.series.slice(M.idxFor(key)),b=pts[0],l=pts[pts.length-1],d=l.v-b.v;
-    heroBig=rp(l.v);heroDelta=deltaHTML(d,null,'perubahan saldo sejak '+dlabel(b.t));
+    heroBig=rp(l.v);heroDelta=deltaHTML(d,null,'balance change since '+dlabel(b.t));
     chartSeries=[{pts,color:meta.color}];
-    stats=`<div class="note" style="margin-top:12px">Cash tidak dihitung return. Saldonya keluar-masuk untuk kebutuhan harian, jadi yang kelihatan cuma posisi saldo.</div>`;
+    stats='';
     onHover=pt=>{if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
       $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`};
   }
@@ -497,20 +495,19 @@ function renderDetail(){
   let growth='';
   if(g.hasReturn){
     const P=M.periodsFor(g.retAccs,g.retStart),mx=Math.max(...P.map(x=>Math.abs(x.r||0)),.0001);
-    growth=`<section><h2>Growth bulanan</h2><div class="card blist">${P.map(x=>`<div class="brow"><span style="font-weight:600">${MON[new Date(x.e).getUTCMonth()]}${x.partial?'*':''}</span>
+    growth=`<section><h2>Monthly growth</h2><div class="card blist">${P.map(x=>`<div class="brow"><span style="font-weight:600">${MON[new Date(x.e).getUTCMonth()]}</span>
       <div class="btrack"><i style="width:${Math.max(3,Math.abs(x.r||0)/mx*100)}%;background:${(x.r||0)>=0?'var(--accent)':'var(--neg)'}"></i></div>
-      <div class="bval ${(x.r||0)>=0?'pos-t':'neg-t'}">${x.r==null?'–':pct(x.r)}<small>${rpS(x.profit)}</small></div></div>`).join('')}</div>
-      ${P.some(x=>x.partial)?'<div class="note">*Bulan berjalan, s/d '+dlabel(TODAY_T)+'.</div>':''}</section>`;
+      <div class="bval ${(x.r||0)>=0?'pos-t':'neg-t'}">${x.r==null?'–':pct(x.r)}<small>${rpS(x.profit)}</small></div></div>`).join('')}</div></section>`;
   }
   /* rekening */
-  const accRows=g.accs.map(a=>{const ak=M.byAkun[a];return `<div class="acc"><span>${ak.nama}${ak.aktif?'':'<span class="tag">histori</span>'}</span><b>${rp(M.val(a,TODAY_T))}</b></div>`}).join('');
+  const accRows=g.accs.map(a=>{const ak=M.byAkun[a];return `<div class="acc"><span>${ak.nama}${ak.aktif?'':'<span class="tag">history</span>'}</span><b>${rp(M.val(a,TODAY_T))}</b></div>`}).join('');
   /* topup tujuan */
   const tx=DATA.transaksi.filter(x=>g.accs.includes(x.ke)).sort((a,b)=>T(b.tanggal)-T(a.tanggal));
-  const txHTML=tx.length?`<div class="card">${tx.map(x=>txRow(x,g)).join('')}</div>`:`<div class="card empty">Belum ada topup tercatat.</div>`;
+  const txHTML=tx.length?`<div class="card">${tx.map(x=>txRow(x,g)).join('')}</div>`:`<div class="card empty">No top-ups yet.</div>`;
   view.innerHTML=`
-  <div class="dhead"><button class="back" data-act="back" aria-label="Kembali">${icon('back')}</button><div class="t">${g.name}</div><span class="badge">${meta.badge}</span></div>
+  <div class="dhead"><button class="back" data-act="back" aria-label="Back">${icon('back')}</button><div class="t">${g.name}</div><span class="badge">${meta.badge}</span></div>
   <section class="hero">
-    <div class="eyebrow">Nilai saat ini</div>
+    <div class="eyebrow">Current value</div>
     <div class="big" id="hBig">${heroBig}</div>
     <div class="drow" id="hDelta">${heroDelta}</div>
     <div class="chart" id="hChart"></div>
@@ -518,13 +515,13 @@ function renderDetail(){
     ${stats}
   </section>
   ${growth}
-  <section><h2>Rekening</h2><div class="card">${accRows}</div></section>
-  <section><h2>Topup <small>${tx.length} transaksi</small></h2>${txHTML}</section>`;
-  drawChart($('#hChart'),chartSeries,{label:'Grafik '+g.name,onHover});
+  <section><h2>Accounts</h2><div class="card">${accRows}</div></section>
+  <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>`;
+  drawChart($('#hChart'),chartSeries,{label:'Chart '+g.name,onHover});
 }
 function txRow(x,g){
   g=g||M.tujuan.find(t=>t.accs.includes(x.ke));const t=T(x.tanggal);
-  const extra=[x.dari?'dari '+(M.byAkun[x.dari]?M.byAkun[x.dari].nama:x.dari):'',x.catatan].filter(Boolean).map(esc).join(' · ');
+  const extra=[x.dari?'from '+(M.byAkun[x.dari]?M.byAkun[x.dari].nama:x.dari):'',x.catatan].filter(Boolean).map(esc).join(' · ');
   return `<div class="tx"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
     <div class="m"><b>${M.byAkun[x.ke]?M.byAkun[x.ke].nama:x.ke}</b><span>${dlabel(t)}${extra?' · '+extra:''}</span></div><div class="a">+${rp(x.nominal)}</div></div>`;
 }
@@ -532,66 +529,62 @@ function txRow(x,g){
 /* ---------- Riwayat ---------- */
 function goalOf(ak){return M.tujuan.find(t=>t.accs.includes(ak))}
 function renderRiwayat(){
-  const names=['Semua',...M.tujuan.filter(t=>t.hasReturn).map(t=>t.name)];
+  const names=['All',...M.tujuan.filter(t=>t.hasReturn).map(t=>t.name)];
   const all=DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal));
-  const tx=all.filter(x=>S.filter==='Semua'||(goalOf(x.ke)||{}).name===S.filter);
-  /* setoran per bulan (sesuai filter) */
+  const tx=all.filter(x=>S.filter==='All'||(goalOf(x.ke)||{}).name===S.filter);
+  /* deposits per month (filtered) */
   const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+x.nominal});
   const keys=Object.keys(byM).sort(),mx=Math.max(...keys.map(k=>byM[k]),1);
-  const bars=keys.length?keys.map(k=>`<div class="col"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${MON[+k.slice(5,7)-1]}</span></div>`).join(''):'<div class="empty" style="width:100%">Belum ada data.</div>';
+  const bars=keys.length?keys.map(k=>`<div class="col"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${MON[+k.slice(5,7)-1]}</span></div>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
   const total=tx.reduce((s,x)=>s+x.nominal,0);
-  /* grup per bulan */
+  /* grouped by month */
   let list='',cur='';
   tx.forEach(x=>{const k=x.tanggal.slice(0,7);
     if(k!==cur){if(cur)list+='</div>';cur=k;list+=`<div class="mhead"><span>${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}</span><span>${rp(byM[k])}</span></div><div class="card">`}
     list+=txRow(x)});
   if(cur)list+='</div>';
   view.innerHTML=`
-  <div class="topbar"><div class="brand">Riwayat topup</div></div>
-  <section class="hero"><div class="eyebrow">Total setoran</div><div class="big">${rp(total)}</div>
-    <div class="hint">${tx.length} transaksi sejak Agu 2026</div></section>
-  <section><h2>Setoran per bulan</h2><div class="card cols">${bars}</div></section>
+  <div class="topbar"><div class="brand">Top-up history</div></div>
+  <section class="hero"><div class="eyebrow">Total deposits</div><div class="big">${rp(total)}</div></section>
+  <section><h2>Monthly deposits</h2><div class="card cols">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${n}">${n}</button>`).join('')}</div>
-  <section>${list||'<div class="card empty" style="margin-top:16px">Belum ada topup.</div>'}</section>`;
+  <section>${list||'<div class="card empty" style="margin-top:16px">No top-ups yet.</div>'}</section>`;
 }
 
 /* ---------- Profil ---------- */
 function renderProfil(){
   view.innerHTML=`
-  <div class="topbar"><div class="brand">Profil</div></div>
+  <div class="topbar"><div class="brand">Profile</div></div>
   <div class="prof" style="padding-top:56px"><div class="avatar">A</div></div>
-  <button class="btn ghost" data-act="logout">${icon('out')}Keluar</button>`;
+  <button class="btn ghost" data-act="logout">${icon('out')}Log out</button>`;
 }
 
 /* =====================================================================
-   Sheet tambah topup / update saldo (dummy: ubah data di memori saja)
+   Add top-up / update balance sheet
    ===================================================================== */
-const fmtIn=s=>{const d=String(s).replace(/\D/g,'');return d?Number(d).toLocaleString('id-ID'):''};
+const fmtIn=s=>{const d=String(s).replace(/\D/g,'');return d?Number(d).toLocaleString('en-US'):''};
 const numIn=s=>Number(String(s).replace(/\D/g,''))||0;
 function sheetHTML(){
   const act=M.akun.filter(a=>a.aktif);
   const opt=(list,sel)=>list.map(a=>`<option value="${a.akun}"${a.akun===sel?' selected':''}>${a.nama}</option>`).join('');
-  const tab=`<div class="seg"><button class="${S.mode==='topup'?'on':''}" data-act="mode" data-k="topup">Topup</button><button class="${S.mode==='saldo'?'on':''}" data-act="mode" data-k="saldo">Update saldo</button></div>`;
+  const tab=`<div class="seg"><button class="${S.mode==='topup'?'on':''}" data-act="mode" data-k="topup">Top-up</button><button class="${S.mode==='saldo'?'on':''}" data-act="mode" data-k="saldo">Update balance</button></div>`;
   if(S.mode==='topup'){
     const inv=act.filter(a=>a.jenis==='investasi');
     return `<div class="grab"></div>${tab}
-    <div class="field"><label for="fTgl">Tanggal</label><input class="inp" id="fTgl" type="date" value="${TODAY}" max="${TODAY}"></div>
-    <div class="field"><label for="fNom">Nominal</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div>
+    <div class="field"><label for="fTgl">Date</label><input class="inp" id="fTgl" type="date" value="${TODAY}" max="${TODAY}"></div>
+    <div class="field"><label for="fNom">Amount</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div>
     <div class="ferr" id="fErr"></div>
-    <div class="field"><label for="fKe">Ke akun</label><select class="inp" id="fKe">${opt(inv,inv[0].akun)}</select></div>
-      <div class="field"><label for="fDari">Dari akun</label><select class="inp" id="fDari"><option value="">Tidak dicatat</option><option value="Rekening Utama">Rekening utama</option>${opt(act,'')}</select></div>
-    <div class="field"><label for="fCat">Catatan</label><input class="inp" id="fCat" placeholder="Opsional"></div>
-    <button class="btn primary" id="fSave" data-act="save" style="margin-top:6px">Simpan topup</button>
-    <div class="sfoot">Langsung tersimpan ke Google Sheets.</div>`;
+    <div class="field"><label for="fKe">To account</label><select class="inp" id="fKe">${opt(inv,inv[0].akun)}</select></div>
+      <div class="field"><label for="fDari">From account</label><select class="inp" id="fDari"><option value="">Not recorded</option><option value="Rekening Utama">Main account</option>${opt(act,'')}</select></div>
+    <div class="field"><label for="fCat">Notes</label><input class="inp" id="fCat" placeholder="Optional"></div>
+    <button class="btn primary" id="fSave" data-act="save" style="margin-top:6px">Save top-up</button>`;
   }
   const cur=act[0];
   return `<div class="grab"></div>${tab}
-    <div class="field"><label for="fAk">Akun</label><select class="inp" id="fAk">${opt(act,cur.akun)}</select></div>
-    <div class="field"><label for="fSal">Saldo saat ini</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(cur.akun,TODAY_T))}" autocomplete="off"></div>
+    <div class="field"><label for="fAk">Account</label><select class="inp" id="fAk">${opt(act,cur.akun)}</select></div>
+    <div class="field"><label for="fSal">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(cur.akun,TODAY_T))}" autocomplete="off"></div>
     <div class="ferr" id="fErr"></div>
-    <div class="hint" style="margin:-4px 2px 12px">Mengisi saldo ${MON[new Date(TODAY_T).getUTCMonth()]} ${YEAR} (posisi ${dlabel(TODAY_T)}).</div>
-    <button class="btn primary" id="fSave" data-act="save">Simpan saldo</button>
-    <div class="sfoot">Langsung tersimpan ke Google Sheets.</div>`;
+    <button class="btn primary" id="fSave" data-act="save">Save balance</button>`;
 }
 function openSheet(){
   const sh=$('#sheet'),bd=$('#backdrop');sh.innerHTML=sheetHTML();sh.hidden=false;bd.hidden=false;
@@ -608,26 +601,26 @@ async function saveSheet(){
   let action,payload,okMsg;
   if(S.mode==='topup'){
     const nom=numIn($('#fNom').value),tgl=$('#fTgl').value;
-    if(!tgl||T(tgl)>TODAY_T){err.textContent='Tanggal tidak valid.';return}
-    if(nom<=0){$('#fNom').classList.add('err');err.textContent='Isi nominal lebih dari 0.';return}
+    if(!tgl||T(tgl)>TODAY_T){err.textContent='Invalid date.';return}
+    if(nom<=0){$('#fNom').classList.add('err');err.textContent='Enter an amount above 0.';return}
     const dari=$('#fDari').value,ke=$('#fKe').value;
-    if(dari===ke){err.textContent='Akun asal dan tujuan sama.';return}
+    if(dari===ke){err.textContent='From and to accounts are the same.';return}
     action='addTopup';payload={tanggal:tgl,nominal:nom,ke,dari,catatan:$('#fCat').value.trim()};
-    okMsg='Topup '+rp(nom)+' ke '+M.byAkun[ke].nama+' tersimpan';
+    okMsg='Top-up of '+rp(nom)+' to '+M.byAkun[ke].nama+' saved';
   }else{
     const ak=$('#fAk').value,v=numIn($('#fSal').value);
-    if(!$('#fSal').value){err.textContent='Isi saldo.';return}
+    if(!$('#fSal').value){err.textContent='Enter a balance.';return}
     action='setSaldo';payload={akun:ak,bulan:TODAY.slice(0,7),saldo:v};
-    okMsg='Saldo '+M.byAkun[ak].nama+' jadi '+rp(v);
+    okMsg=M.byAkun[ak].nama+' balance set to '+rp(v);
   }
-  saving=true;btn.disabled=true;btn.textContent='Menyimpan…';err.textContent='';
+  saving=true;btn.disabled=true;btn.textContent='Saving…';err.textContent='';
   try{
     await api(action,payload);
     closeSheet();toast(okMsg);
-    try{await loadData();render()}catch(_){toast('Tersimpan, tapi gagal memuat ulang. Tarik ulang nanti.')}
+    try{await loadData();render()}catch(_){toast('Saved, but refreshing failed.')}
   }catch(e){
     if(e.status===401||e.status===403){closeSheet();Auth.signOut({denied:true})}
-    else{err.textContent=e.message||'Gagal menyimpan.';btn.disabled=false;btn.textContent=label}
+    else{err.textContent=e.message||'Could not save.';btn.disabled=false;btn.textContent=label}
   }finally{saving=false}
 }
 let tt;function toast(msg){const t=$('#toast');t.querySelector('span').textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
@@ -667,19 +660,19 @@ let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>
    ===================================================================== */
 async function api(action,payload){
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){const e=new Error('Belum login');e.status=401;throw e}
+  if(!session){const e=new Error('Not signed in');e.status=401;throw e}
   let res;
   try{res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,token:session.access_token},payload||{}))})}
-  catch(_){throw new Error('Tidak bisa terhubung ke server.')}
-  let j;try{j=await res.json()}catch(_){throw new Error('Respons server tidak valid.')}
-  if(!j.ok){const e=new Error((j.error||'Gagal.')+(j.detail?' ['+j.detail+']':''));e.status=j.status;throw e}
+  catch(_){throw new Error('Cannot reach the server.')}
+  let j;try{j=await res.json()}catch(_){throw new Error('Invalid server response.')}
+  if(!j.ok){const e=new Error((j.error||'Failed.')+(j.detail?' ['+j.detail+']':''));e.status=j.status;throw e}
   return j.data;
 }
 let lastLoad=0;
 async function loadData(){
   const d=await api('read');
   setToday(d.today);DATA.akun=d.akun;DATA.saldo=d.saldo;DATA.transaksi=d.transaksi;
-  if(!DATA.akun.length||!DATA.saldo.length)throw new Error('Data di Google Sheets masih kosong.');
+  if(!DATA.akun.length||!DATA.saldo.length)throw new Error('The Google Sheet has no data yet.');
   build();lastLoad=Date.now();
 }
 function showLoggedOut(){S.auth=false;$('#shell').hidden=true}
@@ -688,17 +681,17 @@ async function enter(){
   if(entering)return;entering=true;
   try{
     $('#shell').hidden=false;S.auth=true;
-    view.innerHTML='<div class="empty" style="padding-top:40vh">Memuat data\u2026</div>';
+    view.innerHTML='<div class="empty" style="padding-top:40vh">Loading\u2026</div>';
     await loadData();
     S.view='home';render();
   }catch(e){
     if(e.status===401||e.status===403){showLoggedOut();Auth.signOut({denied:true})}
-    else view.innerHTML=`<div class="card empty" style="margin-top:30vh">${esc(e.message||'Gagal memuat.')}<button class="btn primary" data-act="retry">Coba lagi</button></div>`;
+    else view.innerHTML=`<div class="card empty" style="margin-top:30vh">${esc(e.message||'Could not load.')}<button class="btn primary" data-act="retry">Try again</button></div>`;
   }finally{entering=false}
 }
 Auth.init({
-  name:'Jurnal Keuangan',
-  tagline:'Net worth dan pertumbuhan investasi',
+  name:'Finance Journal',
+  tagline:'Net worth and investment growth',
   accent:'#2dd48f',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg>',
   onSignIn:enter,
