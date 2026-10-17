@@ -185,20 +185,33 @@
   #days { display: block; max-width: 100%; }
   #spark { position: absolute; pointer-events: none; }
 
-  .foot { margin: 0; font-size: 11.5px; color: var(--muted); }
+  .view { display: flex; flex-direction: column; gap: 16px; }
+  .titlerow { display: flex; align-items: center; gap: 6px; }
+  .iconbtn {
+    display: grid; place-items: center; width: 32px; height: 32px; margin-top: 2px;
+    border: 0; border-radius: 10px; background: var(--field); color: var(--muted);
+    cursor: pointer; outline: none; flex: none;
+  }
+  .iconbtn:hover, .iconbtn:focus-visible { background: var(--field-focus); color: var(--ink); }
+  .lead { margin: 4px 0 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .hint { margin: 0; min-height: 1.2em; font-size: 12.5px; color: var(--lit); }
+  .cta {
+    border: 0; border-radius: 14px; padding: 14px 16px;
+    background: var(--lit); color: #1a1405;
+    font: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer; outline: none;
+  }
+  .cta:disabled { background: var(--field); color: var(--muted); cursor: default; }
 </style>
 </head>
 <body>
 
 <div class="wrap" id="wrap">
+  <div class="view" id="setup">
   <header>
     <div>
       <h1>Lifedots</h1>
-      <p class="sub" id="sub">900 dot, 1 dot = 1 bulan</p>
-    </div>
-    <div class="seg" role="group" aria-label="Satuan dot">
-      <button type="button" id="u-month" aria-pressed="true">Bulan</button>
-      <button type="button" id="u-day" aria-pressed="false">Hari</button>
+      <p class="sub">1 dot = 1 bulan atau 1 hari</p>
     </div>
   </header>
 
@@ -208,6 +221,7 @@
   </aside>
 
   <div class="input">
+    <p class="lead">Masukkan usia atau tanggal lahir</p>
     <div class="modes">
       <span>Isi dengan</span>
       <div class="seg" role="group" aria-label="Cara mengisi">
@@ -246,21 +260,40 @@
         <select id="by" aria-label="Tanggal lahir, tahun"></select>
       </div>
     </div>
+    <p class="hint" id="hint" aria-live="polite"></p>
+    <button type="button" class="cta" id="go" disabled>Lihat dot-ku</button>
+  </div>
   </div>
 
-  <section class="hero" aria-live="polite">
-    <p class="hero-label">Tersisa</p>
-    <p class="pct" id="pct">–<small>%</small></p>
-    <p class="countdown" id="countdown">Pilih usia dulu.</p>
-  </section>
+  <div class="view" id="result" hidden>
+    <header>
+      <div>
+        <div class="titlerow">
+          <h1>Lifedots</h1>
+          <button type="button" class="iconbtn" id="reset" aria-label="Reset, isi ulang usia atau tanggal lahir" title="Reset">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 2.6v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <p class="sub" id="sub">900 dot, 1 dot = 1 bulan</p>
+      </div>
+      <div class="seg" role="group" aria-label="Satuan dot">
+        <button type="button" id="u-month" aria-pressed="true">Bulan</button>
+        <button type="button" id="u-day" aria-pressed="false">Hari</button>
+      </div>
+    </header>
 
-  <div class="stage" id="stage">
-    <div class="grid" id="grid" role="img" aria-label="Satu dot satu bulan"></div>
-    <canvas id="days" role="img" aria-label="Satu dot satu hari" hidden></canvas>
-    <canvas id="spark" aria-hidden="true"></canvas>
+    <section class="hero" aria-live="polite">
+      <p class="hero-label">Tersisa</p>
+      <p class="pct" id="pct">–<small>%</small></p>
+      <p class="countdown" id="countdown"></p>
+    </section>
+
+    <div class="stage" id="stage">
+      <div class="grid" id="grid" role="img" aria-label="Satu dot satu bulan"></div>
+      <canvas id="days" role="img" aria-label="Satu dot satu hari" hidden></canvas>
+      <canvas id="spark" aria-hidden="true"></canvas>
+    </div>
   </div>
-
-  <p class="foot">Dihitung di browser kamu. Tanpa login, tidak ada data yang disimpan.</p>
 </div>
 
 <script>
@@ -301,7 +334,7 @@
   }
 
   // start = titik awal hitung. Dari tanggal lahir, atau dari hari ini dikurangi usia yang dipilih.
-  var start = null, lastLived = -1, unit = "month", inMode = "age", dayKey = "", cur = null;
+  var committed = false, start = null, lastLived = -1, unit = "month", inMode = "age", dayKey = "", cur = null;
 
   function monthsLived(now) {
     var m = (now.getFullYear() - start.getFullYear()) * 12 + now.getMonth() - start.getMonth();
@@ -466,15 +499,8 @@
     $("sub").textContent = fmt(n) + " dot, 1 dot = 1 " + (month ? "bulan" : "hari");
   }
 
-  function renderEmpty(msg) {
-    $("pct").innerHTML = "–<small>%</small>";
-    $("countdown").textContent = msg || (inMode === "age" ? "Pilih usia dulu." : "Pilih tanggal lahir dulu.");
-    if (unit === "month") { setDots(-1, 0); } else { drawDays(estDays(), -1, true); }
-    setCur(null);
-  }
-
   function tick() {
-    if (!start) return;
+    if (!start || !committed) return;
     var now = new Date();
     var end = addMonths(start, TOTAL);
     var total = end - start, elapsed = now - start;
@@ -564,11 +590,36 @@
       else start = dt;
     }
     syncPills();
+    $("hint").textContent = msg;
+    $("go").disabled = !start;
+    if (!committed) return;
     lastLived = -1;
     dayKey = "";
     renderUnit();
-    if (start) tick(); else renderEmpty(msg);
+    tick();
   }
+
+  function show(on) {
+    committed = on;
+    $("setup").hidden = on;
+    $("result").hidden = !on;
+    if (on) {
+      lastLived = -1; dayKey = "";
+      renderUnit(); tick();
+      sizeSpark();
+    } else {
+      renderUnit();
+      setCur(null);
+    }
+  }
+  $("go").addEventListener("click", function () { if (start) show(true); });
+  $("reset").addEventListener("click", function () {
+    [yy, mm, dd, bm, by].forEach(function (s) { s.value = ""; });
+    unit = "month";
+    show(false);
+    recompute();
+    window.scrollTo(0, 0);
+  });
 
   [yy, mm, dd, bm, by].forEach(function (s) { s.addEventListener("change", recompute); });
 
@@ -588,7 +639,7 @@
     lastLived = -1;
     dayKey = "";
     renderUnit();
-    if (start) tick(); else renderEmpty("");
+    tick();
   }
   $("u-month").addEventListener("click", function () { setUnit("month"); });
   $("u-day").addEventListener("click", function () { setUnit("day"); });
@@ -596,7 +647,7 @@
   var rt = null;
   window.addEventListener("resize", function () {
     clearTimeout(rt);
-    rt = setTimeout(function () { dayKey = ""; if (start) tick(); else renderEmpty(""); }, 150);
+    rt = setTimeout(function () { dayKey = ""; tick(); }, 150);
   });
 
   recompute();
