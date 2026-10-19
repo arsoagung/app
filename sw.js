@@ -27,6 +27,7 @@ const PRECACHE = [
   'targetin/', 'targetin/index.html',
   'karnote/',  'karnote/index.html',
   'sehatin/',  'sehatin/index.html',
+  'puasain/',  'puasain/index.html',
   'jurnal-keuangan/', 'jurnal-keuangan/index.html',
   'ekspektasi-hidup/', 'ekspektasi-hidup/index.html',
   'sehatin/js/shared.js', 'sehatin/js/data.js'
