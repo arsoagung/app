@@ -23,11 +23,11 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-/* ═══ TOKEN — dark only: #101010 / #262626 / #E55630 ═══ */
+/* ═══ TOKEN — dark only: #101010 / #262626 / ungu #714CB6, aksen tipis #E55630 ═══ */
 :root{
   color-scheme:dark;
   --cream:#101010; --white:#262626; --dark:#F2F2F2; --gray:#8F8F8F; --gray-light:#333333;
-  --fast:#E55630; --fast-soft:#3A2019; --hi:#FF9B7A; --hi-soft:#3A2019; --hi-ink:#FF9B7A;
+  --fast:#714CB6; --fast-soft:#30264A; --hi:#B79CF0; --red:#E55630; --red-soft:#3A2019; --red-hi:#FF9B7A;
   --ok:#F2F2F2; --ok-ink:#101010; --eat:#E6E6E6; --ink:#101010;
   --input-bg:#101010; --input-focus:#1A1A1A;
   --radius:28px; --radius-sm:18px; --nav-h:74px;
@@ -73,7 +73,7 @@ svg{display:block}
 .pill{display:inline-flex;align-items:center;gap:6px;background:var(--fast-soft);color:var(--hi);font-size:12px;font-weight:700;padding:6px 12px;border-radius:30px}
 .pill.eat{background:var(--ok);color:var(--ok-ink)}
 .pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
-.pill.live .dot{animation:pulse 1.6s ease-in-out infinite}
+.pill.live .dot{background:var(--red);animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
 .proto{font-size:12px;font-weight:700;color:var(--gray)}
 .ring-wrap{position:relative;width:260px;height:260px;margin:6px auto 4px}
@@ -105,7 +105,7 @@ svg{display:block}
 .week{background:var(--white);border-radius:var(--radius);padding:16px 10px 14px;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:12px}
 .wd{display:flex;flex-direction:column;align-items:center;gap:5px}
 .wd-n{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase}
-.wd.today .wd-n{color:var(--hi)}
+.wd.today .wd-n{color:var(--red-hi)}
 .wd-h{font-size:11px;font-weight:700;color:var(--gray)}
 .wd.today .wd-h{color:var(--dark)}
 
@@ -116,7 +116,7 @@ svg{display:block}
 .scard.b{background:var(--white);color:var(--dark)}
 .scard.b .scard-num{color:var(--hi)}
 .scard.c{background:var(--white);color:var(--dark)}
-.scard.c .scard-num{color:var(--fast);font-size:26px;letter-spacing:-.5px}
+.scard.c .scard-num{color:var(--dark);font-size:26px;letter-spacing:-.5px}
 .scard-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.65;margin-bottom:6px}
 .scard-num{font-size:42px;font-weight:800;line-height:1;letter-spacing:-1px}
 .scard-unit{font-size:12px;opacity:.65;margin-top:3px;font-weight:500}
@@ -128,7 +128,7 @@ svg{display:block}
 .prog-bg{height:6px;background:rgba(255,255,255,.28);border-radius:3px;overflow:hidden}
 .prog-fill{height:100%;background:#fff;border-radius:3px;transition:width .6s}
 .insight-card{background:var(--white);border-radius:24px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;color:var(--dark)}
-.insight-icon{width:20px;height:20px;flex-shrink:0;margin-top:1px;fill:var(--fast)}
+.insight-icon{width:20px;height:20px;flex-shrink:0;margin-top:1px;fill:var(--red)}
 .insight-text{font-size:13px;font-weight:600;line-height:1.5}
 .insight-sub{font-size:11px;font-weight:400;color:var(--gray);margin-top:2px}
 
@@ -148,7 +148,7 @@ svg{display:block}
 .cell.today{background:var(--fast-soft)}
 .cell.sel{background:var(--fast);}
 .cell .num{font-size:12.5px;font-weight:700;color:var(--gray);line-height:1}
-.cell.today .num{color:var(--hi)}
+.cell.today .num{color:var(--red-hi)}
 .cell.sel .num{color:#fff}
 .cell .mr{width:78%;height:auto}
 .mr .t{stroke:var(--gray-light)}
@@ -176,7 +176,7 @@ svg{display:block}
 .fr-act .btn-ic{background:var(--gray-light)}
 .fr-foot{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .badge{font-size:11px;font-weight:700;padding:4px 11px;border-radius:30px;background:var(--ok);color:var(--ok-ink)}
-.badge.miss{background:var(--hi-soft);color:var(--hi-ink)}
+.badge.miss{background:var(--red-soft);color:var(--red-hi)}
 .badge.n{background:var(--gray-light);color:var(--gray)}
 .badge.live{background:var(--fast-soft);color:var(--hi)}
 .fr-note{font-size:12px;color:var(--gray);margin-top:8px;line-height:1.5;font-style:italic}
@@ -209,7 +209,7 @@ svg{display:block}
 .chart-card svg{width:100%;height:auto}
 .chart-card .cb{fill:var(--fast)}
 .chart-card .cb.part{opacity:.5}
-.chart-card .cg{stroke:var(--hi);stroke-width:2;stroke-dasharray:4 4}
+.chart-card .cg{stroke:var(--red);stroke-width:2;stroke-dasharray:4 4}
 .chart-card text{fill:var(--gray);font-family:var(--font);font-size:10px;font-weight:600}
 .top-list{display:flex;flex-direction:column;gap:8px}
 .top-item{background:var(--white);border-radius:22px;padding:13px 14px;display:flex;align-items:center;gap:12px}
@@ -245,27 +245,27 @@ svg{display:block}
 .btn-x svg{width:16px;height:16px;fill:currentColor}
 .btn-x svg.st{fill:none;stroke:currentColor}
 .btn-xl{background:var(--fast-soft);color:var(--hi)}
-.btn-out{background:var(--hi-soft);color:var(--hi-ink)}
+.btn-out{background:var(--red-soft);color:var(--red-hi)}
 .btn-gray{background:var(--gray-light);color:var(--dark);width:100%;margin-top:10px}
 
 /* ═══ TAB BAR iOS ═══ */
 .bottom-nav{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:398px;height:var(--nav-h);border-radius:40px;background:rgba(38,38,38,.86);-webkit-backdrop-filter:blur(24px) saturate(1.7);backdrop-filter:blur(24px) saturate(1.7);box-shadow:0 20px 44px -12px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-around;z-index:100;padding:0 8px}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;padding:9px 6px;border-radius:30px;flex:1;transition:background .35s,transform .5s var(--spring)}
 .nav-btn:active{transform:scale(.88)}
-.nav-btn.active{background:rgba(255,255,255,.14);animation:tab-pop .62s var(--spring)}
+.nav-btn.active{background:rgba(229,86,48,.2);animation:tab-pop .62s var(--spring)}
 @keyframes tab-pop{0%{transform:scale(.84)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
 .nav-lbl{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:.3px;transition:color .15s}
-.nav-btn.active .nav-lbl{color:#fff}
+.nav-btn.active .nav-lbl{color:var(--red-hi)}
 .nav-ic{display:flex;align-items:center;justify-content:center;width:24px;height:24px}
 .nav-ic svg{width:22px;height:22px;fill:var(--gray);transition:fill .15s}
-.nav-btn.active .nav-ic svg{fill:#fff}
+.nav-btn.active .nav-ic svg{fill:var(--red-hi)}
 .nav-btn.bounce .nav-ic{animation:icon-pop .62s var(--spring) forwards}
 @keyframes icon-pop{0%{transform:scale(.7)}55%{transform:scale(1.25)}100%{transform:scale(1)}}
-.nav-fab{width:54px;height:54px;background:var(--fast);border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;flex-shrink:0;transition:transform .5s var(--spring),background .3s,box-shadow .3s;box-shadow:0 8px 22px -6px rgba(229,86,48,.5)}
+.nav-fab{width:54px;height:54px;background:var(--fast);border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;flex-shrink:0;transition:transform .5s var(--spring),background .3s,box-shadow .3s;box-shadow:0 8px 22px -6px rgba(113,76,182,.5)}
 .nav-fab:active{transform:scale(.84)}
 .nav-fab svg{width:24px;height:24px;fill:#fff}
-.nav-fab.on svg{fill:#101010}
-.nav-fab.on{background:#F2F2F2;box-shadow:0 8px 22px -6px rgba(242,242,242,.22)}
+.nav-fab.on svg{fill:#fff}
+.nav-fab.on{background:var(--red);box-shadow:0 8px 22px -6px rgba(229,86,48,.5)}
 
 /* ═══ MODAL ═══ */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-end;justify-content:center}
@@ -982,7 +982,7 @@ async function startApp(user){
 Auth.init({
   name: 'Puasain',
   tagline: 'Catat puasa intermiten, hitung jamnya, dan pantau progresmu',
-  accent: '#E55630',
+  accent: '#B79CF0',
   icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8" opacity=".3"/><path d="M12 4a8 8 0 1 1-8 8"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg>',
   onSignIn: function (u) { startApp(u); },
   onSignOut: function () { currentUser = null; window.location.reload(); }
