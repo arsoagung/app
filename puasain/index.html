@@ -25,7 +25,7 @@
 /* ═══ TOKEN — sama dengan Sehatin (light + dark), ditambah warna Puasain ═══ */
 :root{
   --cream:#F3F0FA; --white:#FFFFFF; --dark:#1C1530; --gray:#847F96; --gray-light:#E7E2F3;
-  --warm:#FF9B71; --peach:#FFC4A8; --peach-soft:#FFE3D6; --mint:#BDEBDD; --mint-dark:#1F7A63;
+  --sky:#2EB4F5; --sky-soft:#D8F0FF; --sky-ink:#0B5C86; --mint:#BDEBDD; --mint-dark:#1F7A63;
   --lilac-soft:#E4DCFF;
   --fast:#6A45F0; --fast-soft:#E6DFFF; --eat:#1F9A7E; --ink:#1C1530;
   --input-bg:#F3F0FA; --input-focus:#EAE5F7;
@@ -35,7 +35,7 @@
 }
 body.dark{
   --cream:#14101F; --white:#201A33; --dark:#EFEAFB; --gray:#9A95AE; --gray-light:#322A4A;
-  --warm:#FFA67F; --peach:#FFC4A8; --peach-soft:#FFC4A8; --mint:#7FE0C3; --mint-dark:#0F4A3B;
+  --sky:#5CCBFF; --sky-soft:#9BDDFF; --sky-ink:#0A3A57; --mint:#7FE0C3; --mint-dark:#0F4A3B;
   --lilac-soft:#C9BBFF; --input-bg:#2A2342; --input-focus:#332B52; --ink:#14101F;
   --fast:#A78BFA; --fast-soft:#3B2F6B; --eat:#6EE0BE;
 }
@@ -90,20 +90,20 @@ svg{display:block}
 .ring-track{stroke:var(--gray-light)}
 .ring-main{stroke:var(--fast);transition:stroke-dashoffset 1s linear,stroke .3s}
 .ring-main.eat{stroke:var(--eat)}
-.ring-over{stroke:var(--warm);transition:stroke-dashoffset 1s linear}
+.ring-over{stroke:var(--sky);transition:stroke-dashoffset 1s linear}
 #ring-knob{transform-origin:130px 130px;transition:transform 1s linear}
 .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 40px}
 .rc-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray)}
 .rc-big{font-size:48px;font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-top:4px}
 .rc-big small{font-size:20px;font-weight:700;color:var(--gray);letter-spacing:0}
 .rc-sub{font-size:13px;font-weight:600;color:var(--gray);margin-top:2px}
-.hero-times{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}
-.tbox{background:var(--cream);border-radius:22px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hero-times{display:grid;grid-template-columns:1.2fr 1fr;gap:10px;margin:10px 0 14px}
+.tbox{background:var(--cream);border-radius:22px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .tbox-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gray)}
-.tbox-v{font-size:14px;font-weight:700;margin-top:3px}
+.tbox-v{font-size:14px;font-weight:700;margin-top:3px;white-space:nowrap}
 .btn-ic{background:var(--cream);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .4s var(--spring),background .2s}
 .btn-ic svg{width:15px;height:15px;fill:var(--dark)}
-.tbox .btn-ic{background:var(--gray-light)}
+.tbox .btn-ic{background:var(--gray-light);width:32px;height:32px}
 .btn-ic:active{transform:scale(.8)}
 .btn-save{width:100%;background:var(--fast);color:#fff;border:none;border-radius:30px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;transition:transform .4s var(--spring)}
 body.dark .btn-save{color:var(--ink)}
@@ -129,14 +129,14 @@ body.dark .scard.dark{background:var(--white)}
 body.dark .scard.a{color:var(--ink)}
 .scard.dark .scard-label,.scard.dark .scard-unit{color:#F0EBFF}
 body:not(.dark) .scard.dark .scard-label,body:not(.dark) .scard.dark .scard-unit{color:#fff}
-.scard.dark .scard-num{color:var(--warm);font-size:26px;letter-spacing:-.5px}
+.scard.dark .scard-num{color:var(--sky);font-size:26px;letter-spacing:-.5px}
 .scard-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.65;margin-bottom:6px}
 .scard-num{font-size:42px;font-weight:800;line-height:1;letter-spacing:-1px}
 .scard-unit{font-size:12px;opacity:.65;margin-top:3px;font-weight:500}
 .scard-icon{position:absolute;top:16px;right:16px;width:22px;height:22px;opacity:.5;fill:currentColor}
 .scard.b .scard-icon{fill:#6A45F0;opacity:.7}
 .scard-row{display:flex;justify-content:space-between;align-items:center}
-.scard-right{width:38px;height:38px;opacity:.7;fill:var(--warm)}
+.scard-right{width:38px;height:38px;opacity:.7;fill:var(--sky)}
 body.dark .prog-bg{background:rgba(20,16,31,.2)}
 body.dark .prog-fill{background:var(--ink)}
 .prog-label{font-size:11px;opacity:.75;margin:10px 0 5px;font-weight:600}
@@ -166,15 +166,17 @@ body.dark .prog-fill{background:var(--ink)}
 .cell.today .num{color:var(--fast)}
 .cell.sel .num{color:#fff}
 .cell .mr{width:78%;height:auto}
-.cell .mr .t{stroke:var(--gray-light)}
+.mr .t{stroke:var(--gray-light)}
 .cell.today .mr .t{stroke:var(--white)}
 .cell.sel .mr .t{stroke:rgba(255,255,255,.3)}
-.cell .mr .p{stroke:var(--fast)}
+.mr .p{stroke:var(--fast)}
 .cell.sel .mr .p{stroke:#fff}
-.cell .mr text{fill:var(--dark);font-family:var(--font);font-weight:800;font-size:11px}
+.mr text{fill:var(--dark);font-family:var(--font);font-weight:800;font-size:11px}
 .cell.sel .mr text{fill:#fff}
-.cell .mr.part .p{opacity:.55}
-.cell.live .mr .p{animation:pulse 1.6s ease-in-out infinite}
+.mr.part .p{opacity:.55}
+.cell.live .mr .p{animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.wd .mr{margin:2px 0}
 .cell.bounce{animation:cellb .4s var(--spring)}
 @keyframes cellb{0%{transform:scale(1)}35%{transform:scale(1.12)}100%{transform:scale(1)}}
 .day-card{background:var(--white);border-radius:var(--radius);padding:16px;margin-top:14px}
@@ -189,7 +191,7 @@ body.dark .prog-fill{background:var(--ink)}
 .fr-act .btn-ic{background:var(--gray-light)}
 .fr-foot{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .badge{font-size:11px;font-weight:700;padding:4px 11px;border-radius:30px;background:var(--mint);color:var(--mint-dark)}
-.badge.miss{background:var(--peach-soft);color:#A04A22}
+.badge.miss{background:var(--sky-soft);color:var(--sky-ink)}
 .badge.n{background:var(--gray-light);color:var(--gray)}
 .badge.live{background:var(--fast-soft);color:var(--fast)}
 .fr-note{font-size:12px;color:var(--gray);margin-top:8px;line-height:1.5;font-style:italic}
@@ -223,12 +225,12 @@ body.dark .acc-pill.active{color:var(--ink)}
 .chart-card svg{width:100%;height:auto}
 .chart-card .cb{fill:var(--fast)}
 .chart-card .cb.part{opacity:.5}
-.chart-card .cg{stroke:var(--warm);stroke-width:2;stroke-dasharray:4 4}
+.chart-card .cg{stroke:var(--sky);stroke-width:2;stroke-dasharray:4 4}
 .chart-card text{fill:var(--gray);font-family:var(--font);font-size:10px;font-weight:600}
 .top-list{display:flex;flex-direction:column;gap:8px}
 .top-item{background:var(--white);border-radius:22px;padding:13px 14px;display:flex;align-items:center;gap:12px}
 .top-rank{font-size:20px;font-weight:800;color:var(--gray-light);width:24px;text-align:center;flex-shrink:0}
-.top-rank.gold{color:var(--warm)}
+.top-rank.gold{color:var(--sky)}
 .top-info{flex:1}
 .top-name{font-size:14px;font-weight:700}
 .top-cnt{font-size:11px;color:var(--gray);margin-top:1px;font-weight:500}
@@ -258,7 +260,7 @@ body.dark .qchip.selected{color:var(--ink)}
 .btn-x:active{transform:scale(.96)}
 .btn-x svg{width:16px;height:16px;fill:currentColor}
 .btn-xl{background:var(--fast-soft);color:var(--fast)}
-.btn-out{background:var(--peach-soft);color:#A04A22}
+.btn-out{background:var(--sky-soft);color:var(--sky-ink)}
 .btn-gray{background:var(--gray-light);color:var(--dark);width:100%;margin-top:10px}
 
 /* ═══ TAB BAR iOS ═══ */
@@ -282,7 +284,7 @@ body.dark .nav-btn.active .nav-ic svg{fill:#F0EDE6}
 .nav-fab{width:54px;height:54px;background:#B9A4FF;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;flex-shrink:0;transition:transform .5s var(--spring),background .3s,box-shadow .3s;box-shadow:0 8px 22px -6px rgba(185,164,255,.6)}
 .nav-fab:active{transform:scale(.84)}
 .nav-fab svg{width:24px;height:24px;fill:#1C1530}
-.nav-fab.on{background:#FF9B71;box-shadow:0 8px 22px -6px rgba(255,155,113,.55)}
+.nav-fab.on{background:#5CCBFF;box-shadow:0 8px 22px -6px rgba(92,203,255,.5)}
 
 /* ═══ MODAL ═══ */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-end;justify-content:center}
@@ -291,18 +293,49 @@ body.dark .nav-btn.active .nav-ic svg{fill:#F0EDE6}
 .overlay-center{align-items:center}
 .modal{background:var(--white);border-radius:34px 34px 0 0;width:100%;max-width:430px;padding:10px 22px calc(28px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.34,1.3,.64,1)}
 @keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:none;opacity:1}}
-.modal-handle{width:38px;height:4px;background:var(--gray-light);border-radius:2px;margin:10px auto 18px}
-.modal-title{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
-.modal-sub{font-size:13px;color:var(--gray);margin-bottom:18px;line-height:1.5}
+.sheet{padding:20px 0 0;display:flex;flex-direction:column;overflow:hidden}
+.sheet .m-head,.sheet .sheet-body,.sheet .m-foot{padding-left:22px;padding-right:22px}
+.sheet-body{overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.m-foot{padding-top:10px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--white)}
+.m-foot .btn-save{margin-top:0}
+.m-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.m-head .btn-ic{background:var(--cream);width:36px;height:36px;margin-top:2px}
+.m-head .btn-ic svg{width:14px;height:14px}
+.modal-title{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.modal-sub{font-size:13px;color:var(--gray);margin-top:3px;line-height:1.5}
 .form-group{margin-bottom:14px}
-.form-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gray);display:block;margin-bottom:6px}
-.form-input,.form-textarea{width:100%;padding:13px 14px;border:none;border-radius:20px;font-size:15px;font-weight:500;color:var(--dark);background:var(--input-bg);-webkit-appearance:none;appearance:none;transition:background .2s;min-height:48px}
-.form-input:focus,.form-textarea:focus{background:var(--input-focus)}
-.form-textarea{min-height:72px;resize:none}
-body.dark .modal .form-input,body.dark .modal .form-textarea{background:#3A393D;color:#F0EDE6}
-body.dark .modal .form-input:focus,body.dark .modal .form-textarea:focus{background:#444146}
-body.dark .modal .qchip,body.dark .modal .btn-cancel-m{background:#3A393D;color:#d6d4d9}
+.form-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gray);display:block;margin-bottom:8px}
+.form-textarea{width:100%;padding:13px 16px;border:none;border-radius:22px;font-size:15px;font-weight:500;color:var(--dark);background:var(--input-bg);-webkit-appearance:none;appearance:none;transition:background .2s;min-height:72px;resize:none}
+.form-textarea:focus{background:var(--input-focus)}
+body.dark .modal .qchip,body.dark .modal .btn-cancel-m{background:var(--gray-light);color:var(--dark)}
 body.dark .modal .qchip.selected{background:var(--fast);color:var(--ink)}
+
+/* ringkasan durasi */
+.sum{background:var(--fast);color:#fff;border-radius:28px;padding:16px 18px 18px;margin-bottom:14px}
+.sum-l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.75}
+.sum-v{font-size:40px;font-weight:800;letter-spacing:-1.2px;line-height:1.1;margin-top:4px}
+.sum-s{display:inline-block;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:30px;font-size:12px;font-weight:700;margin-top:10px}
+.sum.ok .sum-s{background:var(--mint);color:var(--mint-dark)}
+body.dark .sum{color:var(--ink)}
+body.dark .sum-s{background:rgba(20,16,31,.16)}
+body.dark .sum.ok .sum-s{background:var(--mint);color:var(--mint-dark)}
+
+/* pemilih waktu */
+.tp{background:var(--cream);border-radius:28px;padding:14px 14px 16px;margin-bottom:10px}
+.tp-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tp-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray);padding-left:4px}
+.tp-day{display:flex;align-items:center;gap:2px}
+.tp-day span{font-size:13px;font-weight:700;min-width:108px;text-align:center}
+.tp-time{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px}
+.tp-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+.tp-num{font-size:46px;font-weight:800;letter-spacing:-1.5px;line-height:1;min-width:74px;text-align:center}
+.tp-sep{font-size:40px;font-weight:800;color:var(--gray);padding-bottom:2px}
+.tp-b{width:38px;height:38px;border-radius:50%;background:var(--white);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .4s var(--spring),background .2s}
+.tp-b:active{transform:scale(.8);background:var(--fast-soft)}
+.tp-b.s{width:30px;height:30px}
+.tp-b svg{width:18px;height:18px;fill:none;stroke:var(--dark);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.tp-b.s svg{width:15px;height:15px}
+.quick{margin:2px 0 14px}
 .confirm-box{background:var(--white);border-radius:32px;width:calc(100% - 48px);max-width:320px;padding:28px 22px;text-align:center;animation:popIn .25s cubic-bezier(.34,1.5,.64,1)}
 @keyframes popIn{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}
 .cf-ic{display:flex;justify-content:center;margin-bottom:10px;color:var(--dark)}
@@ -492,21 +525,23 @@ body.dark .btn-neu{background:#3A393D;color:#d6d4d9}
 
 <!-- FORM -->
 <div class="overlay" id="ov-form" onclick="ovClose(event,'ov-form')" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="m-title">Mulai Puasa</div>
-    <div class="modal-sub" id="m-sub"></div>
-    <div class="form-group" id="g-goal"><label class="form-label">Target</label><div class="chips" id="m-chips"></div></div>
-    <div class="form-group" id="g-start">
-      <label class="form-label" for="f-start">Waktu mulai</label>
-      <input type="datetime-local" class="form-input" id="f-start">
-      <div class="chips" id="m-quick" style="margin-top:8px"></div>
+  <div class="modal sheet">
+    <div class="m-head">
+      <div><div class="modal-title" id="m-title">Mulai Puasa</div><div class="modal-sub" id="m-sub"></div></div>
+      <button class="btn-ic" onclick="closeForm()" aria-label="Tutup"><svg viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg></button>
     </div>
-    <div class="form-group" id="g-end"><label class="form-label" for="f-end">Waktu buka puasa</label><input type="datetime-local" class="form-input" id="f-end"></div>
+    <div class="sheet-body">
+    <div class="sum" id="sum"><div class="sum-l" id="sum-l">Lama puasa</div><div class="sum-v" id="sum-v">–</div><div class="sum-s" id="sum-s"></div></div>
+    <div class="form-group" id="g-goal"><label class="form-label">Target</label><div class="chips" id="m-chips"></div></div>
+    <div id="g-start"><div class="tp" id="tp-start"></div><div class="chips quick" id="m-quick"></div></div>
+    <div id="g-end"><div class="tp" id="tp-end"></div></div>
+    <input type="hidden" id="f-start"><input type="hidden" id="f-end">
     <div class="form-group"><label class="form-label" for="f-note">Catatan</label><textarea class="form-textarea" id="f-note" placeholder="Opsional. Buka pakai apa, rasanya gimana..."></textarea></div>
-    <div class="err" id="m-err"></div>
-    <button class="btn-save" id="m-save" onclick="saveForm()">Simpan</button>
-    <button class="btn-cancel-m" onclick="closeForm()">Batal</button>
+    </div>
+    <div class="m-foot">
+      <div class="err" id="m-err"></div>
+      <button class="btn-save" id="m-save" onclick="saveForm()">Simpan</button>
+    </div>
   </div>
 </div>
 
@@ -799,13 +834,13 @@ function renderStats(){
   const list = inRange(period === '7' || period === '30' ? +period : period);
   const ok = list.filter(reached).length, near = list.filter(f => !reached(f) && dur(f.start, f.end) >= f.goal * HOUR * 0.8).length, miss = list.length - ok - near;
   const C = 2 * Math.PI * 58; let off = 0, segs = '';
-  const parts = [[ok, 'var(--fast)'], [near, 'var(--warm)'], [miss, 'var(--gray-light)']];
+  const parts = [[ok, 'var(--fast)'], [near, 'var(--sky)'], [miss, 'var(--gray-light)']];
   segs += '<circle cx="66" cy="66" r="58" stroke="var(--gray-light)" opacity="' + (list.length ? 0 : 1) + '"/>';
   parts.forEach(pt => { if (!pt[0]) return; const len = pt[0] / list.length * C, gap = parts.filter(x => x[0]).length > 1 ? 5 : 0;
     segs += '<circle cx="66" cy="66" r="58" stroke="' + pt[1] + '" stroke-linecap="round" transform="rotate(' + (-90 + off / C * 360) + ' 66 66)" stroke-dasharray="' + Math.max(0.01, len - gap) + ' ' + C + '"/>'; off += len; });
   $('donut-svg').innerHTML = segs;
   $('dn-n').textContent = list.length ? Math.round(ok / list.length * 100) + '%' : '–';
-  $('dn-legend').innerHTML = [['var(--fast)', 'Tercapai', ok], ['var(--warm)', 'Hampir (80%+)', near], ['var(--gray-light)', 'Belum', miss]].map(x => '<div class="dl-i"><i style="background:' + x[0] + '"></i>' + x[1] + '<b>' + x[2] + '</b></div>').join('');
+  $('dn-legend').innerHTML = [['var(--fast)', 'Tercapai', ok], ['var(--sky)', 'Hampir (80%+)', near], ['var(--gray-light)', 'Belum', miss]].map(x => '<div class="dl-i"><i style="background:' + x[0] + '"></i>' + x[1] + '<b>' + x[2] + '</b></div>').join('');
   const tot = list.reduce((s, f) => s + dur(f.start, f.end), 0), mx = list.reduce((s, f) => Math.max(s, dur(f.start, f.end)), 0);
   $('st-total').textContent = list.length;
   $('st-avg').textContent = list.length ? (tot / list.length / HOUR).toFixed(1).replace(/\.0$/, '') : '0';
@@ -871,17 +906,44 @@ function renderAll(){ renderFab(); renderHome(); if ($('page-kalender').classLis
 
 /* ═══ FORM ═══ */
 function overlaps(s, e, exceptId){ return fasts.some(f => f.id !== exceptId && s < (f.end || new Date(8.64e15)) && e > f.start); }
-function setChips(g){ form.goal = g; $('m-chips').innerHTML = [12, 14, 16, 18, 20].map(x => '<button type="button" class="qchip' + (x === g ? ' selected' : '') + '" onclick="setChips(' + x + ')">' + x + ':' + (24 - x) + '</button>').join(''); }
-function setStartAgo(h){ $('f-start').value = toInput(new Date(Date.now() - h * HOUR)); }
+function setChips(g){ form.goal = g; $('m-chips').innerHTML = [12, 14, 16, 18, 20].map(x => '<button type="button" class="qchip' + (x === g ? ' selected' : '') + '" onclick="setChips(' + x + ')">' + x + ':' + (24 - x) + '</button>').join(''); renderSum(); }
+let pk = { start:null, end:null };   // waktu yang lagi diatur di popup
+const CH = { up:'M6 15l6-6 6 6', dn:'M6 9l6 6 6-6', l:'M15 18l-6-6 6-6', r:'M9 18l6-6-6-6' };
+function tpBtn(w, u, n, path, cls, label){ return '<button type="button" class="tp-b' + (cls || '') + '" onclick="tpAdj(\'' + w + '\',\'' + u + '\',' + n + ')" aria-label="' + label + '"><svg viewBox="0 0 24 24"><path d="' + path + '"/></svg></button>'; }
+function tpCol(w, u, txt){ return '<div class="tp-col">' + tpBtn(w, u, 1, CH.up, '', 'Tambah') + '<div class="tp-num">' + txt + '</div>' + tpBtn(w, u, -1, CH.dn, '', 'Kurangi') + '</div>'; }
+function tpHTML(w, label){
+  const d = pk[w]; if (!d) return '';
+  return '<div class="tp-top"><div class="tp-lbl">' + label + '</div><div class="tp-day">' + tpBtn(w, 'd', -1, CH.l, ' s', 'Hari sebelumnya') + '<span>' + relDay(d) + '</span>' + tpBtn(w, 'd', 1, CH.r, ' s', 'Hari berikutnya') + '</div></div>'
+    + '<div class="tp-time">' + tpCol(w, 'h', pad2(d.getHours())) + '<div class="tp-sep">:</div>' + tpCol(w, 'm', pad2(d.getMinutes())) + '</div>';
+}
+function tpAdj(w, u, n){
+  const d = pk[w]; if (!d) return;
+  let t = d.getTime() + n * (u === 'd' ? DAY : u === 'h' ? HOUR : 5 * 60000);
+  if (t > Date.now()) t = Date.now();                 // gak boleh di masa depan
+  const nd = new Date(t); nd.setSeconds(0, 0); pk[w] = nd; renderTP();
+}
+function renderSum(){
+  const now = new Date(), s = pk.start, e = pk.end, goalMs = form.goal * HOUR; let l = 'Lama puasa', v = '–', sub = '', ok = false;
+  if (s && !e) { const el = Math.max(0, now - s); l = 'Sudah berjalan'; v = fmtDur(el); ok = el >= goalMs; sub = ok ? 'Target ' + form.goal + ' jam tercapai' : 'Target buka ' + fmtDT(new Date(s.getTime() + goalMs)); }
+  else if (s && e) { const ms = e - s; if (ms <= 0) sub = 'Buka puasa harus setelah waktu mulai'; else { v = fmtDur(ms); ok = ms >= goalMs; sub = ok ? 'Target ' + form.goal + ' jam tercapai' : 'Kurang ' + fmtDur(goalMs - ms) + ' dari target'; } }
+  $('sum-l').textContent = l; $('sum-v').textContent = v; $('sum-s').textContent = sub; $('sum').classList.toggle('ok', ok);
+}
+function renderTP(){
+  $('tp-start').innerHTML = tpHTML('start', pk.end ? 'Mulai puasa' : 'Waktu mulai');
+  $('tp-end').innerHTML = tpHTML('end', 'Buka puasa');
+  $('f-start').value = pk.start ? toInput(pk.start) : ''; $('f-end').value = pk.end ? toInput(pk.end) : '';
+  renderSum();
+}
+function setStartAgo(h){ const d = new Date(Date.now() - h * HOUR); d.setSeconds(0, 0); pk.start = d; renderTP(); }
 function showForm(o){
   form = { mode:o.mode, id:o.id || null, goal:o.goal || goalDef };
+  const z = d => { if (!d) return null; const x = new Date(d); x.setSeconds(0, 0); return x; };
+  pk = { start:z(o.start), end:o.end_on ? z(o.end) : null };
   $('m-title').textContent = o.title; $('m-sub').textContent = o.sub || '';
   $('g-goal').classList.toggle('hidden', !o.goal_on); $('g-end').classList.toggle('hidden', !o.end_on);
-  $('g-start').classList.remove('hidden');
   $('m-quick').innerHTML = o.quick ? [[0,'Sekarang'],[1,'1 jam lalu'],[2,'2 jam lalu'],[4,'4 jam lalu']].map(q => '<button type="button" class="qchip" onclick="setStartAgo(' + q[0] + ')">' + q[1] + '</button>').join('') : '';
-  setChips(form.goal);
-  $('f-start').value = o.start ? toInput(o.start) : ''; $('f-end').value = o.end ? toInput(o.end) : ''; $('f-note').value = o.note || '';
-  $('m-err').textContent = ''; $('m-save').textContent = o.btn || 'Simpan';
+  setChips(form.goal); renderTP();
+  $('f-note').value = o.note || ''; $('m-err').textContent = ''; $('m-save').textContent = o.btn || 'Simpan';
   $('ov-form').classList.add('open');
 }
 function closeForm(){ $('ov-form').classList.remove('open'); }
