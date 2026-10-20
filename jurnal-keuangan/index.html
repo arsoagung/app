@@ -37,6 +37,8 @@ button{background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
 #view>*{animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
 #view>*:nth-child(2){animation-delay:.04s}#view>*:nth-child(3){animation-delay:.08s}#view>*:nth-child(4){animation-delay:.12s}#view>*:nth-child(5){animation-delay:.16s}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes livepulse{0%{transform:scale(1);opacity:.5}70%,100%{transform:scale(3.4);opacity:0}}
+.live{transform-box:fill-box;transform-origin:center;animation:livepulse 2s ease-out infinite;pointer-events:none}
 .topbar{display:flex;align-items:center;justify-content:space-between;height:44px;margin-bottom:6px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700}
 .brand .logo{width:26px;height:26px;color:var(--accent);display:grid;place-items:center}
@@ -348,14 +350,14 @@ function drawChart(el,series,o){
     s+=`<path d="${d}" fill="none" stroke="${sr.color}" stroke-width="${k===0?2.2:1.6}" stroke-linecap="round" stroke-linejoin="round"${sr.dashed?' stroke-dasharray="4 4"':''}/>`;
   });
   const lp=prim.pts[prim.pts.length-1];
-  s+=`<circle cx="${X(lp.t)}" cy="${Y(lp.v)}" r="4" fill="${prim.color}" stroke="#080c0a" stroke-width="2"/>`;
+  s+=`<circle class="live" cx="${X(lp.t)}" cy="${Y(lp.v)}" r="4" fill="${prim.color}"/><circle cx="${X(lp.t)}" cy="${Y(lp.v)}" r="4" fill="${prim.color}" stroke="#080c0a" stroke-width="2"/>`;
   const n=prim.pts.length,ti=[...new Set(n<=4?prim.pts.map((_,i)=>i):[0,Math.round((n-1)/3),Math.round(2*(n-1)/3),n-1])];
   ti.forEach((i,k)=>{const p=prim.pts[i],d=new Date(p.t);
     const lab=p.t===TODAY_T?dlabel(p.t):MON[d.getUTCMonth()]+(d.getUTCFullYear()!==YEAR?' ’'+String(d.getUTCFullYear()).slice(2):'');
     const an=k===0?'start':(k===ti.length-1?'end':'middle'),x=k===0?pl+2:(k===ti.length-1?W-pr-2:X(p.t));
     s+=`<text x="${x}" y="${H-6}" fill="#5d6c65" font-size="10.5" text-anchor="${an}">${lab}</text>`});
   s+=`<line id="${id}l" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="#8b9b93" stroke-width="1" opacity="0"/><circle id="${id}c" r="5" fill="${prim.color}" stroke="#080c0a" stroke-width="2" opacity="0"/>`;
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${o.label||'Grafik'}">${s}</svg>`;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="overflow:visible" role="img" aria-label="${o.label||'Grafik'}">${s}</svg>`;
   const svg=el.firstChild,ln=svg.querySelector('#'+id+'l'),ci=svg.querySelector('#'+id+'c');
   const move=e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)*(W/r.width);let b=0,bd=1e9;
     prim.pts.forEach((p,i)=>{const dd=Math.abs(X(p.t)-px);if(dd<bd){bd=dd;b=i}});
