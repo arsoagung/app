@@ -416,13 +416,15 @@ function goalRows(){
     let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
       if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.r)}">${pct(lp.r)} this month</span>`}
+    const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-      <div><div class="gname">${g.name}</div><div class="gsub">${g.meta.sub}</div></div>
+      <div><div class="gname">${g.name}</div><div class="gsub">${lu?fullDate(lu):''}</div></div>
       <div class="gright"><div class="gval">${rp(g.now)}</div>${chip}</div></button>`}).join('');
 }
 /* update tracking: last update + month-end checkpoint (window = 3 days either side of a month change) */
 function lastUpd(ak){let b=null;DATA.updates.forEach(u=>{if((!ak||u.akun===ak)&&(!b||u.tanggal>b))b=u.tanggal});return b}
+const fullDate=iso=>{const d=new Date(T(iso));return d.getUTCDate()+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear()};
 const updLabel=iso=>iso===TODAY?'today':iso===isoOf(TODAY_T-DAY)?'yesterday':dlabel(T(iso));
 function cpTarget(){
   const y=+TODAY.slice(0,4),m=+TODAY.slice(5,7),d=+TODAY.slice(8,10),last=new Date(Date.UTC(y,m,0)).getUTCDate();
