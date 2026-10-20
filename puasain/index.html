@@ -250,15 +250,13 @@ svg{display:block}
 
 /* ═══ TAB BAR iOS ═══ */
 .bottom-nav{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:398px;height:var(--nav-h);border-radius:40px;background:rgba(38,38,38,.86);-webkit-backdrop-filter:blur(24px) saturate(1.7);backdrop-filter:blur(24px) saturate(1.7);box-shadow:0 20px 44px -12px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-around;z-index:100;padding:0 8px}
-.nav-btn{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;padding:9px 6px;border-radius:30px;flex:1;transition:background .35s,transform .5s var(--spring)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:none;border:none;cursor:pointer;padding:15px 6px;border-radius:30px;flex:1;transition:background .35s,transform .5s var(--spring)}
 .nav-btn:active{transform:scale(.88)}
-.nav-btn.active{background:rgba(229,86,48,.2);animation:tab-pop .62s var(--spring)}
+.nav-btn.active{background:rgba(113,76,182,.32);animation:tab-pop .62s var(--spring)}
 @keyframes tab-pop{0%{transform:scale(.84)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
-.nav-lbl{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:.3px;transition:color .15s}
-.nav-btn.active .nav-lbl{color:var(--red-hi)}
 .nav-ic{display:flex;align-items:center;justify-content:center;width:24px;height:24px}
 .nav-ic svg{width:22px;height:22px;fill:var(--gray);transition:fill .15s}
-.nav-btn.active .nav-ic svg{fill:var(--red-hi)}
+.nav-btn.active .nav-ic svg{fill:var(--hi)}
 .nav-btn.bounce .nav-ic{animation:icon-pop .62s var(--spring) forwards}
 @keyframes icon-pop{0%{transform:scale(.7)}55%{transform:scale(1.25)}100%{transform:scale(1)}}
 .nav-fab{width:54px;height:54px;background:var(--fast);border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;flex-shrink:0;transition:transform .5s var(--spring),background .3s,box-shadow .3s;box-shadow:0 8px 22px -6px rgba(113,76,182,.5)}
@@ -489,11 +487,11 @@ svg{display:block}
 
 <!-- TAB BAR -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" id="nb-home" onclick="goTab('home')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-home"/></svg></span><span class="nav-lbl">Beranda</span></button>
-  <button class="nav-btn" id="nb-kalender" onclick="goTab('kalender')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-cal"/></svg></span><span class="nav-lbl">Kalender</span></button>
+  <button class="nav-btn active" id="nb-home" aria-label="Beranda" onclick="goTab('home')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-home"/></svg></span></button>
+  <button class="nav-btn" id="nb-kalender" aria-label="Kalender" onclick="goTab('kalender')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-cal"/></svg></span></button>
   <button class="nav-fab" id="fab" onclick="fabAction()" aria-label="Mulai puasa"><svg viewBox="0 0 256 256"><use href="#ic-play"/></svg></button>
-  <button class="nav-btn" id="nb-statistik" onclick="goTab('statistik')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-stats"/></svg></span><span class="nav-lbl">Statistik</span></button>
-  <button class="nav-btn" id="nb-setelan" onclick="goTab('setelan')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-setting"/></svg></span><span class="nav-lbl">Setelan</span></button>
+  <button class="nav-btn" id="nb-statistik" aria-label="Statistik" onclick="goTab('statistik')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-stats"/></svg></span></button>
+  <button class="nav-btn" id="nb-setelan" aria-label="Setelan" onclick="goTab('setelan')"><span class="nav-ic"><svg viewBox="0 0 256 256"><use href="#ic-setting"/></svg></span></button>
 </nav>
 
 <!-- FORM -->
