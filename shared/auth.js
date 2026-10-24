@@ -42,7 +42,20 @@
 
   var client = global.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  var MSG_DENIED = 'Akun ini tidak diizinkan. Pakai email yang terdaftar.';
+  /* teks UI — default Indonesia; app bisa menimpa lewat Auth.init({ strings: {...} }) */
+  var DEFAULT_STRINGS = {
+    signInTitle: 'Masuk ke ',
+    loading: 'Memuat…',
+    checking: 'Memeriksa akses…',
+    google: 'Masuk dengan Google',
+    retry: 'Coba lagi',
+    logout: 'Keluar',
+    foot: 'Akses pribadi · hanya untuk akun yang terdaftar',
+    denied: 'Akun ini tidak diizinkan. Pakai email yang terdaftar.',
+    loginFailed: 'Login gagal: ',
+    checkFailed: 'Gagal memeriksa akses. Cek koneksi lalu coba lagi.'
+  };
+  var T = DEFAULT_STRINGS;
   var DENIED_FLAG = 'auth_denied';
   var VERIFIED_KEY = 'auth_verified';
   var VERIFIED_MAX_AGE = 30 * 24 * 3600 * 1000;   // 30 hari
@@ -117,7 +130,7 @@
     root = document.createElement('div');
     root.id = 'auth-root';
     root.setAttribute('role', 'dialog');
-    root.setAttribute('aria-label', 'Masuk ke ' + opts.name);
+    root.setAttribute('aria-label', T.signInTitle + opts.name);
     root.style.setProperty('--acc', opts.accent || '#c8f135');
     root.dataset.state = 'loading';
     root.innerHTML =
@@ -125,12 +138,12 @@
         '<div class="au-ico">' + (opts.icon || '') + '</div>' +
         '<h1 class="au-title">' + esc(opts.name) + '</h1>' +
         '<p class="au-tag">' + esc(opts.tagline || '') + '</p>' +
-        '<div class="au-load"><div class="au-spin"></div><span data-el="loadtxt">Memuat…</span></div>' +
-        '<div class="au-login"><button class="au-btn" type="button" data-act="google">' + G_ICON + 'Masuk dengan Google</button></div>' +
-        '<div class="au-retry"><button class="au-btn" type="button" data-act="retry">Coba lagi</button>' +
-          '<button class="au-link" type="button" data-act="out">Keluar</button></div>' +
+        '<div class="au-load"><div class="au-spin"></div><span data-el="loadtxt">' + esc(T.loading) + '</span></div>' +
+        '<div class="au-login"><button class="au-btn" type="button" data-act="google">' + G_ICON + esc(T.google) + '</button></div>' +
+        '<div class="au-retry"><button class="au-btn" type="button" data-act="retry">' + esc(T.retry) + '</button>' +
+          '<button class="au-link" type="button" data-act="out">' + esc(T.logout) + '</button></div>' +
         '<p class="au-msg" role="alert" aria-live="polite" data-el="msg"></p>' +
-        '<p class="au-foot">Akses pribadi · hanya untuk akun yang terdaftar</p>' +
+        '<p class="au-foot">' + esc(T.foot) + '</p>' +
       '</div>';
     document.body.appendChild(root);
     root.addEventListener('click', function (e) {
@@ -166,7 +179,7 @@
         queryParams: { prompt: 'select_account' }
       }
     });
-    if (r.error) setState('login', 'Login gagal: ' + r.error.message);
+    if (r.error) setState('login', T.loginFailed + r.error.message);
   }
 
   /* true = boleh, false = ditolak, null = gagal ngecek (jaringan dsb) */
@@ -194,19 +207,19 @@
     if (admitting) return;
     admitting = true;
     pendingUser = u;
-    setState('loading', '', 'Memeriksa akses…');
+    setState('loading', '', T.checking);
     var ok = await isAllowed();
     admitting = false;
     if (ok === null && verifiedRecently(u.id)) ok = true;     // offline / server gangguan
     else if (ok === true) markVerified(u.id);
     if (ok === null) {
-      setState('retry', 'Gagal memeriksa akses. Cek koneksi lalu coba lagi.');
+      setState('retry', T.checkFailed);
       return;
     }
     if (ok === false) {
       denying = true;
       await client.auth.signOut();
-      setState('login', MSG_DENIED);
+      setState('login', T.denied);
       return;
     }
     user = u;
@@ -232,12 +245,13 @@
     if (d) history.replaceState(null, '', location.pathname);
     var denied = '';
     try { denied = sessionStorage.getItem(DENIED_FLAG) || ''; sessionStorage.removeItem(DENIED_FLAG); } catch (e) {}
-    return (d || denied) ? MSG_DENIED : '';
+    return (d || denied) ? T.denied : '';
   }
 
   /* ═══ INIT ═══ */
   function init(o) {
     opts = o;
+    T = Object.assign({}, DEFAULT_STRINGS, o.strings || {});
     var go = function () {
       urlError = readUrlError();
       mount();
