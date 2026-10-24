@@ -194,6 +194,11 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .sfoot{font-size:11.5px;color:var(--faint);text-align:center;margin-top:12px}
 .toast{position:fixed;top:calc(14px + var(--safe-t));left:50%;transform:translate(-50%,-140%);max-width:min(92%,440px);padding:12px 16px;border-radius:14px;background:var(--surface-2);font-weight:600;font-size:13px;z-index:60;display:flex;gap:10px;align-items:center;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .toast.show{transform:translate(-50%,0)}.toast i{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.avatar{overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.eyebtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--muted)}
+button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surface-2)}
+.btn.danger{background:var(--neg-soft);color:var(--neg)}
+.inp.ro{display:flex;align-items:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -215,7 +220,9 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
   <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M12 21v-9"/><path d="M12 12C12 8 9 6 5 6c0 4 2 6 7 6z"/><path d="M12 14c0-3 2.2-5 6-5 0 3.5-2 5-6 5z"/></symbol>
   <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.2"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
-  <symbol id="i-out"viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></symbol>
 </svg>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
@@ -265,12 +272,18 @@ const T=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10));
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const isoOf=t=>new Date(t).toISOString().slice(0,10);
 const isMonthEnd=t=>new Date(t+DAY).getUTCDate()===1;
-const rp=n=>'Rp '+Math.round(Math.abs(n)).toLocaleString('en-US');
+let HIDE=false;try{HIDE=localStorage.getItem('jk_hide')==='1'}catch(_){}
+const rp=n=>HIDE?'Rp ••••••':'Rp '+Math.round(Math.abs(n)).toLocaleString('en-US');
 const rpS=n=>(n<0?'−':'+')+rp(n);
 const rpN=n=>(n<0?'−':'')+rp(n);
 const pct=(x,d=2)=>(x<0?'−':'+')+Math.abs(x*100).toFixed(d)+'%';
-const cmp=n=>{const a=Math.abs(n);let s;if(a>=1e9)s=(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';else if(a>=1e6)s=(n/1e6).toFixed(a>=1e8?0:1).replace(/\.0$/,'')+'M';else if(a>=1e3)s=Math.round(n/1e3)+'K';else s=''+Math.round(n);return s};
+const cmp=n=>{if(HIDE)return '•••';const a=Math.abs(n);let s;if(a>=1e9)s=(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';else if(a>=1e6)s=(n/1e6).toFixed(a>=1e8?0:1).replace(/\.0$/,'')+'M';else if(a>=1e3)s=Math.round(n/1e3)+'K';else s=''+Math.round(n);return s};
 const dlabel=t=>{const d=new Date(t);return d.getUTCDate()+' '+MON[d.getUTCMonth()]+(d.getUTCFullYear()!==YEAR?' '+d.getUTCFullYear():'')};
+/* month labels: add the year whenever it is not the current one, so Oct '25 and Oct '26 never look the same */
+const monY=t=>{const d=new Date(t),y=d.getUTCFullYear();return MON[d.getUTCMonth()]+(y!==YEAR?' ’'+String(y).slice(2):'')};
+const monF=t=>{const d=new Date(t),y=d.getUTCFullYear();return MONF[d.getUTCMonth()]+(y!==YEAR?' '+y:'')};
+/* date N calendar months before t (day clamped to the target month's length) */
+const monthsBack=(t,n)=>{const d=new Date(t),y=d.getUTCFullYear(),m=d.getUTCMonth()-n,last=new Date(Date.UTC(y,m+1,0)).getUTCDate();return Date.UTC(y,m,Math.min(d.getUTCDate(),last))};
 const sgn=n=>n>=0?'pos':'neg';
 const icon=n=>`<svg class="i"><use href="#i-${n}"/></svg>`;
 
@@ -304,10 +317,13 @@ function build(){
   };
   const idxFor=key=>{
     if(key==='ALL')return 0;
-    if(key==='1Y'){let i=0;dates.forEach((t,k)=>{if(t<=TODAY_T-365*DAY)i=k});return i}
     if(key==='YTD'){let i=0;dates.forEach((t,k)=>{if(new Date(t).getUTCFullYear()<YEAR)i=k});return i}
-    return Math.max(0,dates.length-1-parseInt(key));
+    /* 1M / 3M / 1Y: by calendar time, baseline = data point closest to N months ago */
+    const target=rangeTarget(key);let best=0,bd=Infinity;
+    dates.forEach((t,k)=>{const dd=Math.abs(t-target);if(dd<bd){bd=dd;best=k}});
+    return Math.max(0,Math.min(best,dates.length-2));
   };
+  const rangeTarget=key=>monthsBack(TODAY_T,key==='1Y'?12:parseInt(key));
 
   const names=[...new Set(akun.map(a=>a.tujuan))];
   const tujuan=names.map(name=>{
@@ -325,7 +341,7 @@ function build(){
   const allStart=Math.min(...akun.filter(a=>a.ikutReturn&&a.returnMulai).map(a=>T(a.returnMulai)));
 
   const chain=P=>P.reduce((m,p)=>m*(1+(p.r||0)),1)-1;
-  M={akun,byAkun,dates,val,sum,flows,periodsFor,idxFor,tujuan,total,allRet,allStart,chain};
+  M={akun,byAkun,dates,val,sum,flows,periodsFor,idxFor,rangeTarget,tujuan,total,allRet,allStart,chain};
 }
 
 /* =====================================================================
@@ -386,10 +402,10 @@ function drawCandles(wrap,info,P,lab){
   C.forEach((k,i)=>{const up=k.r>=0,col=up?'#2dd48f':'#f0786d',yv=Y(k.r),top=Math.min(y0,yv),h=Math.max(3,Math.abs(yv-y0));
     g+=`<g class="cand" data-i="${i}"><rect x="${X(i)-step/2}" y="0" width="${step}" height="${H}" fill="transparent"/><rect class="cb" x="${X(i)-bw/2}" y="${top}" width="${bw}" height="${h}" rx="5" fill="${col}"/>
       <text x="${X(i)}" y="${up?top-8:top+h+15}" fill="#e9f1ed" font-size="10.5" font-weight="700" text-anchor="middle">${f(k.r)}</text>
-      <text x="${X(i)}" y="${H-8}" fill="#8b9b93" font-size="11" text-anchor="middle">${MON[new Date(k.x.e).getUTCMonth()]}</text></g>`});
+      <text x="${X(i)}" y="${H-8}" fill="#8b9b93" font-size="11" text-anchor="middle">${monY(k.x.e)}</text></g>`});
   wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Monthly growth">${g}</svg>`;
   const sel=i=>{const k=C[i],x=k.x;
-    info.innerHTML=`<b>${MONF[new Date(x.e).getUTCMonth()]}${x.partial?' (to '+dlabel(x.e)+')':''} <span style="color:${k.r>=0?'var(--accent)':'var(--neg)'};font-weight:700">${pct(k.r)}</span></b><span>${lab} ${rpS(x.profit)} \u00b7 cumulative ${pct(k.c)}</span>`;
+    info.innerHTML=`<b>${monF(x.e)}${x.partial?' (to '+dlabel(x.e)+')':''} <span style="color:${k.r>=0?'var(--accent)':'var(--neg)'};font-weight:700">${pct(k.r)}</span></b><span>${lab} ${rpS(x.profit)} \u00b7 cumulative ${pct(k.c)}</span>`;
     wrap.querySelectorAll('.cb').forEach((r,j)=>r.setAttribute('fill-opacity',j===i?'1':'.45'))};
   wrap.querySelectorAll('.cand').forEach(el=>el.addEventListener('click',()=>sel(+el.dataset.i)));
   sel(C.length-1);wrap.scrollLeft=wrap.scrollWidth;
@@ -398,7 +414,8 @@ function drawCandles(wrap,info,P,lab){
 /* =====================================================================
    State & router
    ===================================================================== */
-const S={sel:null,from:'home',gmode:'nw',auth:false,view:'home',goal:null,range:'YTD',gRange:'ALL',sheet:false,filter:'All'};
+const S={sel:null,from:'home',gmode:'nw',auth:false,view:'home',goal:null,range:'YTD',gRange:'ALL',sheet:false,filter:'All',hmode:'tx'};
+let USER=null;
 const $=s=>document.querySelector(s);
 const view=$('#view');
 const RANGES=['1M','3M','YTD','1Y','ALL'];
@@ -410,7 +427,7 @@ function render(){
   fn();
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===(S.view==='detail'?(S.from||'tujuan'):S.view)));
 }
-const chipsHTML=(cur,act)=>`<div class="chips">${RANGES.map(k=>{const off=k==='1Y'&&M.dates[0]>TODAY_T-365*DAY;return `<button class="chip${cur===k?' on':''}"${off?' disabled':''} data-act="${act}" data-k="${k}">${k}</button>`}).join('')}</div>`;
+const chipsHTML=(cur,act)=>`<div class="chips">${RANGES.map(k=>{const off=(k==='1M'||k==='3M'||k==='1Y')&&M.dates[0]>M.rangeTarget(k);return `<button class="chip${cur===k?' on':''}"${off?' disabled':''} data-act="${act}" data-k="${k}">${k}</button>`}).join('')}</div>`;
 const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'down')}${rpS(d)}${p==null?'':' ('+pct(p)+')'}</span><span class="since">${since}</span>`;
 
 /* ---------- Beranda ---------- */
@@ -487,7 +504,7 @@ function renderHome(){
     ?M.total.slice(1).map((p,i)=>({e:p.t,r:M.total[i].v?(p.v-M.total[i].v)/M.total[i].v:0,profit:p.v-M.total[i].v,partial:p.t===TODAY_T&&!isMonthEnd(p.t)}))
     :M.periodsFor(M.allRet,M.allStart);
   view.innerHTML=`
-  <div class="topbar"><div class="brand"><span class="logo">${icon('logo')}</span>Finance Journal</div></div>
+  <div class="topbar"><div class="brand"><span class="logo">${icon('logo')}</span>Finance Journal</div><button class="eyebtn" data-act="hide" aria-label="${HIDE?'Show':'Hide'} balances">${icon(HIDE?'eyeoff':'eye')}</button></div>
   ${remindHTML()}
   <section class="hero">
     <div class="eyebrow">Net worth \u00b7 ${dlabel(TODAY_T)}</div>
@@ -564,20 +581,45 @@ function renderDetail(){
 function txRow(x,g){
   g=g||M.tujuan.find(t=>t.accs.includes(x.ke));const t=T(x.tanggal);
   const extra=[x.dari?'from '+(M.byAkun[x.dari]?M.byAkun[x.dari].nama:x.dari):'',x.catatan].filter(Boolean).map(esc).join(' · ');
-  return `<div class="tx"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-    <div class="m"><b>${M.byAkun[x.ke]?M.byAkun[x.ke].nama:x.ke}</b><span>${dlabel(t)}${extra?' · '+extra:''}</span></div><div class="a">+${rp(x.nominal)}</div></div>`;
+  return `<button class="tx" data-act="txedit" data-i="${DATA.transaksi.indexOf(x)}" aria-label="Edit top-up"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
+    <div class="m"><b>${M.byAkun[x.ke]?M.byAkun[x.ke].nama:x.ke}</b><span>${dlabel(t)}${extra?' · '+extra:''}</span></div><div class="a">+${rp(x.nominal)}</div></button>`;
 }
 
 /* ---------- Riwayat ---------- */
 function goalOf(ak){return M.tujuan.find(t=>t.accs.includes(ak))}
-function renderRiwayat(){
+function histSeg(){
+  const upd=S.hmode==='upd';
+  return `<div class="seg" style="margin:16px 0 0"><button class="${upd?'':'on'}" data-act="hmode" data-k="tx">Top-ups</button><button class="${upd?'on':''}" data-act="hmode" data-k="upd">Balance updates</button></div>`;
+}
+function renderRiwayat(){S.hmode==='upd'?renderUpdates():renderTopups()}
+
+/* balance update log (app_update): who was updated when, and which were month-end checkpoints */
+function renderUpdates(){
+  const names=['All',...M.tujuan.filter(t=>t.accs.some(a=>M.byAkun[a].aktif)).map(t=>t.name)];
+  if(!names.includes(S.filter))S.filter='All';
+  const rows=DATA.updates.map((u,i)=>({u,i})).filter(r=>M.byAkun[r.u.akun]&&(S.filter==='All'||(goalOf(r.u.akun)||{}).name===S.filter))
+    .sort((a,b)=>a.u.tanggal<b.u.tanggal?1:a.u.tanggal>b.u.tanggal?-1:b.i-a.i);
+  let list='',cur='';
+  rows.forEach(({u})=>{const k=u.tanggal.slice(0,7),g=goalOf(u.akun),cpv=u.checkpoint===true||u.checkpoint==='TRUE';
+    if(k!==cur){if(cur)list+='</div>';cur=k;list+=`<div class="mhead"><span>${monF(T(k+'-01'))}</span></div><div class="card">`}
+    list+=`<div class="tx"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div><div class="m"><b>${esc(M.byAkun[u.akun].nama)}</b><span>${dlabel(T(u.tanggal))}</span></div>${cpv?'<span class="badge" style="background:var(--surface-3)">Month-end</span>':''}</div>`});
+  if(cur)list+='</div>';
+  view.innerHTML=`
+  <div class="topbar"><div class="brand">History</div></div>
+  <section class="hero"><div class="eyebrow">Balance updates</div><div class="big">${rows.length}</div></section>
+  ${histSeg()}
+  <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+  <section>${list||'<div class="card empty" style="margin-top:16px">No updates yet.</div>'}</section>`;
+}
+function renderTopups(){
   const names=['All',...M.tujuan.filter(t=>t.hasReturn).map(t=>t.name)];
+  if(!names.includes(S.filter))S.filter='All';
   const all=DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal));
   const tx=all.filter(x=>S.filter==='All'||(goalOf(x.ke)||{}).name===S.filter);
   /* deposits per month (filtered) */
   const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+x.nominal});
   const keys=Object.keys(byM).sort(),mx=Math.max(...keys.map(k=>byM[k]),1);
-  const bars=keys.length?keys.map(k=>`<div class="col"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${MON[+k.slice(5,7)-1]}</span></div>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
+  const bars=keys.length?keys.map(k=>`<div class="col"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></div>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
   const total=tx.reduce((s,x)=>s+x.nominal,0);
   /* grouped by month */
   let list='',cur='';
@@ -588,6 +630,7 @@ function renderRiwayat(){
   view.innerHTML=`
   <div class="topbar"><div class="brand">Top-up history</div></div>
   <section class="hero"><div class="eyebrow">Total deposits</div><div class="big">${rp(total)}</div></section>
+  ${histSeg()}
   <section><h2>Monthly deposits</h2><div class="card cols">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${n}">${n}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No top-ups yet.</div>'}</section>`;
@@ -595,9 +638,13 @@ function renderRiwayat(){
 
 /* ---------- Profil ---------- */
 function renderProfil(){
+  const m=(USER&&USER.user_metadata)||{},em=(USER&&USER.email)||'',nm=m.full_name||m.name||em||'Account',av=m.avatar_url||m.picture;
+  const sync=lastLoad?new Date(lastLoad).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'-';
   view.innerHTML=`
   <div class="topbar"><div class="brand">Profile</div></div>
-  <div class="prof" style="padding-top:56px"><div class="avatar">A</div></div>
+  <div class="prof"><div class="avatar">${av?`<img src="${esc(av)}" alt="" referrerpolicy="no-referrer">`:esc(nm.charAt(0).toUpperCase())}</div><div class="nm">${esc(nm)}</div>${em&&em!==nm?`<div class="sb">${esc(em)}</div>`:''}</div>
+  <div class="card"><div class="kv"><span>Data as of</span><span>${fullDate(TODAY)}</span></div><div class="kv"><span>Last synced</span><span>${sync}</span></div><div class="kv"><span>Active accounts</span><span>${M.akun.filter(a=>a.aktif).length}</span></div></div>
+  <div class="swrow" style="margin:14px 0 0"><span id="hideLbl">Hide balances</span><button class="sw" role="switch" aria-checked="${HIDE}" aria-labelledby="hideLbl" data-act="hide"><i></i></button></div>
   <button class="btn ghost" data-act="logout">${icon('out')}Log out</button>`;
 }
 
@@ -669,6 +716,54 @@ async function saveSheet(){
     else{err.textContent=e.message||'Could not save.';btn.disabled=false;btn.textContent=label}
   }finally{saving=false}
 }
+/* ---------- Edit / delete a top-up (row in app_transaksi) ----------
+   There is no id column, so the server finds the row by matching the original values. */
+let txIdx=-1,txBusy=false;
+const txOrig=x=>({tanggal:x.tanggal,nominal:x.nominal,ke:x.ke,dari:x.dari||'',catatan:x.catatan||''});
+function openTxSheet(i){
+  const x=DATA.transaksi[i];if(!x)return;txIdx=i;
+  const act=M.akun.filter(a=>a.aktif),known=!x.dari||x.dari==='Rekening Utama'||act.some(a=>a.akun===x.dari);
+  const opts=act.map(a=>`<option value="${esc(a.akun)}"${a.akun===x.dari?' selected':''}>${esc(a.nama)}</option>`).join('');
+  const sh=$('#sheet'),bd=$('#backdrop');
+  sh.innerHTML=`<div class="grab"></div><div class="stitle">Edit top-up</div>
+    <div class="field"><label>To account</label><div class="inp ro">${esc(M.byAkun[x.ke]?M.byAkun[x.ke].nama:x.ke)}</div></div>
+    <div class="field"><label for="eNom">Amount</label><input class="inp" id="eNom" inputmode="numeric" data-money value="${fmtIn(x.nominal)}" autocomplete="off"></div>
+    <div class="field"><label for="eTgl">Date</label><input class="inp" id="eTgl" type="date" value="${esc(x.tanggal)}" max="${TODAY}"></div>
+    <div class="field"><label for="eDari">From account</label><select class="inp" id="eDari"><option value="">Not recorded</option><option value="Rekening Utama"${x.dari==='Rekening Utama'?' selected':''}>Main account</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>
+    <div class="field"><label for="eCat">Notes</label><input class="inp" id="eCat" value="${esc(x.catatan||'')}" placeholder="Optional"></div>
+    <div class="ferr" id="fErr"></div>
+    <button class="btn primary" id="eSave" data-act="txsave" style="margin-top:6px">Save changes</button>
+    <button class="btn danger" id="eDel" data-act="txdel" style="margin-top:10px">Delete top-up</button>
+    <div class="sfoot">Balances are not changed. Update the balance separately if needed.</div>`;
+  sh.hidden=false;bd.hidden=false;
+  requestAnimationFrame(()=>{sh.classList.add('open');bd.classList.add('open')});S.sheet=true;
+}
+async function txCall(action,payload,okMsg){
+  txBusy=true;$('#eSave').disabled=true;$('#eDel').disabled=true;
+  try{
+    await api(action,payload);
+    closeSheet();toast(okMsg);
+    try{await loadData();render()}catch(_){toast('Saved, but refreshing failed.')}
+  }catch(e){
+    if(e.status===401||e.status===403){closeSheet();Auth.signOut({denied:true})}
+    else{$('#fErr').textContent=e.message||'Failed.';$('#eSave').disabled=false;$('#eDel').disabled=false}
+  }finally{txBusy=false}
+}
+function saveTx(){
+  if(txBusy)return;const x=DATA.transaksi[txIdx];if(!x)return;
+  const err=$('#fErr'),nom=numIn($('#eNom').value),tgl=$('#eTgl').value,dari=$('#eDari').value,cat=$('#eCat').value.trim();
+  if(!nom){$('#eNom').classList.add('err');err.textContent='Enter the amount.';return}
+  if(!tgl||T(tgl)>TODAY_T){err.textContent='Invalid date.';return}
+  if(dari===x.ke){err.textContent='From and to accounts are the same.';return}
+  txCall('editTopup',{orig:txOrig(x),next:{tanggal:tgl,nominal:nom,dari,catatan:cat}},'Top-up updated');
+}
+function delTx(btn){
+  if(txBusy)return;const x=DATA.transaksi[txIdx];if(!x)return;
+  if(btn.dataset.armed!=='1'){btn.dataset.armed='1';btn.textContent='Tap again to delete';
+    setTimeout(()=>{if(btn.isConnected){btn.dataset.armed='';btn.textContent='Delete top-up'}},3000);return}
+  txCall('deleteTopup',{orig:txOrig(x)},'Top-up deleted');
+}
+
 let tt;function toast(msg){const t=$('#toast');t.querySelector('span').textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
 
 /* =====================================================================
@@ -687,6 +782,11 @@ document.addEventListener('click',e=>{
   else if(a==='grange'){S.gRange=el.dataset.k;render()}
   else if(a==='gmode'){S.gmode=el.dataset.k;render()}
   else if(a==='filter'){S.filter=el.dataset.k;render()}
+  else if(a==='hmode'){S.hmode=el.dataset.k;S.filter='All';render()}
+  else if(a==='hide'){HIDE=!HIDE;try{localStorage.setItem('jk_hide',HIDE?'1':'0')}catch(_){}render()}
+  else if(a==='txedit')openTxSheet(+el.dataset.i);
+  else if(a==='txsave')saveTx();
+  else if(a==='txdel')delTx(el);
   else if(a==='fab')openSheet();
   else if(a==='upd')openSheet(el.dataset.ak);
   else if(a==='cp'){el.setAttribute('aria-checked',el.getAttribute('aria-checked')==='true'?'false':'true');syncForm()}
@@ -741,7 +841,7 @@ Auth.init({
   tagline:'Net worth and investment growth',
   accent:'#2dd48f',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg>',
-  onSignIn:enter,
+  onSignIn:u=>{USER=u||USER;enter()},
   onSignOut:showLoggedOut
 });
 document.addEventListener('visibilitychange',()=>{
