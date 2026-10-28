@@ -316,6 +316,114 @@
     transform:scale(1);
   }
 
+  /* ---------- Coffee-free streak ---------- */
+  .streak-wrap{ padding:16px 16px 6px; }
+
+  .streak-card{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:16px 18px;
+    background:var(--bg-elevated);
+    border-radius:var(--radius-lg);
+  }
+
+  .streak-flame{
+    position:relative;
+    width:56px;
+    height:64px;
+    flex-shrink:0;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+
+  .streak-flame::before{
+    content:'';
+    position:absolute;
+    left:50%;
+    bottom:2px;
+    width:64px;
+    height:64px;
+    transform:translateX(-50%);
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,150,70,.45) 0%, rgba(217,119,87,0) 68%);
+    opacity:0;
+    transition:opacity .4s ease;
+  }
+
+  .streak-flame svg{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-origin:50% 92%;
+    transition:filter .4s ease;
+  }
+
+  .streak-flame .flame-body{ fill:url(#flameGrad); }
+  .streak-flame .flame-core{ fill:#ffe6a8; opacity:.92; }
+
+  /* tiers: 0 = out, 1..5 = growing */
+  .streak-card[data-tier="0"] .flame-body{ fill:var(--text-tertiary); }
+  .streak-card[data-tier="0"] .flame-core{ opacity:0; }
+  .streak-card:not([data-tier="0"]) .streak-flame svg{ animation:flame-flicker 1.6s ease-in-out infinite; }
+  .streak-card:not([data-tier="0"]) .streak-flame::before{ animation:flame-glow 2.4s ease-in-out infinite; }
+  .streak-card[data-tier="1"] .streak-flame::before{ opacity:.35; }
+  .streak-card[data-tier="2"] .streak-flame::before{ opacity:.55; }
+  .streak-card[data-tier="3"] .streak-flame::before{ opacity:.75; }
+  .streak-card[data-tier="4"] .streak-flame::before{ opacity:.9; }
+  .streak-card[data-tier="5"] .streak-flame::before{ opacity:1; }
+  .streak-card[data-tier="1"] .streak-flame svg{ width:80%; height:80%; }
+  .streak-card[data-tier="2"] .streak-flame svg{ width:90%; height:90%; }
+  .streak-card[data-tier="5"] .streak-flame svg{ filter:drop-shadow(0 0 8px rgba(255,150,70,.55)); }
+
+  @keyframes flame-flicker{
+    0%,100%{ transform:scale(1,1) rotate(0deg); }
+    25%{ transform:scale(.97,1.05) rotate(-1.6deg); }
+    50%{ transform:scale(1.03,.97) rotate(1deg); }
+    75%{ transform:scale(.98,1.04) rotate(1.8deg); }
+  }
+
+  @keyframes flame-glow{
+    0%,100%{ transform:translateX(-50%) scale(1); }
+    50%{ transform:translateX(-50%) scale(1.14); }
+  }
+
+  .streak-info{ min-width:0; }
+
+  .streak-count-row{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+
+  .streak-number{
+    font-size:38px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .streak-unit{
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-secondary);
+  }
+
+  .streak-msg{
+    margin-top:6px;
+    font-size:12px;
+    font-weight:500;
+    color:var(--text-secondary);
+    line-height:1.4;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .streak-card .streak-flame svg,
+    .streak-card .streak-flame::before{ animation:none !important; }
+  }
+
   /* ---------- Bottom nav (fixed, PWA style) ---------- */
   .bottom-nav{
     position:fixed;
@@ -907,6 +1015,31 @@ body{background:radial-gradient(120% 45% at 80% -6%,rgba(217,119,87,.16),transpa
         </div>
         <div class="grid locked" id="grid"></div>
       </div>
+
+      <div class="streak-wrap">
+        <div class="streak-card" id="streakCard" data-tier="0">
+          <div class="streak-flame" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <defs>
+                <linearGradient id="flameGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0" stop-color="#D9482B"/>
+                  <stop offset="0.55" stop-color="#F08A3C"/>
+                  <stop offset="1" stop-color="#FFC75F"/>
+                </linearGradient>
+              </defs>
+              <path class="flame-body" d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+              <path class="flame-core" d="M12 21a3.6 3.6 0 0 0 3.6-3.6c0-1.5-1-2.4-1.8-3.4-.4.9-1 1.3-1.6 1.5-.9-.6-1.2-1.4-1.2-2.3-1.2 1-2.6 2.2-2.6 4.2A3.6 3.6 0 0 0 12 21z"/>
+            </svg>
+          </div>
+          <div class="streak-info">
+            <div class="streak-count-row">
+              <div class="streak-number" id="streakNumber">–</div>
+              <div class="streak-unit" id="streakUnit">days without coffee</div>
+            </div>
+            <div class="streak-msg" id="streakMsg">Loading…</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- STATS SCREEN -->
@@ -1070,6 +1203,7 @@ body{background:radial-gradient(120% 45% at 80% -6%,rgba(217,119,87,.16),transpa
 
     loadMonthEntries();
     loadYearStats();
+    loadStreak();
   }
 
   function showLogin(){
@@ -1186,8 +1320,89 @@ body{background:radial-gradient(120% 45% at 80% -6%,rgba(217,119,87,.16),transpa
         // resync from the server instead of guessing the previous state
         if(viewYear === y && viewMonth === m) loadMonthEntries();
       }
+      loadStreak();
     });
   }
+
+  // ---------- Coffee-free streak ----------
+  // Days since the latest logged drink (today or earlier). 0 when today is logged.
+  const streakCardEl = document.getElementById('streakCard');
+  const streakNumberEl = document.getElementById('streakNumber');
+  const streakUnitEl = document.getElementById('streakUnit');
+  const streakMsgEl = document.getElementById('streakMsg');
+  let streakLoadSeq = 0;
+  let streakShown = null;
+  let streakAnimT = null;
+
+  function streakTier(n){
+    if(n <= 0) return 0;
+    if(n < 3) return 1;
+    if(n < 7) return 2;
+    if(n < 14) return 3;
+    if(n < 30) return 4;
+    return 5;
+  }
+
+  function streakMessage(n){
+    if(n <= 0) return "Had a drink today. Tomorrow's a fresh start.";
+    if(n < 3) return 'Good start, keep it going.';
+    if(n < 7) return 'Building momentum.';
+    if(n < 14) return 'A full week and counting.';
+    if(n < 30) return 'Two weeks strong.';
+    return 'A month or more. Habit locked in.';
+  }
+
+  function setStreakNumber(n){
+    clearTimeout(streakAnimT);
+    const from = streakShown == null ? 0 : streakShown;
+    streakShown = n;
+    if(from === n){ streakNumberEl.textContent = n; return; }
+    const steps = Math.min(Math.abs(n - from), 20);
+    let i = 0;
+    const tick = () => {
+      i++;
+      streakNumberEl.textContent = Math.round(from + (n - from) * (i / steps));
+      if(i < steps) streakAnimT = setTimeout(tick, 28);
+    };
+    tick();
+  }
+
+  function renderStreak(lastDateStr){
+    if(!lastDateStr){
+      streakShown = null;
+      streakCardEl.dataset.tier = '0';
+      streakNumberEl.textContent = '–';
+      streakUnitEl.textContent = 'days without coffee';
+      streakMsgEl.textContent = 'Log a drink to start tracking.';
+      return;
+    }
+    const now = new Date();
+    const [ly, lm, ld] = lastDateStr.split('-').map(Number);
+    const days = Math.max(0, Math.round((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(ly, lm - 1, ld)) / 86400000));
+    streakCardEl.dataset.tier = String(streakTier(days));
+    setStreakNumber(days);
+    streakUnitEl.textContent = days === 1 ? 'day without coffee' : 'days without coffee';
+    streakMsgEl.textContent = streakMessage(days);
+  }
+
+  async function loadStreak(){
+    if(!currentUser) return;
+    const seq = ++streakLoadSeq;
+    const now = new Date();
+    const todayStr = isoDate(now.getFullYear(), now.getMonth(), now.getDate());
+    const { data, error } = await sb.from('coffeelog_entries')
+      .select('entry_date')
+      .eq('user_id', currentUser.id)
+      .lte('entry_date', todayStr)
+      .order('entry_date', { ascending: false })
+      .limit(1);
+    if(seq !== streakLoadSeq || error) return;
+    renderStreak(data && data.length ? data[0].entry_date : null);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible') loadStreak();
+  });
 
   function markAndAnimate(k, d){
     const current = coffeeLog[k] || null;
