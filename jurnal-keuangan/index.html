@@ -111,9 +111,17 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
 
 /* riwayat */
-.cols{display:flex;align-items:flex-end;gap:14px;height:132px;padding:14px 18px 12px}
-.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
-.col .bar{width:100%;max-width:56px;border-radius:10px 10px 4px 4px;background:var(--accent);min-height:4px}
+.cols{display:flex;align-items:flex-end;gap:10px;height:132px;padding:14px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.cols::-webkit-scrollbar{display:none}
+.col{flex:1 0 44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
+.col .bar{width:100%;max-width:56px;border-radius:10px 10px 4px 4px;background:var(--accent);min-height:4px;opacity:.4;transition:opacity .2s}
+.col.on .bar{opacity:1}
+.mblock{margin-top:10px;overflow:hidden}
+.mrow{display:flex;align-items:center;gap:10px;width:100%;padding:14px 16px;text-align:left}
+.mrow .mn{flex:1;min-width:0;font-weight:700}.mrow .mn small{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px}
+.mrow .mt{font-weight:700;color:var(--accent)}
+.mrow .chev{width:18px;height:18px;flex:none;color:var(--muted);transition:transform .2s;transform:rotate(180deg)}
+.mblock.open .chev{transform:rotate(-90deg)}
 .col .cv{font-size:11px;color:var(--muted);font-weight:600}.col .cm{font-size:11.5px;color:var(--muted)}
 .fchips{display:flex;gap:8px;overflow-x:auto;margin:16px -16px 0;padding:0 16px 4px;scrollbar-width:none}
 .fchips::-webkit-scrollbar{display:none}
@@ -415,7 +423,7 @@ function drawCandles(wrap,info,P,lab){
 /* =====================================================================
    State & router
    ===================================================================== */
-const S={sel:null,from:'home',auth:false,view:'home',goal:null,range:'YTD',iRange:'YTD',gRange:'ALL',sheet:false,filter:'All'};
+const S={sel:null,mSel:{},from:'home',auth:false,view:'home',goal:null,range:'YTD',iRange:'YTD',gRange:'ALL',sheet:false,filter:'All'};
 let USER=null;
 const $=s=>document.querySelector(s);
 const view=$('#view');
@@ -498,6 +506,8 @@ function renderTujuan(){
   <section class="hero"><div class="eyebrow">All goals</div><div class="big">${rp(tot)}</div></section>
   <section style="margin-top:14px">${goalRows()}</section>
   ${topupsHTML()}`;
+  /* keep the chart showing the newest months (or the picked one) */
+  const tc=$('#tuCols');if(tc){const on=tc.querySelector('.col.on');tc.scrollLeft=on&&S.mSel&&Object.keys(S.mSel).length?on.offsetLeft-tc.clientWidth/2:tc.scrollWidth}
 }
 function renderHome(){
   const idx=M.idxFor(S.range),pts=M.total.slice(idx),base=pts[0],last=pts[pts.length-1];
@@ -647,16 +657,16 @@ function topupsHTML(){
   /* deposits per month (filtered) */
   const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+x.nominal});
   const keys=Object.keys(byM).sort(),mx=Math.max(...keys.map(k=>byM[k]),1);
-  const bars=keys.length?keys.map(k=>`<div class="col"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></div>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
   const total=tx.reduce((s,x)=>s+x.nominal,0);
-  /* grouped by month */
-  let list='',cur='';
-  tx.forEach(x=>{const k=x.tanggal.slice(0,7);
-    if(k!==cur){if(cur)list+='</div>';cur=k;list+=`<div class="mhead"><span>${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}</span><span>${rp(byM[k])}</span></div><div class="card">`}
-    list+=txRow(x)});
-  if(cur)list+='</div>';
+  /* which months are expanded: newest by default, otherwise whatever the user toggled / picked from the chart */
+  const newest=keys[keys.length-1],isOpen=k=>k in S.mSel?S.mSel[k]:k===newest;
+  const bars=keys.length?keys.map(k=>`<button class="col${isOpen(k)?' on':''}" data-act="mbar" data-k="${k}" aria-label="${monF(T(k+'-01'))}"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></button>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
+  /* one collapsible block per month, newest first */
+  const byK={};tx.forEach(x=>{(byK[x.tanggal.slice(0,7)]=byK[x.tanggal.slice(0,7)]||[]).push(x)});
+  const list=keys.slice().reverse().map(k=>{const o=isOpen(k),n=byK[k].length;
+    return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} top-up${n>1?'s':''}</small></span><span class="mt">${rp(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button>${o?byK[k].map(x=>txRow(x)).join(''):''}</div>`}).join('');
   return `
-  <section><h2>Top-ups <small>${rp(total)}</small></h2><div class="card cols">${bars}</div></section>
+  <section><h2>Top-ups <small>${rp(total)}</small></h2><div class="card cols" id="tuCols">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No top-ups yet.</div>'}</section>`;
 }
@@ -806,7 +816,9 @@ document.addEventListener('click',e=>{
   else if(a==='range'){S.range=el.dataset.k;render()}
   else if(a==='grange'){S.gRange=el.dataset.k;render()}
   else if(a==='irange'){S.iRange=el.dataset.k;render()}
-  else if(a==='filter'){S.filter=el.dataset.k;render()}
+  else if(a==='filter'){S.filter=el.dataset.k;S.mSel={};render()}
+  else if(a==='mtoggle'){const k=el.dataset.k,cur=el.getAttribute('aria-expanded')==='true';S.mSel[k]=!cur;render()}
+  else if(a==='mbar'){const k=el.dataset.k;S.mSel={};document.querySelectorAll('#tuCols .col').forEach(c=>S.mSel[c.dataset.k]=false);S.mSel[k]=true;render();const m=$('#m-'+k);if(m)m.scrollIntoView({behavior:'smooth',block:'center'})}
   else if(a==='hide'){HIDE=!HIDE;try{localStorage.setItem('jk_hide',HIDE?'1':'0')}catch(_){}render()}
   else if(a==='txedit')openTxSheet(+el.dataset.i);
   else if(a==='txsave')saveTx();
