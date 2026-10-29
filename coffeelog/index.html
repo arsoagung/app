@@ -263,10 +263,10 @@
     height:16px;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 24'%3E%3Cpath d='M6 22C2 17 10 13 6 8C4 5 6 3 6 2' fill='none' stroke='%23C18857' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
     opacity:0;
-    animation:steam-rise 2.8s ease-in-out infinite;
+    animation:steam-rise var(--dur1,2.8s) ease-in-out var(--dl1,0s) infinite;
   }
   .cell.hot::before{ left:6px; bottom:12px; }
-  .cell.hot::after{ right:7px; bottom:20px; animation-delay:1.3s; }
+  .cell.hot::after{ right:7px; bottom:20px; animation-duration:var(--dur2,3.2s); animation-delay:var(--dl2,-1.3s); }
 
   @keyframes steam-rise{
     0%{ transform:translateY(6px); opacity:0; }
@@ -275,16 +275,27 @@
   }
 
   .cell.ice::before, .cell.ice::after{
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 0C12.8 7 17 11.2 24 12C17 12.8 12.8 17 12 24C11.2 17 7 12.8 0 12C7 11.2 11.2 7 12 0Z' fill='%2370B3D9'/%3E%3C/svg%3E");
+    inset:0;
     opacity:0;
-    animation:sparkle 2.6s ease-in-out infinite;
+    background-size:3px 3px, 2px 2px, 2px 2px;
+    animation:snow-fall var(--dur1,3.4s) ease-in-out var(--dl1,0s) infinite;
   }
-  .cell.ice::before{ width:9px; height:9px; left:5px; bottom:10px; }
-  .cell.ice::after{ width:7px; height:7px; right:6px; top:44%; animation-delay:1.2s; }
+  .cell.ice::before{
+    background-image:radial-gradient(circle,#fff 0 55%,transparent 60%),radial-gradient(circle,#fff 0 55%,transparent 60%),radial-gradient(circle,#fff 0 55%,transparent 60%);
+    background-position:14% 30%, 82% 42%, 28% 62%;
+  }
+  .cell.ice::after{
+    background-image:radial-gradient(circle,#dff1fb 0 55%,transparent 60%),radial-gradient(circle,#fff 0 55%,transparent 60%),radial-gradient(circle,#dff1fb 0 55%,transparent 60%);
+    background-position:72% 24%, 10% 52%, 88% 68%;
+    animation-duration:var(--dur2,4.4s);
+    animation-delay:var(--dl2,-2s);
+  }
 
-  @keyframes sparkle{
-    0%,100%{ transform:scale(.4) rotate(0deg); opacity:0; }
-    50%{ transform:scale(1) rotate(45deg); opacity:.9; }
+  @keyframes snow-fall{
+    0%{ transform:translateY(-8px); opacity:0; }
+    30%{ opacity:.95; }
+    60%{ opacity:.5; }
+    100%{ transform:translateY(12px); opacity:0; }
   }
 
   .cell.bounce{
@@ -1514,7 +1525,14 @@ body{background:radial-gradient(120% 45% at 80% -6%,rgba(217,119,87,.16),transpa
 
       const k = keyFor(viewYear, viewMonth, d);
       const state = coffeeLog[k];
-      if(state) cell.classList.add('filled', state);
+      if(state){
+        cell.classList.add('filled', state);
+        const rnd = n => { const x = Math.sin((d * 31 + viewMonth * 7 + n) * 12.9898) * 43758.5453; return x - Math.floor(x); };
+        cell.style.setProperty('--dur1', (2.4 + rnd(1) * 2.2).toFixed(2) + 's');
+        cell.style.setProperty('--dur2', (2.8 + rnd(2) * 2.6).toFixed(2) + 's');
+        cell.style.setProperty('--dl1', '-' + (rnd(3) * 4).toFixed(2) + 's');
+        cell.style.setProperty('--dl2', '-' + (rnd(4) * 4).toFixed(2) + 's');
+      }
 
       const num = document.createElement('div');
       num.className = 'num';
