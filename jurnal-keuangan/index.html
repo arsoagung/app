@@ -37,6 +37,10 @@ button{background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
 #view>*{animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
 #view>*:nth-child(2){animation-delay:.04s}#view>*:nth-child(3){animation-delay:.08s}#view>*:nth-child(4){animation-delay:.12s}#view>*:nth-child(5){animation-delay:.16s}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* re-render inside the same page (range chips, filters…): no page-entrance replay, chart just draws in */
+#view.still>*{animation:none}
+@keyframes reveal{from{clip-path:inset(-40px 100% -40px 0)}to{clip-path:inset(-40px -40px -40px 0)}}
+#view.still .chart svg{animation:reveal .5s cubic-bezier(.3,.7,.2,1) backwards}
 @keyframes livepulse{0%{transform:scale(1);opacity:.5}70%,100%{transform:scale(3.4);opacity:0}}
 .live{transform-box:fill-box;transform-origin:center;animation:livepulse 2s ease-out infinite;pointer-events:none}
 .topbar{display:flex;align-items:center;justify-content:space-between;height:44px;margin-bottom:6px}
@@ -57,8 +61,10 @@ button{background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
 .chart{position:relative;margin:14px -2px 6px;height:200px}
 .chart svg{display:block;width:100%;height:100%;touch-action:pan-y;user-select:none}
 .chips{display:flex;gap:4px;justify-content:space-between;margin:6px 0 0;padding:4px;background:var(--surface);border-radius:999px}
-.chip{flex:1;text-align:center;height:32px;line-height:32px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);transition:background .15s,color .15s}
-.chip.on{background:var(--surface-3);color:var(--text)}
+.chips{position:relative}
+.cind{position:absolute;top:4px;left:0;width:0;height:32px;border-radius:999px;background:var(--surface-3);transition:transform .32s cubic-bezier(.3,.8,.2,1),width .32s cubic-bezier(.3,.8,.2,1);pointer-events:none}
+.chip{position:relative;z-index:1;flex:1;text-align:center;height:32px;line-height:32px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);transition:color .2s}
+.chip.on{color:var(--text)}
 .chip:disabled{opacity:.35;cursor:default}
 
 h2{font-size:15px;font-weight:700;margin:28px 2px 12px;display:flex;align-items:baseline;justify-content:space-between}
@@ -117,6 +123,9 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .col .bar{width:100%;max-width:56px;border-radius:10px 10px 4px 4px;background:var(--accent);min-height:4px;opacity:.4;transition:opacity .2s}
 .col.on .bar{opacity:1}
 .mblock{margin-top:10px;overflow:hidden}
+.mbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.2,1)}
+.mblock.open .mbody{grid-template-rows:1fr}
+.mbody>.min{overflow:hidden;min-height:0}
 .mrow{display:flex;align-items:center;gap:10px;width:100%;padding:14px 16px;text-align:left}
 .mrow .mn{flex:1;min-width:0;font-weight:700}.mrow .mn small{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px}
 .mrow .mt{font-weight:700;color:var(--accent)}
@@ -433,11 +442,26 @@ function go(v,goal){if(v==='detail'&&(S.view==='home'||S.view==='tujuan'||S.view
 function render(){
   if(!S.auth)return;
   const fn={home:renderHome,invest:renderInvest,tujuan:renderTujuan,detail:renderDetail,riwayat:renderUpdates,profil:renderProfil}[S.view];
+  const key=S.view+'|'+(S.goal||''),same=key===lastKey;lastKey=key;view.classList.toggle('still',same);
   fn();
   const tabOf=S.view==='detail'?(S.from||'tujuan'):S.view==='riwayat'?'profil':S.view;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===tabOf));
+  placeChips();
 }
-const chipsHTML=(cur,act)=>`<div class="chips">${RANGES.map(k=>{const off=(k==='1M'||k==='3M'||k==='1Y')&&M.dates[0]>M.rangeTarget(k);return `<button class="chip${cur===k?' on':''}"${off?' disabled':''} data-act="${act}" data-k="${k}">${k}</button>`}).join('')}</div>`;
+/* range chips: one pill that slides from the old chip to the new one */
+let lastKey='';const CHIP_IDX={};
+function chipFrom(act){const cs=[...document.querySelectorAll('.chips[data-chips="'+act+'"] .chip')],i=cs.findIndex(c=>c.classList.contains('on'));if(i>=0)CHIP_IDX[act]=i}
+function placeChips(){
+  document.querySelectorAll('.chips[data-chips]').forEach(box=>{
+    const act=box.dataset.chips,cs=[...box.querySelectorAll('.chip')],ind=box.querySelector('.cind'),n=cs.findIndex(c=>c.classList.contains('on'));
+    if(!ind||n<0)return;
+    const put=i=>{ind.style.width=cs[i].offsetWidth+'px';ind.style.transform='translateX('+cs[i].offsetLeft+'px)'};
+    const o=CHIP_IDX[act];delete CHIP_IDX[act];
+    ind.style.transition='none';put(o!=null&&o!==n&&cs[o]?o:n);void ind.offsetWidth;ind.style.transition='';
+    if(o!=null&&o!==n)put(n);
+  });
+}
+const chipsHTML=(cur,act)=>`<div class="chips" data-chips="${act}"><i class="cind"></i>${RANGES.map(k=>{const off=(k==='1M'||k==='3M'||k==='1Y')&&M.dates[0]>M.rangeTarget(k);return `<button class="chip${cur===k?' on':''}"${off?' disabled':''} data-act="${act}" data-k="${k}">${k}</button>`}).join('')}</div>`;
 const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'down')}${rpS(d)}${p==null?'':' ('+pct(p)+')'}</span><span class="since">${since}</span>`;
 
 /* ---------- Beranda ---------- */
@@ -648,12 +672,28 @@ function renderUpdates(){
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No updates yet.</div>'}</section>`;
 }
+const tuFiltered=()=>DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal)).filter(x=>S.filter==='All'||(goalOf(x.ke)||{}).name===S.filter);
+/* open/close one month in place so it can slide; rows are only built while a month is open */
+function setMonth(k,open){
+  S.mSel[k]=open;
+  const b=$('#m-'+k),col=document.querySelector('#tuCols .col[data-k="'+k+'"]');
+  if(col)col.classList.toggle('on',open);
+  if(!b)return;
+  const body=b.querySelector('.min'),row=b.querySelector('.mrow');
+  row.setAttribute('aria-expanded',open);
+  if(open){
+    if(!body.firstChild)body.innerHTML=tuFiltered().filter(x=>x.tanggal.slice(0,7)===k).map(x=>txRow(x)).join('');
+    void b.offsetHeight;b.classList.add('open');
+  }else{
+    b.classList.remove('open');
+    setTimeout(()=>{if(!b.classList.contains('open'))body.innerHTML=''},340);
+  }
+}
 /* top-up history + monthly deposits, shown at the bottom of the Goals tab */
 function topupsHTML(){
   const names=['All',...M.tujuan.filter(t=>t.hasReturn).map(t=>t.name)];
   if(!names.includes(S.filter))S.filter='All';
-  const all=DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal));
-  const tx=all.filter(x=>S.filter==='All'||(goalOf(x.ke)||{}).name===S.filter);
+  const tx=tuFiltered();
   /* deposits per month (filtered) */
   const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+x.nominal});
   const keys=Object.keys(byM).sort(),mx=Math.max(...keys.map(k=>byM[k]),1);
@@ -664,7 +704,7 @@ function topupsHTML(){
   /* one collapsible block per month, newest first */
   const byK={};tx.forEach(x=>{(byK[x.tanggal.slice(0,7)]=byK[x.tanggal.slice(0,7)]||[]).push(x)});
   const list=keys.slice().reverse().map(k=>{const o=isOpen(k),n=byK[k].length;
-    return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} top-up${n>1?'s':''}</small></span><span class="mt">${rp(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button>${o?byK[k].map(x=>txRow(x)).join(''):''}</div>`}).join('');
+    return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} top-up${n>1?'s':''}</small></span><span class="mt">${rp(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?byK[k].map(x=>txRow(x)).join(''):''}</div></div></div>`}).join('');
   return `
   <section><h2>Top-ups <small>${rp(total)}</small></h2><div class="card cols" id="tuCols">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
@@ -813,12 +853,12 @@ document.addEventListener('click',e=>{
   else if(a==='go')go('detail',el.dataset.g);
   else if(a==='back')go(S.from||'tujuan');
   else if(a==='dsel'){S.sel=S.sel===el.dataset.g?null:el.dataset.g;updateDonut()}
-  else if(a==='range'){S.range=el.dataset.k;render()}
-  else if(a==='grange'){S.gRange=el.dataset.k;render()}
-  else if(a==='irange'){S.iRange=el.dataset.k;render()}
+  else if(a==='range'){chipFrom(a);S.range=el.dataset.k;render()}
+  else if(a==='grange'){chipFrom(a);S.gRange=el.dataset.k;render()}
+  else if(a==='irange'){chipFrom(a);S.iRange=el.dataset.k;render()}
   else if(a==='filter'){S.filter=el.dataset.k;S.mSel={};render()}
-  else if(a==='mtoggle'){const k=el.dataset.k,cur=el.getAttribute('aria-expanded')==='true';S.mSel[k]=!cur;render()}
-  else if(a==='mbar'){const k=el.dataset.k;S.mSel={};document.querySelectorAll('#tuCols .col').forEach(c=>S.mSel[c.dataset.k]=false);S.mSel[k]=true;render();const m=$('#m-'+k);if(m)m.scrollIntoView({behavior:'smooth',block:'center'})}
+  else if(a==='mtoggle'){const k=el.dataset.k;setMonth(k,el.getAttribute('aria-expanded')!=='true')}
+  else if(a==='mbar'){const k=el.dataset.k;document.querySelectorAll('#tuCols .col').forEach(c=>setMonth(c.dataset.k,c.dataset.k===k));setTimeout(()=>{const m=$('#m-'+k);if(m)m.scrollIntoView({behavior:'smooth',block:'center'})},320)}
   else if(a==='hide'){HIDE=!HIDE;try{localStorage.setItem('jk_hide',HIDE?'1':'0')}catch(_){}render()}
   else if(a==='txedit')openTxSheet(+el.dataset.i);
   else if(a==='txsave')saveTx();
