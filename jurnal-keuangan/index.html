@@ -212,6 +212,7 @@ button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surfac
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-5.5 8-5.5s6.5 1.5 8 5.5"/></symbol>
   <symbol id="i-goal" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15.5 3.6A9 9 0 0 1 20.4 8.5H15.5z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></symbol>
@@ -232,10 +233,10 @@ button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surfac
 <div id="shell" hidden>
   <main id="view"></main>
   <nav class="tabbar">
-    <button class="tab" data-act="nav" data-v="home" aria-label="Home"><svg class="i"><use href="#i-home"/></svg></button>
-    <button class="tab" data-act="nav" data-v="tujuan" aria-label="Goals"><svg class="i"><use href="#i-goal"/></svg></button>
+    <button class="tab" data-act="nav" data-v="home" aria-label="Net worth"><svg class="i"><use href="#i-home"/></svg></button>
+    <button class="tab" data-act="nav" data-v="invest" aria-label="Investment"><svg class="i"><use href="#i-trend"/></svg></button>
     <button class="addbtn" data-act="fab" aria-label="Add"><svg class="i"><use href="#i-plus"/></svg></button>
-    <button class="tab" data-act="nav" data-v="riwayat" aria-label="History"><svg class="i"><use href="#i-hist"/></svg></button>
+    <button class="tab" data-act="nav" data-v="tujuan" aria-label="Goals"><svg class="i"><use href="#i-goal"/></svg></button>
     <button class="tab" data-act="nav" data-v="profil" aria-label="Profile"><svg class="i"><use href="#i-user"/></svg></button>
   </nav>
 </div>
@@ -414,25 +415,26 @@ function drawCandles(wrap,info,P,lab){
 /* =====================================================================
    State & router
    ===================================================================== */
-const S={sel:null,from:'home',gmode:'nw',auth:false,view:'home',goal:null,range:'YTD',gRange:'ALL',sheet:false,filter:'All',hmode:'tx'};
+const S={sel:null,from:'home',auth:false,view:'home',goal:null,range:'YTD',iRange:'YTD',gRange:'ALL',sheet:false,filter:'All'};
 let USER=null;
 const $=s=>document.querySelector(s);
 const view=$('#view');
 const RANGES=['1M','3M','YTD','1Y','ALL'];
 
-function go(v,goal){if(v==='detail'&&(S.view==='home'||S.view==='tujuan'))S.from=S.view;S.view=v;S.goal=goal||null;render();window.scrollTo(0,0)}
+function go(v,goal){if(v==='detail'&&(S.view==='home'||S.view==='tujuan'||S.view==='invest'))S.from=S.view;S.view=v;S.goal=goal||null;render();window.scrollTo(0,0)}
 function render(){
   if(!S.auth)return;
-  const fn={home:renderHome,tujuan:renderTujuan,detail:renderDetail,riwayat:renderRiwayat,profil:renderProfil}[S.view];
+  const fn={home:renderHome,invest:renderInvest,tujuan:renderTujuan,detail:renderDetail,riwayat:renderUpdates,profil:renderProfil}[S.view];
   fn();
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===(S.view==='detail'?(S.from||'tujuan'):S.view)));
+  const tabOf=S.view==='detail'?(S.from||'tujuan'):S.view==='riwayat'?'profil':S.view;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===tabOf));
 }
 const chipsHTML=(cur,act)=>`<div class="chips">${RANGES.map(k=>{const off=(k==='1M'||k==='3M'||k==='1Y')&&M.dates[0]>M.rangeTarget(k);return `<button class="chip${cur===k?' on':''}"${off?' disabled':''} data-act="${act}" data-k="${k}">${k}</button>`}).join('')}</div>`;
 const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'down')}${rpS(d)}${p==null?'':' ('+pct(p)+')'}</span><span class="since">${since}</span>`;
 
 /* ---------- Beranda ---------- */
-function goalRows(){
-  return M.tujuan.map(g=>{
+function goalRows(list){
+  return (list||M.tujuan).map(g=>{
     let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
       if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.r)}">${pct(lp.r)} this month</span>`}
@@ -494,15 +496,14 @@ function renderTujuan(){
   view.innerHTML=`
   <div class="topbar"><div class="brand">Goals</div></div>
   <section class="hero"><div class="eyebrow">All goals</div><div class="big">${rp(tot)}</div></section>
-  <section style="margin-top:14px">${goalRows()}</section>`;
+  <section style="margin-top:14px">${goalRows()}</section>
+  ${topupsHTML()}`;
 }
 function renderHome(){
   const idx=M.idxFor(S.range),pts=M.total.slice(idx),base=pts[0],last=pts[pts.length-1];
   const d=last.v-base.v,p=base.v?d/base.v:null,since='since '+dlabel(base.t);
   const tot=last.v;
-  const GP=S.gmode==='nw'
-    ?M.total.slice(1).map((p,i)=>({e:p.t,r:M.total[i].v?(p.v-M.total[i].v)/M.total[i].v:0,profit:p.v-M.total[i].v,partial:p.t===TODAY_T&&!isMonthEnd(p.t)}))
-    :M.periodsFor(M.allRet,M.allStart);
+  const GP=M.total.slice(1).map((p,i)=>({e:p.t,r:M.total[i].v?(p.v-M.total[i].v)/M.total[i].v:0,profit:p.v-M.total[i].v,partial:p.t===TODAY_T&&!isMonthEnd(p.t)}));
   view.innerHTML=`
   <div class="topbar"><div class="brand"><span class="logo">${icon('logo')}</span>Finance Journal</div><button class="eyebtn" data-act="hide" aria-label="${HIDE?'Show':'Hide'} balances">${icon(HIDE?'eyeoff':'eye')}</button></div>
   ${remindHTML()}
@@ -516,12 +517,44 @@ function renderHome(){
   </section>
   <section><h2>Goals</h2><div class="card"><div class="dnwrap" id="dn"></div><div class="dnlist" id="dnList"></div><div class="dninfo" id="dnInfo"></div></div></section>
   <section><h2>Monthly growth</h2>
-    <div class="card"><div class="ctabs"><div class="seg"><button class="${S.gmode==='nw'?'on':''}" data-act="gmode" data-k="nw">Net worth</button><button class="${S.gmode==='nw'?'':'on'}" data-act="gmode" data-k="ret">Investment return</button></div></div><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>`;
+    <div class="card"><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>`;
   drawDonut();
-  drawCandles($('#cWrap'),$('#cInfo'),GP,S.gmode==='nw'?'change':'profit');
+  drawCandles($('#cWrap'),$('#cInfo'),GP,'change');
   drawChart($('#hChart'),[{pts:pts,color:'#2dd48f'}],{label:'Net worth chart',onHover:pt=>{
     if(!pt){$('#hBig').textContent=rp(tot);$('#hDelta').innerHTML=deltaHTML(d,p,since);return}
     const dd=pt.v-base.v;$('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=deltaHTML(dd,base.v?dd/base.v:null,dlabel(pt.t))}});
+}
+
+/* ---------- Investment (all return-bearing accounts combined) ---------- */
+function renderInvest(){
+  const accs=M.allRet,key=S.iRange,rg=goal=>goal.hasReturn;
+  if(!accs.length||!isFinite(M.allStart)){view.innerHTML=`<div class="topbar"><div class="brand">Investment</div></div><div class="card empty">No investment accounts yet.</div>`;return}
+  const base=Math.max(M.allStart,M.dates[M.idxFor(key)]);
+  const vals=M.dates.filter(t=>t>=base).map(t=>({t,v:M.sum(accs,t)}));
+  let modal=vals[0].v;const mp=[{t:base,v:modal}];
+  M.flows(accs).filter(f=>f.t>base).sort((a,b)=>a.t-b.t).forEach(f=>{mp.push({t:f.t,v:modal});modal+=f.amt;mp.push({t:f.t,v:modal})});
+  mp.push({t:TODAY_T,v:modal});
+  const now=vals[vals.length-1].v,profit=now-modal,r=M.chain(M.periodsFor(accs,base));
+  const heroBig=rp(now),heroDelta=deltaHTML(profit,r,'profit since '+dlabel(base));
+  const GP=M.periodsFor(accs,M.allStart);
+  view.innerHTML=`
+  <div class="topbar"><div class="brand">Investment</div></div>
+  <section class="hero">
+    <div class="eyebrow">Investment value · ${dlabel(TODAY_T)}</div>
+    <div class="big" id="hBig">${heroBig}</div>
+    <div class="drow" id="hDelta">${heroDelta}</div>
+    <div class="chart" id="hChart"></div>
+    ${chipsHTML(key,'irange')}
+    <div class="stats"><div class="card stat"><div class="l">Principal</div><div class="v">${rp(modal)}</div></div>
+      <div class="card stat"><div class="l">Profit</div><div class="v ${sgn(profit)==='pos'?'pos-t':'neg-t'}">${rpS(profit)}</div></div>
+      <div class="card stat"><div class="l">${key==='ALL'?'Total return':'Return '+key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>
+  </section>
+  <section><h2>Monthly growth</h2><div class="card"><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>
+  <section><h2>Portfolio</h2>${goalRows(M.tujuan.filter(rg))}</section>`;
+  drawChart($('#hChart'),[{pts:vals,color:'#2dd48f'},{pts:mp,color:'#8b9b93',dashed:true}],{label:'Investment chart',onHover:pt=>{
+    if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
+    $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`}});
+  drawCandles($('#cWrap'),$('#cInfo'),GP,'profit');
 }
 
 /* ---------- Detail tujuan ---------- */
@@ -587,11 +620,6 @@ function txRow(x,g){
 
 /* ---------- Riwayat ---------- */
 function goalOf(ak){return M.tujuan.find(t=>t.accs.includes(ak))}
-function histSeg(){
-  const upd=S.hmode==='upd';
-  return `<div class="seg" style="margin:16px 0 0"><button class="${upd?'':'on'}" data-act="hmode" data-k="tx">Top-ups</button><button class="${upd?'on':''}" data-act="hmode" data-k="upd">Balance updates</button></div>`;
-}
-function renderRiwayat(){S.hmode==='upd'?renderUpdates():renderTopups()}
 
 /* balance update log (app_update): who was updated when, and which were month-end checkpoints */
 function renderUpdates(){
@@ -605,13 +633,13 @@ function renderUpdates(){
     list+=`<div class="tx"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div><div class="m"><b>${esc(M.byAkun[u.akun].nama)}</b><span>${dlabel(T(u.tanggal))}</span></div>${cpv?'<span class="badge" style="background:var(--surface-3)">Month-end</span>':''}</div>`});
   if(cur)list+='</div>';
   view.innerHTML=`
-  <div class="topbar"><div class="brand">History</div></div>
-  <section class="hero"><div class="eyebrow">Balance updates</div><div class="big">${rows.length}</div></section>
-  ${histSeg()}
+  <div class="dhead"><button class="back" data-act="nav" data-v="profil" aria-label="Back">${icon('back')}</button><div class="t">Balance updates</div></div>
+  <section class="hero"><div class="eyebrow">Total updates</div><div class="big">${rows.length}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No updates yet.</div>'}</section>`;
 }
-function renderTopups(){
+/* top-up history + monthly deposits, shown at the bottom of the Goals tab */
+function topupsHTML(){
   const names=['All',...M.tujuan.filter(t=>t.hasReturn).map(t=>t.name)];
   if(!names.includes(S.filter))S.filter='All';
   const all=DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal));
@@ -627,12 +655,9 @@ function renderTopups(){
     if(k!==cur){if(cur)list+='</div>';cur=k;list+=`<div class="mhead"><span>${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}</span><span>${rp(byM[k])}</span></div><div class="card">`}
     list+=txRow(x)});
   if(cur)list+='</div>';
-  view.innerHTML=`
-  <div class="topbar"><div class="brand">Top-up history</div></div>
-  <section class="hero"><div class="eyebrow">Total deposits</div><div class="big">${rp(total)}</div></section>
-  ${histSeg()}
-  <section><h2>Monthly deposits</h2><div class="card cols">${bars}</div></section>
-  <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${n}">${n}</button>`).join('')}</div>
+  return `
+  <section><h2>Top-ups <small>${rp(total)}</small></h2><div class="card cols">${bars}</div></section>
+  <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No top-ups yet.</div>'}</section>`;
 }
 
@@ -644,7 +669,7 @@ function renderProfil(){
   <div class="topbar"><div class="brand">Profile</div></div>
   <div class="prof"><div class="avatar">${av?`<img src="${esc(av)}" alt="" referrerpolicy="no-referrer">`:esc(nm.charAt(0).toUpperCase())}</div><div class="nm">${esc(nm)}</div>${em&&em!==nm?`<div class="sb">${esc(em)}</div>`:''}</div>
   <div class="card"><div class="kv"><span>Data as of</span><span>${fullDate(TODAY)}</span></div><div class="kv"><span>Last synced</span><span>${sync}</span></div><div class="kv"><span>Active accounts</span><span>${M.akun.filter(a=>a.aktif).length}</span></div></div>
-  <div class="swrow" style="margin:14px 0 0"><span id="hideLbl">Hide balances</span><button class="sw" role="switch" aria-checked="${HIDE}" aria-labelledby="hideLbl" data-act="hide"><i></i></button></div>
+  <button class="btn ghost" data-act="nav" data-v="riwayat">${icon('hist')}Balance updates</button>
   <button class="btn ghost" data-act="logout">${icon('out')}Log out</button>`;
 }
 
@@ -780,9 +805,8 @@ document.addEventListener('click',e=>{
   else if(a==='dsel'){S.sel=S.sel===el.dataset.g?null:el.dataset.g;updateDonut()}
   else if(a==='range'){S.range=el.dataset.k;render()}
   else if(a==='grange'){S.gRange=el.dataset.k;render()}
-  else if(a==='gmode'){S.gmode=el.dataset.k;render()}
+  else if(a==='irange'){S.iRange=el.dataset.k;render()}
   else if(a==='filter'){S.filter=el.dataset.k;render()}
-  else if(a==='hmode'){S.hmode=el.dataset.k;S.filter='All';render()}
   else if(a==='hide'){HIDE=!HIDE;try{localStorage.setItem('jk_hide',HIDE?'1':'0')}catch(_){}render()}
   else if(a==='txedit')openTxSheet(+el.dataset.i);
   else if(a==='txsave')saveTx();
