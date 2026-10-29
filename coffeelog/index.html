@@ -246,6 +246,12 @@
 
   .cell.today{ background:var(--bg-cell-today); }
 
+  .cell.hot{ background:#C18857; }
+  .cell.ice{ background:#70B3D9; }
+  .cell.hot .num, .cell.ice .num,
+  .cell.hot.today .num, .cell.ice.today .num{ color:#1e1512; }
+  .cell.hot .today-dot, .cell.ice .today-dot{ background:#1e1512; }
+
   .cell.bounce{
     z-index:5;
     animation: cell-bounce .4s cubic-bezier(.34,1.56,.64,1);
@@ -1473,7 +1479,7 @@ body{background:radial-gradient(120% 45% at 80% -6%,rgba(217,119,87,.16),transpa
 
       const k = keyFor(viewYear, viewMonth, d);
       const state = coffeeLog[k];
-      if(state) cell.classList.add('filled');
+      if(state) cell.classList.add('filled', state);
 
       const num = document.createElement('div');
       num.className = 'num';
