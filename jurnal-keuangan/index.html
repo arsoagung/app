@@ -804,11 +804,8 @@ async function saveSheet(){
   saving=true;btn.disabled=true;btn.textContent='Saving…';err.textContent='';
   try{
     await api('saveUpdate',payload);
-    const again=fMode==='topup';   /* top-up mode: keep the sheet open for the next top-up */
-    if(!again)closeSheet();
-    toast(okMsg);
+    closeSheet();toast(okMsg);
     try{await loadData();render()}catch(_){toast('Saved, but refreshing failed.')}
-    if(again){fillSheet(ak,'topup');$('#fNom').focus()}
   }catch(e){
     if(e.status===401||e.status===403){closeSheet();Auth.signOut({denied:true})}
     else{err.textContent=e.message||'Could not save.';btn.disabled=false;btn.textContent=label}
