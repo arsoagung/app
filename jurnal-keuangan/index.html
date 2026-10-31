@@ -732,30 +732,49 @@ function sheetHTML(pre){
   const act=M.akun.filter(a=>a.aktif);
   const opt=(list,sel)=>list.map(a=>`<option value="${a.akun}"${a.akun===sel?' selected':''}>${a.nama}</option>`).join('');
   const ak=pre&&act.some(a=>a.akun===pre)?pre:act[0].akun,tg=cpTarget();
-  return `<div class="grab"></div><div class="stitle">Update</div>
+  return `<div class="grab"></div><div class="stitle" id="fTitle">Add top-up</div>
     <div class="field"><label for="fAk">Account</label><select class="inp" id="fAk">${opt(act,ak)}</select></div>
-    <div class="field"><label for="fSal">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(ak,TODAY_T))}" autocomplete="off"></div>
-    <div id="fTopWrap"><div class="field"><label for="fNom">Top-up <span style="font-weight:500">(optional)</span></label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div>
-      <div id="fExtra">
+    <div class="seg" id="fMode"><button data-act="fmode" data-m="topup">Top-up</button><button data-act="fmode" data-m="upd">Update balance</button></div>
+    <div id="fTopWrap"><div class="field"><label for="fNom">Top-up amount</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div></div>
+    <div class="field"><label for="fSal" id="fSalLbl">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(ak,TODAY_T))}" autocomplete="off"></div>
+    <div id="fTopWrap2">
         <div class="field"><label for="fTgl">Top-up date</label><input class="inp" id="fTgl" type="date" value="${TODAY}" max="${TODAY}"></div>
         <div class="field"><label for="fDari">From account</label><select class="inp" id="fDari"><option value="">Not recorded</option><option value="Rekening Utama">Main account</option>${opt(act,'')}</select></div>
         <div class="field"><label for="fCat">Notes</label><input class="inp" id="fCat" placeholder="Optional"></div>
-      </div></div>
+    </div>
     <div class="swrow" id="fCpWrap"><span id="fCpLbl">${tg?`Mark as ${tg.name} month-end`:''}</span><button class="sw" id="fCp" role="switch" aria-checked="true" aria-labelledby="fCpLbl" data-act="cp"><i></i></button></div>
     <div class="ferr" id="fErr"></div>
     <button class="btn primary" id="fSave" data-act="save" style="margin-top:6px">Save</button>`;
 }
-/* show/hide form parts depending on account, top-up amount and month-end switch */
+/* Top-up mode: amount + date/source, new balance = old balance + amount (still editable).
+   Update-balance mode: balance only (month-end checkpoint, Cash). Cash never takes top-ups. */
+let fMode='topup',fPref='topup',fBase=0,fManual=false;
+function calcSal(){
+  const add=fMode==='topup'?numIn($('#fNom').value):0;
+  $('#fSal').value=fmtIn(fBase+add);
+}
 function syncForm(resetCp){
   const ak=$('#fAk').value,a=M.byAkun[ak],tg=cpTarget(),avail=!!tg&&!cpDone(ak,tg.bulan);
+  fMode=a.jenis==='cair'?'upd':fPref;
+  const top=fMode==='topup';
   if(resetCp)$('#fCp').setAttribute('aria-checked','true');
-  const on=avail&&$('#fCp').getAttribute('aria-checked')==='true';
-  $('#fCpWrap').hidden=!avail;
-  $('#fTopWrap').hidden=a.jenis==='cair'||(on&&tg.prev);
-  $('#fExtra').hidden=$('#fTopWrap').hidden||!numIn($('#fNom').value);
+  $('#fMode').hidden=a.jenis==='cair';
+  $('#fMode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===fMode));
+  $('#fTitle').textContent=top?'Add top-up':'Update balance';
+  $('#fSalLbl').textContent=top?'Balance after top-up':'Current balance';
+  $('#fTopWrap').hidden=!top;
+  $('#fTopWrap2').hidden=!top;
+  $('#fCpWrap').hidden=!avail||top;
+  $('#fSave').textContent=top?'Save top-up':'Save';
 }
-function openSheet(ak){
-  const sh=$('#sheet'),bd=$('#backdrop');sh.innerHTML=sheetHTML(ak);syncForm(true);sh.hidden=false;bd.hidden=false;
+function fillSheet(ak,mode){
+  if(mode)fPref=mode;
+  $('#sheet').innerHTML=sheetHTML(ak);
+  fBase=Number(M.val($('#fAk').value,TODAY_T))||0;fManual=false;
+  syncForm(true);
+}
+function openSheet(ak,mode){
+  const sh=$('#sheet'),bd=$('#backdrop');fillSheet(ak,mode);sh.hidden=false;bd.hidden=false;
   requestAnimationFrame(()=>{sh.classList.add('open');bd.classList.add('open')});S.sheet=true;
 }
 function closeSheet(){
@@ -767,6 +786,7 @@ async function saveSheet(){
   if(saving)return;
   const err=$('#fErr'),btn=$('#fSave'),label=btn.textContent;
   const ak=$('#fAk').value,tg=cpTarget();
+  if(fMode==='topup'&&!numIn($('#fNom').value)){$('#fNom').classList.add('err');err.textContent='Enter the top-up amount.';return}
   if(!$('#fSal').value){$('#fSal').classList.add('err');err.textContent='Enter the current balance.';return}
   const bal=numIn($('#fSal').value),cp=!$('#fCpWrap').hidden&&$('#fCp').getAttribute('aria-checked')==='true';
   const payload={akun:ak,saldo:bal,checkpoint:cp,bulan:cp?tg.bulan:TODAY.slice(0,7)};
@@ -784,8 +804,11 @@ async function saveSheet(){
   saving=true;btn.disabled=true;btn.textContent='Saving…';err.textContent='';
   try{
     await api('saveUpdate',payload);
-    closeSheet();toast(okMsg);
+    const again=fMode==='topup';   /* top-up mode: keep the sheet open for the next top-up */
+    if(!again)closeSheet();
+    toast(okMsg);
     try{await loadData();render()}catch(_){toast('Saved, but refreshing failed.')}
+    if(again){fillSheet(ak,'topup');$('#fNom').focus()}
   }catch(e){
     if(e.status===401||e.status===403){closeSheet();Auth.signOut({denied:true})}
     else{err.textContent=e.message||'Could not save.';btn.disabled=false;btn.textContent=label}
@@ -863,17 +886,18 @@ document.addEventListener('click',e=>{
   else if(a==='txedit')openTxSheet(+el.dataset.i);
   else if(a==='txsave')saveTx();
   else if(a==='txdel')delTx(el);
-  else if(a==='fab')openSheet();
-  else if(a==='upd')openSheet(el.dataset.ak);
+  else if(a==='fab')openSheet(undefined,'topup');
+  else if(a==='upd')openSheet(el.dataset.ak,'upd');
+  else if(a==='fmode'){fPref=el.dataset.m;fManual=false;syncForm();calcSal();$('#fErr').textContent=''}
   else if(a==='cp'){el.setAttribute('aria-checked',el.getAttribute('aria-checked')==='true'?'false':'true');syncForm()}
   else if(a==='close')closeSheet();
   else if(a==='save')saveSheet();
 });
 document.addEventListener('input',e=>{
-  if(e.target.matches('[data-money]')){e.target.value=fmtIn(e.target.value);e.target.classList.remove('err');const er=$('#fErr');if(er)er.textContent='';if(e.target.id==='fNom')syncForm()}
+  if(e.target.matches('[data-money]')){e.target.value=fmtIn(e.target.value);e.target.classList.remove('err');const er=$('#fErr');if(er)er.textContent='';if(e.target.id==='fNom'&&!fManual)calcSal();if(e.target.id==='fSal')fManual=true}
 });
 document.addEventListener('change',e=>{
-  if(e.target.id==='fAk'){$('#fSal').value=fmtIn(M.val(e.target.value,TODAY_T));syncForm(true)}
+  if(e.target.id==='fAk'){fBase=Number(M.val(e.target.value,TODAY_T))||0;fManual=false;syncForm(true);calcSal()}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(S.auth&&!S.sheet)render()},150)});
