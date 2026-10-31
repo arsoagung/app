@@ -739,7 +739,7 @@ function sheetHTML(pre){
     <div class="field"><label for="fSal" id="fSalLbl">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(ak,TODAY_T))}" autocomplete="off"></div>
     <div id="fTopWrap2">
         <div class="field"><label for="fTgl">Top-up date</label><input class="inp" id="fTgl" type="date" value="${TODAY}" max="${TODAY}"></div>
-        <div class="field"><label for="fDari">From account</label><select class="inp" id="fDari"><option value="">Not recorded</option><option value="Rekening Utama">Main account</option>${opt(act,'')}</select></div>
+        <div class="field"><label for="fDari">From account</label><select class="inp" id="fDari"><option value="">Income</option>${opt(act,'')}</select></div>
         <div class="field"><label for="fCat">Notes</label><input class="inp" id="fCat" placeholder="Optional"></div>
     </div>
     <div class="swrow" id="fCpWrap"><span id="fCpLbl">${tg?`Mark as ${tg.name} month-end`:''}</span><button class="sw" id="fCp" role="switch" aria-checked="true" aria-labelledby="fCpLbl" data-act="cp"><i></i></button></div>
@@ -827,7 +827,7 @@ function openTxSheet(i){
     <div class="field"><label>To account</label><div class="inp ro">${esc(M.byAkun[x.ke]?M.byAkun[x.ke].nama:x.ke)}</div></div>
     <div class="field"><label for="eNom">Amount</label><input class="inp" id="eNom" inputmode="numeric" data-money value="${fmtIn(x.nominal)}" autocomplete="off"></div>
     <div class="field"><label for="eTgl">Date</label><input class="inp" id="eTgl" type="date" value="${esc(x.tanggal)}" max="${TODAY}"></div>
-    <div class="field"><label for="eDari">From account</label><select class="inp" id="eDari"><option value="">Not recorded</option><option value="Rekening Utama"${x.dari==='Rekening Utama'?' selected':''}>Main account</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>
+    <div class="field"><label for="eDari">From account</label><select class="inp" id="eDari"><option value="">Income</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>
     <div class="field"><label for="eCat">Notes</label><input class="inp" id="eCat" value="${esc(x.catatan||'')}" placeholder="Optional"></div>
     <div class="ferr" id="fErr"></div>
     <button class="btn primary" id="eSave" data-act="txsave" style="margin-top:6px">Save changes</button>
