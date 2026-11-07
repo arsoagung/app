@@ -157,7 +157,7 @@ textarea.fin{width:100%;min-height:52vh;background:var(--s2);border-radius:12px;
 <!-- SETUP -->
 <div class="sheet hide" id="setup"><div class="in">
   <h2>Sambungkan ke sheet</h2>
-  <p>Disimpan hanya di browser HP ini. Isi URL web app GAS dan APP_KEY yang kamu set di Script properties.</p>
+  <p>URL web app sudah terisi. Masukkan APP_KEY yang kamu set di Script properties, disimpan hanya di browser HP ini.</p>
   <label class="fld"><span>URL web app (…/exec)</span><input id="fUrl" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
   <label class="fld"><span>APP_KEY</span><input id="fKey" type="password" autocomplete="off"></label>
   <div class="acts">
@@ -179,7 +179,8 @@ var ICON_COPY='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11"
 var ICON_SAVE='<svg viewBox="0 0 24 24"><path d="M5 12.5 10 17.5 19 7"/></svg>';
 var ICON_WAND='<svg viewBox="0 0 24 24"><path d="M4 20 15 9"/><path d="m14 4 1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="m19 12 .7 1.3L21 14l-1.3.7L19 16l-.7-1.3L17 14l1.3-.7z"/></svg>';
 
-function cfg(){return {url:localStorage.getItem(LS_URL)||'',key:localStorage.getItem(LS_KEY)||''}}
+var DEFAULT_URL='https://script.google.com/macros/s/AKfycbx15kzbqBbbpVuaO_wAUBnAk_DMlmnfWj8MXKjcvzV1N7pQl9s9axMHxcSijohmspffWg/exec';
+function cfg(){return {url:localStorage.getItem(LS_URL)||DEFAULT_URL,key:localStorage.getItem(LS_KEY)||''}}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function toast(m,err){var t=$('#toast');t.textContent=m;t.className='toast on'+(err?' err':'');clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='toast'},2200)}
 
