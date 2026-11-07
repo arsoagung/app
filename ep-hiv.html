@@ -111,13 +111,14 @@ textarea.fin{width:100%;min-height:52vh;background:var(--s2);border-radius:12px;
 </head>
 <body>
 
+<div id="app" class="hide">
 <!-- LIST VIEW -->
 <div id="vList">
   <div class="bar"><div class="wrap">
     <div class="row">
       <h1>Antrean HIV<small id="sub">Makna Positif · Season 1</small></h1>
       <button class="ib" id="bRefresh" aria-label="Muat ulang"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 4v5h-5"/></svg></button>
-      <button class="ib" id="bSet" aria-label="Pengaturan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <button class="ib" id="bOut" aria-label="Keluar"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></button>
     </div>
     <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Cari judul atau nomor episode" autocomplete="off"></label>
     <div class="chips" id="chips"></div>
@@ -154,24 +155,16 @@ textarea.fin{width:100%;min-height:52vh;background:var(--s2);border-radius:12px;
   </div>
 </div>
 
-<!-- SETUP -->
-<div class="sheet hide" id="setup"><div class="in">
-  <h2>Sambungkan ke sheet</h2>
-  <p>URL web app sudah terisi. Masukkan APP_KEY yang kamu set di Script properties, disimpan hanya di browser HP ini.</p>
-  <label class="fld"><span>URL web app (…/exec)</span><input id="fUrl" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
-  <label class="fld"><span>APP_KEY</span><input id="fKey" type="password" autocomplete="off"></label>
-  <div class="acts">
-    <button class="cbtn pri" id="bSave">Simpan &amp; muat</button>
-    <button class="cbtn" id="bCancel">Tutup</button>
-  </div>
-</div></div>
+</div><!-- /app -->
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="shared/auth.js"></script>
 <script>
 (function(){
 'use strict';
-var LS_URL='ephiv_url', LS_KEY='ephiv_key', LS_CACHE='ephiv_cache';
+var LS_CACHE='ephiv_cache';
 var $=function(s){return document.querySelector(s)};
 var ROWS=[], FILTER='all', QUERY='', CUR=null, TAB='narasi', DETAIL={}, DRAFTFINAL={};
 
@@ -179,17 +172,21 @@ var ICON_COPY='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11"
 var ICON_SAVE='<svg viewBox="0 0 24 24"><path d="M5 12.5 10 17.5 19 7"/></svg>';
 var ICON_WAND='<svg viewBox="0 0 24 24"><path d="M4 20 15 9"/><path d="m14 4 1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="m19 12 .7 1.3L21 14l-1.3.7L19 16l-.7-1.3L17 14l1.3-.7z"/></svg>';
 
-var DEFAULT_URL='https://script.google.com/macros/s/AKfycbx15kzbqBbbpVuaO_wAUBnAk_DMlmnfWj8MXKjcvzV1N7pQl9s9axMHxcSijohmspffWg/exec';
-function cfg(){return {url:localStorage.getItem(LS_URL)||DEFAULT_URL,key:localStorage.getItem(LS_KEY)||''}}
+var API_URL='https://script.google.com/macros/s/AKfycbx15kzbqBbbpVuaO_wAUBnAk_DMlmnfWj8MXKjcvzV1N7pQl9s9axMHxcSijohmspffWg/exec';
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function toast(m,err){var t=$('#toast');t.textContent=m;t.className='toast on'+(err?' err':'');clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='toast'},2200)}
 
+function getToken(){
+  return Auth.client.auth.getSession().then(function(r){
+    return r.data&&r.data.session?r.data.session.access_token:'';
+  });
+}
 function api(action,payload){
-  var c=cfg();
-  if(!c.url||!c.key){openSetup();return Promise.reject(new Error('Belum disambungkan'))}
-  var body=Object.assign({action:action,key:c.key},payload||{});
-  return fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
-    .then(function(r){return r.json()})
+  return getToken().then(function(t){
+    if(!t)throw new Error('Belum masuk');
+    var body=Object.assign({action:action,token:t},payload||{});
+    return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+  }).then(function(r){return r.json()})
     .then(function(j){if(!j.ok)throw new Error(j.error||'Gagal');return j});
 }
 
@@ -320,23 +317,12 @@ function renderPanel(){
   $('#cpBtn').onclick=function(){copyText(txt)};
 }
 
-/* ---------- setup ---------- */
-function openSetup(){var c=cfg();$('#fUrl').value=c.url;$('#fKey').value=c.key;$('#setup').classList.remove('hide')}
-function closeSetup(){$('#setup').classList.add('hide')}
-
 /* ---------- events ---------- */
 $('#list').addEventListener('click',function(e){var c=e.target.closest('.card');if(c)openEp(c.dataset.ep)});
 $('#chips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;FILTER=c.dataset.f;renderChips();renderList()});
 $('#q').addEventListener('input',function(e){QUERY=e.target.value;renderList()});
 $('#bRefresh').onclick=function(){load()};
-$('#bSet').onclick=openSetup;
-$('#bCancel').onclick=closeSetup;
-$('#bSave').onclick=function(){
-  var u=$('#fUrl').value.trim(),k=$('#fKey').value.trim();
-  if(!/^https:\/\/script\.google\.com\/.+\/exec/.test(u)){toast('URL harus berakhiran /exec',true);return}
-  if(!k){toast('Isi APP_KEY',true);return}
-  localStorage.setItem(LS_URL,u);localStorage.setItem(LS_KEY,k);closeSetup();load();
-};
+$('#bOut').onclick=function(){if(confirm('Keluar dari akun ini?'))Auth.signOut()};
 $('#bBack').onclick=function(){if(history.state&&history.state.ep)history.back();else closeDetail()};
 window.addEventListener('popstate',function(){var m=location.hash.match(/^#ep(\d+)/);if(m)openEp(m[1],false);else closeDetail()});
 $('#tabs').addEventListener('click',function(e){var t=e.target.closest('.tab');if(!t)return;TAB=t.dataset.t;renderPanel()});
@@ -355,8 +341,19 @@ $('#bPrev').onclick=function(){step(-1)};
 $('#bNext').onclick=function(){step(1)};
 
 /* ---------- init ---------- */
-try{var cached=JSON.parse(localStorage.getItem(LS_CACHE)||'null');if(cached&&cached.length){ROWS=cached;renderChips();renderList()}}catch(e){}
-if(!cfg().url||!cfg().key){openSetup()}else{load().then(function(){var m=location.hash.match(/^#ep(\d+)/);if(m)openEp(m[1],false)})}
+function boot(){
+  $('#app').classList.remove('hide');
+  try{var cached=JSON.parse(localStorage.getItem(LS_CACHE)||'null');if(cached&&cached.length){ROWS=cached;renderChips();renderList()}}catch(e){}
+  load().then(function(){var m=location.hash.match(/^#ep(\d+)/);if(m)openEp(m[1],false)});
+}
+Auth.init({
+  name:'Antrean HIV',
+  tagline:'Editorial plan Makna Positif',
+  accent:'#2dd4bf',
+  icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+  onSignIn:function(){boot()},
+  onSignOut:function(){$('#app').classList.add('hide');ROWS=[];DETAIL={};try{localStorage.removeItem(LS_CACHE)}catch(e){}}
+});
 })();
 </script>
 </body>
