@@ -87,6 +87,9 @@ svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke
 .cbtn.pri{background:var(--ac);color:#04201c}
 .txt{white-space:pre-wrap;word-break:break-word;font-size:15.5px;line-height:1.7}
 .txt.none{color:var(--mu);font-style:italic}
+.dsec+.dsec{margin-top:22px}
+.dtit{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dtit b{flex:1;font-size:13px;font-weight:700;color:var(--mu);letter-spacing:.3px}
 .refs{font-size:13px;color:var(--mu);line-height:1.6;white-space:pre-wrap;word-break:break-word}
 textarea.fin{width:100%;min-height:52vh;background:var(--s2);border-radius:12px;padding:14px;font-size:15.5px;line-height:1.7;resize:vertical}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
@@ -145,6 +148,7 @@ textarea.fin{width:100%;min-height:52vh;background:var(--s2);border-radius:12px;
       <button class="tab" data-t="cc">Kroscek</button>
       <button class="tab" data-t="alasan">Alasan</button>
       <button class="tab" data-t="fin">Final</button>
+      <button class="tab" data-t="desk">Deskripsi</button>
       <button class="tab" data-t="ref">Referensi</button>
     </div>
     <div class="panel" id="panel"></div>
@@ -232,7 +236,7 @@ function renderList(){
       (r.batch?'<span>Batch '+esc(r.batch)+'</span>':'')+
       (r.catatan==='sedang dikerjakan'?'<span class="busy">sedang ditulis</span>':'')+
       (r.alasanBusy?'<span class="busy">sedang dikritisi</span>':'')+'</div>'+
-      '<div class="dots">'+dot('Narasi',r.nN,true)+dot('Kroscek',r.nC,true)+dot('Final',r.nF,true)+'</div>'+
+      '<div class="dots">'+dot('Narasi',r.nN,false)+dot('Kroscek',r.nC,false)+dot('Final',r.nF,false)+'</div>'+
       '</div></button>';
   }).join('');
 }
@@ -253,7 +257,7 @@ function openEp(ep,push){
   window.scrollTo(0,0);
   if(push!==false)history.pushState({ep:CUR},'','#ep'+CUR);
   var r=ROWS.find(function(x){return x.ep===CUR})||{judul:''};
-  $('#dEp').textContent='Episode '+CUR+(r.tanggal?' · '+r.tanggal:'');
+  $('#dEp').textContent='Episode '+CUR+(r.pillar?' · '+r.pillar:'')+(r.tanggal?' · '+r.tanggal:'');
   $('#dTitle').textContent=r.judul;
   syncStatusBtns(r.status);
   var idx=ROWS.findIndex(function(x){return x.ep===CUR});
@@ -304,6 +308,17 @@ function renderPanel(){
     };
     var f1=$('#fromCC');if(f1)f1.onclick=function(){ta.value=d.cc;upd()};
     var f2=$('#fromN');if(f2)f2.onclick=function(){ta.value=d.narasi;upd()};
+    return;
+  }
+  if(TAB==='desk'){
+    var P=[['yt','YouTube',d.yt],['tt','TikTok',d.tt],['ig','Instagram',d.ig]];
+    p.innerHTML=P.map(function(x){
+      return '<div class="dsec"><div class="dtit"><b>'+x[1].toUpperCase()+'</b><button class="cbtn" data-cp="'+x[0]+'">'+ICON_COPY+'Salin</button></div>'+
+        (x[2]?'<div class="txt">'+esc(x[2])+'</div>':'<div class="txt none">Belum ada deskripsi.</div>')+'</div>';
+    }).join('');
+    p.querySelectorAll('[data-cp]').forEach(function(b){
+      b.onclick=function(){copyText(d[b.dataset.cp])};
+    });
     return;
   }
   var map={narasi:d.narasi,cc:d.cc,alasan:d.alasan,ref:d.referensi};
