@@ -7,6 +7,9 @@
  *   { token, action: 'setSaldo', akun:'Pluang USD', bulan:'2026-10', saldo:64349849 }
  *   { token, action: 'saveUpdate', akun:'Pluang USD', saldo:64349849, checkpoint:false, bulan:'2026-10',
  *     topup:{ tanggal:'2026-10-16', nominal:1000000, dari:'', catatan:'' } }   // topup opsional
+ *   // atau withdraw (uang keluar dari goal) sebagai ganti topup, saldo = saldo SETELAH withdraw:
+ *   //   withdraw:{ tanggal:'2026-11-25', nominal:10000000, catatan:'pagar rumah' }
+ *   { token, action: 'editWithdraw', orig:{tanggal,nominal,ke:'',dari,catatan}, next:{tanggal,nominal,catatan} }
  * `token` = access_token sesi Supabase (Google login). Diverifikasi ke Supabase, lalu email dicek whitelist.
  *
  * Script properties (Project Settings > Script properties):
@@ -40,6 +43,7 @@ function doPost(e) {
       case 'saveUpdate': out = saveUpdate_(req); break;
       case 'editTopup':   out = editTopup_(req); break;
       case 'deleteTopup': out = deleteTopup_(req); break;
+      case 'editWithdraw': out = editWithdraw_(req); break;
       default: throw new ApiError('Unknown action', 400);
     }
     return json_({ ok: true, user: email, data: out });
@@ -247,6 +251,63 @@ function deleteTopup_(req) {
   } finally { lock.releaseLock(); }
 }
 
+/* ---------------- write: withdraw (uang keluar dari goal, bukan transfer) ----------------
+   Disimpan di log yang sama dengan topup: tanggal | Withdraw | nominal | akun_asal | (kosong) | catatan
+   Hapus withdraw pakai deleteTopup_ (cocok karena akun_tujuan kosong). */
+function withdrawCheck_(ss, akun) {
+  var info = table_(ss, TAB.akun).filter(function (r) { return r.akun === akun && r.aktif === true; })[0];
+  if (!info) throw new ApiError('Unknown account');
+  if (info.jenis === 'cair') throw new ApiError('This account does not take withdrawals');
+}
+function withdrawArgs_(o) {
+  var tgl = parseDate_(o.tanggal);
+  var nominal = Number(o.nominal);
+  if (!isFinite(nominal) || nominal <= 0 || nominal > 1e11) throw new ApiError('Invalid amount');
+  if (iso_(tgl) > Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd')) throw new ApiError('Date cannot be in the future');
+  return { tgl: tgl, nominal: nominal };
+}
+
+function addWithdraw_(req) {
+  var a = withdrawArgs_(req);
+  var akun = String(req.akun || '');
+  var ss = SpreadsheetApp.openById(prop_('SHEET_ID'));
+  withdrawCheck_(ss, akun);
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var sh = ss.getSheetByName(TAB.inv);
+    var col = sh.getRange(LOG_FIRST_ROW, LOG_COL, sh.getMaxRows() - LOG_FIRST_ROW + 1, 1).getValues();
+    var last = 0;
+    for (var i = col.length - 1; i >= 0; i--) if (col[i][0] !== '') { last = i + 1; break; }
+    var row = LOG_FIRST_ROW + last;
+    var cell = sh.getRange(row, LOG_COL, 1, 6);
+    if (last > 0) sh.getRange(row - 1, LOG_COL, 1, 6).copyTo(cell, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+    cell.setValues([[a.tgl, 'Withdraw', a.nominal, akun, '', safeText_(req.catatan)]]);
+    SpreadsheetApp.flush();
+    return { row: row, jenis: 'Withdraw' };
+  } finally { lock.releaseLock(); }
+}
+
+function editWithdraw_(req) {
+  var o = req.orig || {}, n = req.next || {};
+  if (o.ke) throw new ApiError('Not a withdrawal');
+  var a = withdrawArgs_(n);
+  var akun = String(o.dari || '');
+  var ss = SpreadsheetApp.openById(prop_('SHEET_ID'));
+  withdrawCheck_(ss, akun);
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var sh = ss.getSheetByName(TAB.inv);
+    var f = findLog_(sh, o);
+    sh.getRange(f.row, LOG_COL, 1, 6).setValues([[a.tgl, 'Withdraw', a.nominal, akun, '', safeText_(n.catatan)]]);
+    SpreadsheetApp.flush();
+    return { row: f.row };
+  } finally { lock.releaseLock(); }
+}
+
 /* ---------------- write: saldo + topup opsional + checkpoint akhir bulan ---------------- */
 // checkpoint=true  -> saldo masuk ke bulan `bulan` (bulan ini atau bulan lalu). Kalau bulan lalu, nilai yang sama
 //                     juga ditulis ke bulan berjalan (live) supaya net worth bulan ini tidak kosong.
@@ -268,9 +329,13 @@ function saveUpdate_(req) {
   if (tp && info.jenis === 'cair') throw new ApiError('This account does not take top-ups');
   if (tp && cp && bulan === prev) throw new ApiError('No top-up when closing last month');
   if (tp && Number(tp.nominal) > saldo) throw new ApiError('The balance should include the top-up');
+  var wd = req.withdraw && Number(req.withdraw.nominal) > 0 ? req.withdraw : null;
+  if (wd && tp) throw new ApiError('Choose either a top-up or a withdrawal');
+  if (wd && cp && bulan === prev) throw new ApiError('No withdrawal when closing last month');
 
   var out = {};
   if (tp) out.topup = addTopup_({ tanggal: tp.tanggal, nominal: tp.nominal, ke: akun, dari: tp.dari, catatan: tp.catatan });
+  if (wd) out.withdraw = addWithdraw_({ tanggal: wd.tanggal, nominal: wd.nominal, akun: akun, catatan: wd.catatan });
   out.saldo = setSaldo_({ akun: akun, bulan: bulan, saldo: saldo });
   if (cp && bulan === prev) {
     try { setSaldo_({ akun: akun, bulan: cur, saldo: saldo }); }

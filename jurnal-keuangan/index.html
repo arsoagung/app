@@ -200,6 +200,8 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:14px;padding:4px;margin-bottom:16px}
 .seg button{height:38px;border-radius:11px;text-align:center;font-weight:700;color:var(--muted)}
 .seg button.on{background:var(--surface-2);color:var(--text)}
+#fMode{grid-template-columns:repeat(3,1fr)}#fMode button{font-size:13px;padding:0 4px}
+.tx .a.out{color:var(--neg)}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
 .inp{border:0;width:100%;height:50px;padding:0 14px;border-radius:14px;background:var(--surface-2);font-size:16px;outline:none;appearance:none;-webkit-appearance:none}
@@ -303,6 +305,8 @@ const monF=t=>{const d=new Date(t),y=d.getUTCFullYear();return MONF[d.getUTCMont
 /* date N calendar months before t (day clamped to the target month's length) */
 const monthsBack=(t,n)=>{const d=new Date(t),y=d.getUTCFullYear(),m=d.getUTCMonth()-n,last=new Date(Date.UTC(y,m+1,0)).getUTCDate();return Date.UTC(y,m,Math.min(d.getUTCDate(),last))};
 const sgn=n=>n>=0?'pos':'neg';
+/* a withdrawal is a log row with jenis 'Withdraw': money leaves the account in `dari`, `ke` is empty */
+const isW=x=>x.jenis==='Withdraw',txAcc=x=>isW(x)?x.dari:x.ke;
 const icon=n=>`<svg class="i"><use href="#i-${n}"/></svg>`;
 
 /* =====================================================================
@@ -627,7 +631,7 @@ function renderDetail(){
   /* rekening */
   const accRows=g.accs.map(a=>{const ak=M.byAkun[a],lu=ak.aktif?lastUpd(a):null;return `<div class="acc"><span>${ak.nama}${ak.aktif?'':'<span class="tag">history</span>'}${lu?`<small>Updated ${updLabel(lu)}</small>`:''}</span><b>${rp(M.val(a,TODAY_T))}</b></div>`}).join('');
   /* topup tujuan */
-  const tx=DATA.transaksi.filter(x=>g.accs.includes(x.ke)).sort((a,b)=>T(b.tanggal)-T(a.tanggal));
+  const tx=DATA.transaksi.filter(x=>g.accs.includes(txAcc(x))).sort((a,b)=>T(b.tanggal)-T(a.tanggal));
   const txHTML=tx.length?`<div class="card">${tx.map(x=>txRow(x,g)).join('')}</div>`:`<div class="card empty">No top-ups yet.</div>`;
   view.innerHTML=`
   <div class="dhead"><button class="back" data-act="back" aria-label="Back">${icon('back')}</button><div class="t">${g.name}</div>${(a0=>a0?`<button class="badge act" data-act="upd" data-ak="${esc(a0)}">Update</button>`:'')(g.accs.find(a=>M.byAkun[a].aktif))}</div>
@@ -641,15 +645,16 @@ function renderDetail(){
   </section>
   ${growth}
   <section><h2>Accounts</h2><div class="card">${accRows}</div></section>
-  <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>`;
+  <section><h2>${tx.some(isW)?'Transactions':'Top-ups'} <small>${tx.length}</small></h2>${txHTML}</section>`;
   drawChart($('#hChart'),chartSeries,{label:'Chart '+g.name,onHover});
   if(GP)drawCandles($('#dWrap'),$('#dInfo'),GP,'profit');
 }
 function txRow(x,g){
-  g=g||M.tujuan.find(t=>t.accs.includes(x.ke));const t=T(x.tanggal);
-  const extra=[x.dari?'from '+(M.byAkun[x.dari]?M.byAkun[x.dari].nama:x.dari):'',x.catatan].filter(Boolean).map(esc).join(' · ');
-  return `<button class="tx" data-act="txedit" data-i="${DATA.transaksi.indexOf(x)}" aria-label="Edit top-up"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-    <div class="m"><b>${M.byAkun[x.ke]?M.byAkun[x.ke].nama:x.ke}</b><span>${dlabel(t)}${extra?' · '+extra:''}</span></div><div class="a">+${rp(x.nominal)}</div></button>`;
+  const w=isW(x),ac=txAcc(x);
+  g=g||M.tujuan.find(t=>t.accs.includes(ac));const t=T(x.tanggal);
+  const extra=[!w&&x.dari?'from '+(M.byAkun[x.dari]?M.byAkun[x.dari].nama:x.dari):'',x.catatan].filter(Boolean).map(esc).join(' · ');
+  return `<button class="tx" data-act="txedit" data-i="${DATA.transaksi.indexOf(x)}" aria-label="Edit ${w?'withdrawal':'top-up'}"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
+    <div class="m"><b>${M.byAkun[ac]?M.byAkun[ac].nama:ac}</b><span>${dlabel(t)}${extra?' · '+extra:''}</span></div><div class="a${w?' out':''}">${w?'−':'+'}${rp(x.nominal)}</div></button>`;
 }
 
 /* ---------- Riwayat ---------- */
@@ -672,7 +677,7 @@ function renderUpdates(){
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No updates yet.</div>'}</section>`;
 }
-const tuFiltered=()=>DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal)).filter(x=>S.filter==='All'||(goalOf(x.ke)||{}).name===S.filter);
+const tuFiltered=()=>DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal)).filter(x=>S.filter==='All'||(goalOf(txAcc(x))||{}).name===S.filter);
 /* open/close one month in place so it can slide; rows are only built while a month is open */
 function setMonth(k,open){
   S.mSel[k]=open;
@@ -695,18 +700,19 @@ function topupsHTML(){
   if(!names.includes(S.filter))S.filter='All';
   const tx=tuFiltered();
   /* deposits per month (filtered) */
-  const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+x.nominal});
+  const net=x=>isW(x)?-x.nominal:x.nominal,hasW=tx.some(isW);
+  const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+net(x)});
   const keys=Object.keys(byM).sort(),mx=Math.max(...keys.map(k=>byM[k]),1);
-  const total=tx.reduce((s,x)=>s+x.nominal,0);
+  const total=tx.reduce((s,x)=>s+net(x),0);
   /* which months are expanded: newest by default, otherwise whatever the user toggled / picked from the chart */
   const newest=keys[keys.length-1],isOpen=k=>k in S.mSel?S.mSel[k]:k===newest;
   const bars=keys.length?keys.map(k=>`<button class="col${isOpen(k)?' on':''}" data-act="mbar" data-k="${k}" aria-label="${monF(T(k+'-01'))}"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></button>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
   /* one collapsible block per month, newest first */
   const byK={};tx.forEach(x=>{(byK[x.tanggal.slice(0,7)]=byK[x.tanggal.slice(0,7)]||[]).push(x)});
   const list=keys.slice().reverse().map(k=>{const o=isOpen(k),n=byK[k].length;
-    return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} top-up${n>1?'s':''}</small></span><span class="mt">${rp(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?byK[k].map(x=>txRow(x)).join(''):''}</div></div></div>`}).join('');
+    return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} ${byK[k].some(isW)?'transaction':'top-up'}${n>1?'s':''}</small></span><span class="mt">${rpN(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?byK[k].map(x=>txRow(x)).join(''):''}</div></div></div>`}).join('');
   return `
-  <section><h2>Top-ups <small>${rp(total)}</small></h2><div class="card cols" id="tuCols">${bars}</div></section>
+  <section><h2>${hasW?'Top-ups &amp; withdrawals':'Top-ups'} <small>${rpN(total)}</small></h2><div class="card cols" id="tuCols">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No top-ups yet.</div>'}</section>`;
 }
@@ -734,12 +740,12 @@ function sheetHTML(pre){
   const ak=pre&&act.some(a=>a.akun===pre)?pre:act[0].akun,tg=cpTarget();
   return `<div class="grab"></div><div class="stitle" id="fTitle">Add top-up</div>
     <div class="field"><label for="fAk">Account</label><select class="inp" id="fAk">${opt(act,ak)}</select></div>
-    <div class="seg" id="fMode"><button data-act="fmode" data-m="topup">Top-up</button><button data-act="fmode" data-m="upd">Update balance</button></div>
-    <div id="fTopWrap"><div class="field"><label for="fNom">Top-up amount</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div></div>
+    <div class="seg" id="fMode"><button data-act="fmode" data-m="topup">Top-up</button><button data-act="fmode" data-m="wd">Withdraw</button><button data-act="fmode" data-m="upd">Update balance</button></div>
+    <div id="fTopWrap"><div class="field"><label for="fNom" id="fNomLbl">Top-up amount</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div></div>
     <div class="field"><label for="fSal" id="fSalLbl">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(ak,TODAY_T))}" autocomplete="off"></div>
     <div id="fTopWrap2">
-        <div class="field"><label for="fTgl">Top-up date</label><input class="inp" id="fTgl" type="date" value="${TODAY}" max="${TODAY}"></div>
-        <div class="field"><label for="fDari">From account</label><select class="inp" id="fDari"><option value="">Income</option>${opt(act,'')}</select></div>
+        <div class="field"><label for="fTgl" id="fTglLbl">Top-up date</label><input class="inp" id="fTgl" type="date" value="${TODAY}" max="${TODAY}"></div>
+        <div class="field" id="fDariWrap"><label for="fDari">From account</label><select class="inp" id="fDari"><option value="">Income</option>${opt(act,'')}</select></div>
         <div class="field"><label for="fCat">Notes</label><input class="inp" id="fCat" placeholder="Optional"></div>
     </div>
     <div class="swrow" id="fCpWrap"><span id="fCpLbl">${tg?`Mark as ${tg.name} month-end`:''}</span><button class="sw" id="fCp" role="switch" aria-checked="true" aria-labelledby="fCpLbl" data-act="cp"><i></i></button></div>
@@ -750,22 +756,25 @@ function sheetHTML(pre){
    Update-balance mode: balance only (month-end checkpoint, Cash). Cash never takes top-ups. */
 let fMode='topup',fPref='topup',fBase=0,fManual=false;
 function calcSal(){
-  const add=fMode==='topup'?numIn($('#fNom').value):0;
-  $('#fSal').value=fmtIn(fBase+add);
+  const v=numIn($('#fNom').value);
+  $('#fSal').value=fmtIn(fMode==='topup'?fBase+v:fMode==='wd'?Math.max(0,fBase-v):fBase);
 }
 function syncForm(resetCp){
   const ak=$('#fAk').value,a=M.byAkun[ak],tg=cpTarget(),avail=!!tg&&!cpDone(ak,tg.bulan);
   fMode=a.jenis==='cair'?'upd':fPref;
-  const top=fMode==='topup';
+  const top=fMode==='topup',wd=fMode==='wd',mv=top||wd;
   if(resetCp)$('#fCp').setAttribute('aria-checked','true');
   $('#fMode').hidden=a.jenis==='cair';
   $('#fMode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===fMode));
-  $('#fTitle').textContent=top?'Add top-up':'Update balance';
-  $('#fSalLbl').textContent=top?'Balance after top-up':'Current balance';
-  $('#fTopWrap').hidden=!top;
-  $('#fTopWrap2').hidden=!top;
-  $('#fCpWrap').hidden=!avail||top;
-  $('#fSave').textContent=top?'Save top-up':'Save';
+  $('#fTitle').textContent=top?'Add top-up':wd?'Withdraw':'Update balance';
+  $('#fSalLbl').textContent=top?'Balance after top-up':wd?'Balance after withdrawal':'Current balance';
+  $('#fNomLbl').textContent=wd?'Withdrawal amount':'Top-up amount';
+  $('#fTglLbl').textContent=wd?'Withdrawal date':'Top-up date';
+  $('#fTopWrap').hidden=!mv;
+  $('#fTopWrap2').hidden=!mv;
+  $('#fDariWrap').hidden=wd;
+  $('#fCpWrap').hidden=!avail||mv;
+  $('#fSave').textContent=top?'Save top-up':wd?'Save withdrawal':'Save';
 }
 function fillSheet(ak,mode){
   if(mode)fPref=mode;
@@ -786,19 +795,20 @@ async function saveSheet(){
   if(saving)return;
   const err=$('#fErr'),btn=$('#fSave'),label=btn.textContent;
   const ak=$('#fAk').value,tg=cpTarget();
-  if(fMode==='topup'&&!numIn($('#fNom').value)){$('#fNom').classList.add('err');err.textContent='Enter the top-up amount.';return}
+  if(fMode!=='upd'&&!numIn($('#fNom').value)){$('#fNom').classList.add('err');err.textContent=fMode==='wd'?'Enter the withdrawal amount.':'Enter the top-up amount.';return}
   if(!$('#fSal').value){$('#fSal').classList.add('err');err.textContent='Enter the current balance.';return}
   const bal=numIn($('#fSal').value),cp=!$('#fCpWrap').hidden&&$('#fCp').getAttribute('aria-checked')==='true';
   const payload={akun:ak,saldo:bal,checkpoint:cp,bulan:cp?tg.bulan:TODAY.slice(0,7)};
   let okMsg=M.byAkun[ak].nama+' updated';
   const nom=$('#fTopWrap').hidden?0:numIn($('#fNom').value);
   if(nom>0){
-    const tgl=$('#fTgl').value,dari=$('#fDari').value;
-    if(!tgl||T(tgl)>TODAY_T){err.textContent='Invalid top-up date.';return}
+    const wd=fMode==='wd',tgl=$('#fTgl').value,dari=wd?'':$('#fDari').value;
+    if(!tgl||T(tgl)>TODAY_T){err.textContent=wd?'Invalid withdrawal date.':'Invalid top-up date.';return}
     if(dari===ak){err.textContent='From and to accounts are the same.';return}
-    if(nom>bal){$('#fSal').classList.add('err');err.textContent='The balance should include the top-up.';return}
-    payload.topup={tanggal:tgl,nominal:nom,dari,catatan:$('#fCat').value.trim()};
-    okMsg+=' · top-up '+rp(nom);
+    if(!wd&&nom>bal){$('#fSal').classList.add('err');err.textContent='The balance should include the top-up.';return}
+    if(wd)payload.withdraw={tanggal:tgl,nominal:nom,catatan:$('#fCat').value.trim()};
+    else payload.topup={tanggal:tgl,nominal:nom,dari,catatan:$('#fCat').value.trim()};
+    okMsg+=(wd?' · withdrawal ':' · top-up ')+rp(nom);
   }
   if(cp)okMsg+=' · '+tg.name+' month-end';
   saving=true;btn.disabled=true;btn.textContent='Saving…';err.textContent='';
@@ -820,15 +830,16 @@ function openTxSheet(i){
   const act=M.akun.filter(a=>a.aktif),known=!x.dari||x.dari==='Rekening Utama'||act.some(a=>a.akun===x.dari);
   const opts=act.map(a=>`<option value="${esc(a.akun)}"${a.akun===x.dari?' selected':''}>${esc(a.nama)}</option>`).join('');
   const sh=$('#sheet'),bd=$('#backdrop');
-  sh.innerHTML=`<div class="grab"></div><div class="stitle">Edit top-up</div>
-    <div class="field"><label>To account</label><div class="inp ro">${esc(M.byAkun[x.ke]?M.byAkun[x.ke].nama:x.ke)}</div></div>
+  const w=isW(x),ac=txAcc(x);
+  sh.innerHTML=`<div class="grab"></div><div class="stitle">Edit ${w?'withdrawal':'top-up'}</div>
+    <div class="field"><label>${w?'From account':'To account'}</label><div class="inp ro">${esc(M.byAkun[ac]?M.byAkun[ac].nama:ac)}</div></div>
     <div class="field"><label for="eNom">Amount</label><input class="inp" id="eNom" inputmode="numeric" data-money value="${fmtIn(x.nominal)}" autocomplete="off"></div>
     <div class="field"><label for="eTgl">Date</label><input class="inp" id="eTgl" type="date" value="${esc(x.tanggal)}" max="${TODAY}"></div>
-    <div class="field"><label for="eDari">From account</label><select class="inp" id="eDari"><option value="">Income</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>
+    ${w?'':`<div class="field"><label for="eDari">From account</label><select class="inp" id="eDari"><option value="">Income</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>`}
     <div class="field"><label for="eCat">Notes</label><input class="inp" id="eCat" value="${esc(x.catatan||'')}" placeholder="Optional"></div>
     <div class="ferr" id="fErr"></div>
     <button class="btn primary" id="eSave" data-act="txsave" style="margin-top:6px">Save changes</button>
-    <button class="btn danger" id="eDel" data-act="txdel" style="margin-top:10px">Delete top-up</button>
+    <button class="btn danger" id="eDel" data-act="txdel" style="margin-top:10px">Delete ${w?'withdrawal':'top-up'}</button>
     <div class="sfoot">Balances are not changed. Update the balance separately if needed.</div>`;
   sh.hidden=false;bd.hidden=false;
   requestAnimationFrame(()=>{sh.classList.add('open');bd.classList.add('open')});S.sheet=true;
@@ -846,17 +857,19 @@ async function txCall(action,payload,okMsg){
 }
 function saveTx(){
   if(txBusy)return;const x=DATA.transaksi[txIdx];if(!x)return;
-  const err=$('#fErr'),nom=numIn($('#eNom').value),tgl=$('#eTgl').value,dari=$('#eDari').value,cat=$('#eCat').value.trim();
+  const w=isW(x),err=$('#fErr'),nom=numIn($('#eNom').value),tgl=$('#eTgl').value,dari=w?'':$('#eDari').value,cat=$('#eCat').value.trim();
   if(!nom){$('#eNom').classList.add('err');err.textContent='Enter the amount.';return}
   if(!tgl||T(tgl)>TODAY_T){err.textContent='Invalid date.';return}
   if(dari===x.ke){err.textContent='From and to accounts are the same.';return}
-  txCall('editTopup',{orig:txOrig(x),next:{tanggal:tgl,nominal:nom,dari,catatan:cat}},'Top-up updated');
+  if(w)txCall('editWithdraw',{orig:txOrig(x),next:{tanggal:tgl,nominal:nom,catatan:cat}},'Withdrawal updated');
+  else txCall('editTopup',{orig:txOrig(x),next:{tanggal:tgl,nominal:nom,dari,catatan:cat}},'Top-up updated');
 }
 function delTx(btn){
   if(txBusy)return;const x=DATA.transaksi[txIdx];if(!x)return;
+  const w=isW(x),nm=w?'withdrawal':'top-up';
   if(btn.dataset.armed!=='1'){btn.dataset.armed='1';btn.textContent='Tap again to delete';
-    setTimeout(()=>{if(btn.isConnected){btn.dataset.armed='';btn.textContent='Delete top-up'}},3000);return}
-  txCall('deleteTopup',{orig:txOrig(x)},'Top-up deleted');
+    setTimeout(()=>{if(btn.isConnected){btn.dataset.armed='';btn.textContent='Delete '+nm}},3000);return}
+  txCall('deleteTopup',{orig:txOrig(x)},w?'Withdrawal deleted':'Top-up deleted');
 }
 
 let tt;function toast(msg){const t=$('#toast');t.querySelector('span').textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
