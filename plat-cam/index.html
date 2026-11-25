@@ -33,7 +33,7 @@ header p{font-size:12.5px;line-height:1.55;color:var(--mut);margin-top:4px}
 .empty h2{font-size:17px;font-weight:700}
 .empty p{font-size:13px;line-height:1.6;color:var(--mut);max-width:300px}
 
-.pill{position:absolute;left:12px;top:12px;display:none;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+.pill{position:absolute;left:12px;top:max(12px,env(safe-area-inset-top));display:none;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
   background:rgba(11,13,18,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:12px;font-weight:600}
 .stage.live .pill{display:flex}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--mut);flex:none}
@@ -61,6 +61,16 @@ header p{font-size:12.5px;line-height:1.55;color:var(--mut);margin-top:4px}
 .btn:active{transform:scale(.97)}
 .btn[disabled]{opacity:.4;pointer-events:none}
 svg{display:block}
+
+/* mode kamera / analisis: layar penuh */
+body.live{overflow:hidden}
+body.live header{display:none}
+body.live .stage{position:fixed;inset:0;z-index:10;border-radius:0;background:#000}
+body.live .bar{position:fixed;left:0;right:0;bottom:0;z-index:30;max-width:960px;margin:0 auto;
+  padding:36px 14px max(14px,env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(0,0,0,.7),transparent)}
+body.live .btn.sq,body.live .btn.main.stop{background:rgba(30,36,48,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+body.live .hist{position:fixed;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:30;max-width:932px;margin:0 auto}
+body.live .hist-head{text-shadow:0 1px 6px rgba(0,0,0,.8);color:#cfd5e2}
 </style>
 </head>
 <body>
@@ -375,7 +385,23 @@ function setSourceSize(w,h){
   view.width=vw; view.height=Math.round(h*vw/w);
   det.width=640; det.height=Math.max(1,Math.round(640*h/w));
 }
-function stopSource(){
+function enterFs(){
+  try{
+    const el=document.documentElement, fn=el.requestFullscreen||el.webkitRequestFullscreen;
+    if(fn){ const r=fn.call(el); if(r&&r.catch) r.catch(()=>{}); }
+  }catch(e){}
+}
+function exitFs(){
+  try{
+    if(document.fullscreenElement||document.webkitFullscreenElement){
+      const fn=document.exitFullscreen||document.webkitExitFullscreen;
+      const r=fn.call(document); if(r&&r.catch) r.catch(()=>{});
+    }
+  }catch(e){}
+}
+function stopSource(keepFs){
+  if(!keepFs) exitFs();
+  document.body.classList.remove('live');
   st.running=false; st.runId++;
   if(st.stream){ st.stream.getTracks().forEach(t=>t.stop()); st.stream=null; }
   video.srcObject=null; st.img=null; st.source=null;
@@ -386,7 +412,7 @@ function stopSource(){
   $('#flipBtn').disabled=true;
 }
 async function startCam(){
-  stopSource();
+  stopSource(true);
   $('#camBtn').disabled=true;
   try{
     const stream=await navigator.mediaDevices.getUserMedia({
@@ -404,14 +430,14 @@ async function startCam(){
     $('#camBtn').classList.add('stop');
   }catch(e){
     console.warn(e);
-    stopSource();
+    stopSource();     // keluar dari fullscreen juga
     alert(e&&e.name==='NotAllowedError'
       ? 'Izin kamera ditolak. Aktifkan izin kamera untuk situs ini di pengaturan browser.'
       : 'Kamera tidak bisa dibuka: '+(e&&e.message||e));
   }finally{ $('#camBtn').disabled=false; }
 }
 function startImage(file){
-  stopSource();
+  stopSource(true);
   const url=URL.createObjectURL(file);
   const im=new Image();
   im.onload=()=>{
@@ -430,6 +456,7 @@ function beginRun(){
   st.running=true; st.tracks=[];
   const id=++st.runId;
   stage.classList.add('live');
+  document.body.classList.add('live');
   setStatus(st.model||st.ocr?'Siap':'Menyiapkan…','busy');
   loadLibs().then(()=>{
     if(id!==st.runId) return;
@@ -760,11 +787,18 @@ function renderHistory(){
 }
 
 /* ---------- UI ---------- */
-$('#camBtn').onclick=()=>{ if(st.running) stopSource(); else { loadLibs(); startCam(); } };
+$('#camBtn').onclick=()=>{ if(st.running) stopSource(); else { enterFs(); loadLibs(); startCam(); } };
 $('#flipBtn').onclick=()=>{ st.facing=st.facing==='environment'?'user':'environment'; startCam(); };
 $('#imgBtn').onclick=()=>$('#file').click();
 $('#file').onchange=e=>{ const f=e.target.files[0]; if(f){ loadLibs(); startImage(f); } e.target.value=''; };
 $('#clearBtn').onclick=()=>{ st.history.clear(); renderHistory(); };
+function onFsChange(){
+  const inFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  if(inFs){ st.fs=true; return; }
+  if(st.fs){ st.fs=false; if(st.running) stopSource(true); }   // Esc / keluar fullscreen = tutup kamera
+}
+document.addEventListener('fullscreenchange',onFsChange);
+document.addEventListener('webkitfullscreenchange',onFsChange);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&st.running) requestAnimationFrame(render); });
 </script>
 </body>
