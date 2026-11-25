@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Umur Cam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d12; --surf:#151922; --surf2:#1e2430; --tx:#eef1f6; --mut:#8a93a6;
+  --acc:#5eead4; --acc-tx:#04201c; --ok:#4ade80; --err:#ff6b6b;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.app{height:100dvh;max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:12px;
+  padding:max(16px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}
+header h1{font-size:21px;font-weight:800;letter-spacing:-.02em}
+header p{font-size:12.5px;line-height:1.55;color:var(--mut);margin-top:4px}
+
+.stage{position:relative;flex:1;min-height:0;border-radius:22px;background:var(--surf);overflow:hidden}
+#view{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none}
+.stage.live #view{display:block}
+#vid{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center}
+.stage.live .empty{display:none}
+.empty .ico{width:72px;height:72px;border-radius:24px;background:var(--surf2);display:flex;align-items:center;justify-content:center;color:var(--acc)}
+.empty h2{font-size:17px;font-weight:700}
+.empty p{font-size:13px;line-height:1.6;color:var(--mut);max-width:300px}
+
+.pill{position:absolute;left:12px;top:max(12px,env(safe-area-inset-top));display:none;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+  background:rgba(11,13,18,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:12px;font-weight:600}
+.stage.live .pill{display:flex}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mut);flex:none}
+.pill.busy .dot{background:var(--acc);animation:pulse 1s ease-in-out infinite}
+.pill.ok .dot{background:var(--ok)}
+.pill.err .dot{background:var(--err)}
+@keyframes pulse{50%{opacity:.25}}
+
+.bar{display:flex;gap:10px}
+.btn{height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:15px}
+.btn.main{flex:1;background:var(--acc);color:var(--acc-tx)}
+.btn.main.stop{background:var(--surf2);color:var(--tx)}
+.btn.sq{width:52px;background:var(--surf2);color:var(--tx);flex:none}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+svg{display:block}
+
+/* mode kamera / analisis: layar penuh */
+body.live{overflow:hidden}
+body.live header{display:none}
+body.live .stage{position:fixed;inset:0;z-index:10;border-radius:0;background:#000}
+body.live .bar{position:fixed;left:0;right:0;bottom:0;z-index:30;max-width:960px;margin:0 auto;
+  padding:36px 14px max(14px,env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(0,0,0,.7),transparent)}
+body.live .btn.sq,body.live .btn.main.stop{background:rgba(30,36,48,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Umur Cam</h1>
+    <p>Perkiraan kisaran umur dari wajah lewat kamera. Bisa banyak wajah sekaligus. Ini cuma estimasi, bisa meleset beberapa tahun. Diproses di browser, video tidak dikirim ke mana pun.</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <video id="vid" playsinline muted></video>
+    <canvas id="view"></canvas>
+    <div class="pill busy" id="pill"><span class="dot"></span><span id="pillTx">Menyiapkan…</span></div>
+    <div class="empty" id="empty">
+      <div class="ico">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 14.5c.6.6 1.4 1 2.5 1s1.9-.4 2.5-1"/></svg>
+      </div>
+      <h2>Arahkan ke wajah</h2>
+      <p>Nyalakan kamera lalu hadapkan wajah ke depan. Makin terang dan makin menghadap lurus, makin stabil hasilnya.</p>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="btn main" id="camBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2a1 1 0 0 0 .8-.4l.9-1.2a1 1 0 0 1 .8-.4h3.6a1 1 0 0 1 .8.4l.9 1.2a1 1 0 0 0 .8.4h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.2"/></svg>
+      <span id="camTx">Nyalakan kamera</span>
+    </button>
+    <button class="btn sq" id="flipBtn" title="Ganti kamera" disabled>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20v-4.5h4.5"/></svg>
+    </button>
+    <button class="btn sq" id="imgBtn" title="Coba dari foto">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m20 16-4.5-4.5L8 19"/></svg>
+    </button>
+    <input type="file" id="file" accept="image/*" hidden>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   PURE FUNCTIONS (tanpa DOM) — dipisah supaya gampang dites
+   ============================================================ */
+/*PURE-START*/
+function iou(a,b){
+  const x1=Math.max(a.x,b.x), y1=Math.max(a.y,b.y);
+  const x2=Math.min(a.x+a.w,b.x+b.w), y2=Math.min(a.y+a.h,b.y+b.h);
+  const iw=x2-x1, ih=y2-y1;
+  if(iw<=0||ih<=0) return 0;
+  const inter=iw*ih;
+  return inter/(a.w*a.h+b.w*b.h-inter);
+}
+
+/* rata-rata setelah buang 20% terkecil dan terbesar, biar tahan outlier */
+function trimmedMean(arr){
+  const s=arr.slice().sort((a,b)=>a-b);
+  const cut=Math.floor(s.length*0.2);
+  const m=s.slice(cut,s.length-cut);
+  const use=m.length?m:s;
+  return use.reduce((a,b)=>a+b,0)/use.length;
+}
+
+/* dari daftar prediksi umur -> kisaran. Margin melebar untuk umur lebih tua
+   dan saat sampel masih sedikit. */
+function ageRange(samples){
+  const est=trimmedMean(samples);
+  let m=Math.round(2.5+est*0.05);
+  if(samples.length<5) m+=2;
+  const lo=Math.max(1,Math.round(est-m));
+  const hi=Math.round(est+m);
+  return {est, lo, hi, stable:samples.length>=5};
+}
+/*PURE-END*/
+
+/* ============================================================
+   APP
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const view=$('#view'), c=view.getContext('2d'), video=$('#vid'), stage=$('#stage');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ACC='#5eead4';
+const LIB='https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.js';
+const MODELS='https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/';
+
+const st={source:null,img:null,stream:null,facing:'user',mirror:true,running:false,runId:0,
+  ready:false,tracks:[],nextId:1,sw:1,sh:1,count:-1};
+
+/* ---------- status ---------- */
+function setStatus(tx,kind){
+  $('#pillTx').textContent=tx;
+  $('#pill').className='pill '+(kind||'busy');
+}
+
+/* ---------- muat library + model ---------- */
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Gagal memuat '+src));
+    document.head.appendChild(s);
+  });
+}
+let libsPromise=null;
+function loadLibs(){
+  if(libsPromise) return libsPromise;
+  libsPromise=(async()=>{
+    try{ await document.fonts.load('800 16px "Plus Jakarta Sans"'); }catch(e){}
+    setStatus('Memuat model wajah…','busy');
+    try{
+      await loadScript(LIB);
+      try{ await faceapi.tf.ready(); }catch(e){}
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODELS);
+      await faceapi.nets.ageGenderNet.loadFromUri(MODELS);
+      st.ready=true;
+    }catch(e){
+      console.warn(e);
+      libsPromise=null;           // boleh dicoba lagi
+      setStatus('Model gagal dimuat, cek internet','err');
+    }
+  })();
+  return libsPromise;
+}
+
+/* ---------- sumber: kamera / foto ---------- */
+function setSourceSize(w,h){
+  st.sw=w; st.sh=h;
+  const vw=Math.min(w,1280);
+  view.width=vw; view.height=Math.round(h*vw/w);
+}
+function enterFs(){
+  try{
+    const el=document.documentElement, fn=el.requestFullscreen||el.webkitRequestFullscreen;
+    if(fn){ const r=fn.call(el); if(r&&r.catch) r.catch(()=>{}); }
+  }catch(e){}
+}
+function exitFs(){
+  try{
+    if(document.fullscreenElement||document.webkitFullscreenElement){
+      const fn=document.exitFullscreen||document.webkitExitFullscreen;
+      const r=fn.call(document); if(r&&r.catch) r.catch(()=>{});
+    }
+  }catch(e){}
+}
+function stopSource(keepFs){
+  if(!keepFs) exitFs();
+  document.body.classList.remove('live');
+  st.running=false; st.runId++;
+  if(st.stream){ st.stream.getTracks().forEach(t=>t.stop()); st.stream=null; }
+  video.srcObject=null; st.img=null; st.source=null;
+  st.tracks=[]; st.count=-1;
+  stage.classList.remove('live');
+  $('#camTx').textContent='Nyalakan kamera';
+  $('#camBtn').classList.remove('stop');
+  $('#flipBtn').disabled=true;
+}
+async function startCam(){
+  stopSource(true);
+  $('#camBtn').disabled=true;
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      audio:false,
+      video:{facingMode:{ideal:st.facing},width:{ideal:1280},height:{ideal:720}}
+    });
+    st.stream=stream; video.srcObject=stream;
+    await video.play();
+    await new Promise(r=>{ if(video.videoWidth) r(); else video.onloadedmetadata=()=>r(); });
+    st.source='cam'; st.mirror=(st.facing==='user');
+    setSourceSize(video.videoWidth,video.videoHeight);
+    beginRun();
+    $('#flipBtn').disabled=false;
+    $('#camTx').textContent='Matikan kamera';
+    $('#camBtn').classList.add('stop');
+  }catch(e){
+    console.warn(e);
+    stopSource();
+    alert(e&&e.name==='NotAllowedError'
+      ? 'Izin kamera ditolak. Aktifkan izin kamera untuk situs ini di pengaturan browser.'
+      : 'Kamera tidak bisa dibuka: '+(e&&e.message||e));
+  }finally{ $('#camBtn').disabled=false; }
+}
+function startImage(file){
+  stopSource(true);
+  const url=URL.createObjectURL(file);
+  const im=new Image();
+  im.onload=()=>{
+    st.img=im; st.source='img'; st.mirror=false;
+    const w=Math.min(im.naturalWidth,1600), h=Math.round(im.naturalHeight*w/im.naturalWidth);
+    setSourceSize(w,h);
+    beginRun();
+    $('#camTx').textContent='Berhenti';
+    $('#camBtn').classList.add('stop');
+    URL.revokeObjectURL(url);
+  };
+  im.onerror=()=>alert('Foto tidak bisa dibuka.');
+  im.src=url;
+}
+function srcEl(){ return st.source==='cam'?video:st.img; }
+function beginRun(){
+  st.running=true; st.tracks=[]; st.count=-1;
+  const id=++st.runId;
+  stage.classList.add('live');
+  document.body.classList.add('live');
+  setStatus(st.ready?'Mencari wajah…':'Menyiapkan…', st.ready?'ok':'busy');
+  loadLibs().then(()=>{
+    if(id!==st.runId||!st.ready) return;
+    setStatus('Mencari wajah…','ok');
+  });
+  requestAnimationFrame(render);
+  detectLoop(id);
+}
+
+/* ---------- deteksi ---------- */
+async function detectLoop(id){
+  while(st.running&&id===st.runId){
+    if(!st.ready){ await sleep(150); continue; }
+    const src=srcEl();
+    if(st.source==='cam'&&video.readyState<2){ await sleep(50); continue; }
+    const t0=performance.now();
+    try{
+      const res=await faceapi
+        .detectAllFaces(src,new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:0.45}))
+        .withAgeAndGender();
+      if(id!==st.runId) return;
+      onDetections(res);
+      if(st.source==='img') return;       // foto cukup sekali
+    }catch(e){ console.warn(e); await sleep(300); }
+    await sleep(Math.max(0,80-(performance.now()-t0)));
+  }
+}
+function onDetections(res){
+  const now=performance.now();
+  const used=new Set();
+  for(const r of res){
+    const b=r.detection.box;
+    const d={x:b.x,y:b.y,w:b.width,h:b.height};
+    let best=null, bi=0.25;
+    for(const t of st.tracks){
+      if(used.has(t)) continue;
+      const v=iou(t.b,d);
+      if(v>bi){ bi=v; best=t; }
+    }
+    if(best){
+      used.add(best); best.b=d; best.seen=now;
+      best.ages.push(r.age); if(best.ages.length>24) best.ages.shift();
+    }else{
+      const t={id:st.nextId++,b:d,d:{...d},ages:[r.age],seen:now};
+      used.add(t); st.tracks.push(t);
+    }
+  }
+  if(st.source==='cam') st.tracks=st.tracks.filter(t=>now-t.seen<900);
+  const n=st.tracks.length;
+  if(n!==st.count){
+    st.count=n;
+    setStatus(n?(n+' wajah'):'Mencari wajah…', n?'ok':'busy');
+  }
+}
+
+/* ---------- render ---------- */
+function rrect(x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+function brackets(x,y,w,h,len){
+  c.beginPath();
+  c.moveTo(x,y+len); c.lineTo(x,y); c.lineTo(x+len,y);
+  c.moveTo(x+w-len,y); c.lineTo(x+w,y); c.lineTo(x+w,y+len);
+  c.moveTo(x+w,y+h-len); c.lineTo(x+w,y+h); c.lineTo(x+w-len,y+h);
+  c.moveTo(x+len,y+h); c.lineTo(x,y+h); c.lineTo(x,y+h-len);
+  c.stroke();
+}
+const FONT=(w,s)=>`${w} ${s}px "Plus Jakarta Sans",system-ui,sans-serif`;
+
+function render(){
+  if(!st.running) return;
+  const W=view.width, H=view.height, src=srcEl();
+  if(src){
+    c.save();
+    if(st.mirror){ c.translate(W,0); c.scale(-1,1); }
+    try{ c.drawImage(src,0,0,W,H); }catch(e){}
+    c.restore();
+  }
+  drawOverlay(W,H);
+  requestAnimationFrame(render);
+}
+
+function drawOverlay(W,H){
+  // 1 px layar = u px canvas, supaya teks ukurannya sama di semua perangkat
+  const ds=Math.min(view.clientWidth/W,view.clientHeight/H)||1;
+  const u=Math.min(4,Math.max(0.8,1/ds));
+  const sx=W/st.sw;
+
+  for(const t of st.tracks){
+    const k=0.35;
+    t.d.x+=(t.b.x-t.d.x)*k; t.d.y+=(t.b.y-t.d.y)*k;
+    t.d.w+=(t.b.w-t.d.w)*k; t.d.h+=(t.b.h-t.d.h)*k;
+
+    const pad=t.d.w*0.06;
+    let bw=(t.d.w+pad*2)*sx, bh=(t.d.h+pad*2)*sx;
+    let bx=(t.d.x-pad)*sx, by=(t.d.y-pad)*sx;
+    if(st.mirror) bx=W-bx-bw;
+
+    const r=ageRange(t.ages);
+    c.globalAlpha=r.stable?1:0.7;
+
+    c.strokeStyle=ACC; c.lineWidth=3*u; c.lineCap='round'; c.lineJoin='round';
+    brackets(bx,by,bw,bh,Math.min(bw,bh)*0.22);
+
+    // label
+    const num=r.lo+'–'+r.hi;
+    c.font=FONT(800,22*u); const nw=c.measureText(num).width;
+    c.font=FONT(600,12*u); const unit=r.stable?'tahun':'mengukur…';
+    const uw=c.measureText(unit).width;
+    const px=12*u, py=9*u;
+    const lw=Math.max(nw,uw)+px*2, lh=22*u+12*u+py*2+14*u;   // angka + satuan + skala
+    let lx=bx+bw/2-lw/2, ly=by+bh+10*u;
+    if(ly+lh>H-4*u) ly=by-lh-10*u;                           // kalau mentok bawah, taruh di atas
+    lx=Math.max(4*u,Math.min(W-lw-4*u,lx)); ly=Math.max(4*u,ly);
+
+    c.fillStyle='rgba(11,13,18,.78)'; rrect(lx,ly,lw,lh,12*u); c.fill();
+    c.textBaseline='alphabetic'; c.textAlign='center';
+    c.fillStyle='#fff'; c.font=FONT(800,22*u); c.fillText(num,lx+lw/2,ly+py+19*u);
+    c.fillStyle='#8a93a6'; c.font=FONT(600,12*u); c.fillText(unit,lx+lw/2,ly+py+34*u);
+
+    // skala 0–80 tahun
+    const tx=lx+px, tw=lw-px*2, ty=ly+lh-py-3*u, th=4*u;
+    c.fillStyle='rgba(255,255,255,.18)'; rrect(tx,ty,tw,th,th/2); c.fill();
+    const a=Math.min(1,r.lo/80), z=Math.min(1,r.hi/80);
+    c.fillStyle=ACC; rrect(tx+tw*a,ty,Math.max(th,tw*(z-a)),th,th/2); c.fill();
+    c.globalAlpha=1;
+  }
+  c.textAlign='left';
+}
+
+/* ---------- kontrol ---------- */
+$('#camBtn').onclick=()=>{
+  if(st.running){ stopSource(); }
+  else{ enterFs(); startCam(); }
+};
+$('#flipBtn').onclick=()=>{
+  st.facing=st.facing==='user'?'environment':'user';
+  startCam();
+};
+$('#imgBtn').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{
+  const f=e.target.files&&e.target.files[0];
+  if(f) startImage(f);
+  e.target.value='';
+};
+
+function onFsChange(){
+  const inFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  if(inFs){ st.fs=true; return; }
+  if(st.fs){ st.fs=false; if(st.running) stopSource(true); }   // keluar fullscreen = tutup kamera
+}
+document.addEventListener('fullscreenchange',onFsChange);
+document.addEventListener('webkitfullscreenchange',onFsChange);
+</script>
+</body>
+</html>
