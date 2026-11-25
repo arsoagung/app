@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Plat Cam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d12; --surf:#151922; --surf2:#1e2430; --tx:#eef1f6; --mut:#8a93a6;
+  --acc:#ffd23f; --acc-tx:#1a1400; --ok:#4ade80; --err:#ff6b6b;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.app{height:100dvh;max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:12px;
+  padding:max(16px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}
+header h1{font-size:21px;font-weight:800;letter-spacing:-.02em}
+header p{font-size:12.5px;line-height:1.55;color:var(--mut);margin-top:4px}
+
+.stage{position:relative;flex:1;min-height:0;border-radius:22px;background:var(--surf);overflow:hidden}
+#view{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none}
+.stage.live #view{display:block}
+
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center}
+.stage.live .empty{display:none}
+.empty .ico{width:72px;height:72px;border-radius:24px;background:var(--surf2);display:flex;align-items:center;justify-content:center;color:var(--acc)}
+.empty h2{font-size:17px;font-weight:700}
+.empty p{font-size:13px;line-height:1.6;color:var(--mut);max-width:300px}
+
+.pill{position:absolute;left:12px;top:12px;display:none;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+  background:rgba(11,13,18,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:12px;font-weight:600}
+.stage.live .pill{display:flex}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mut);flex:none}
+.pill.busy .dot{background:var(--acc);animation:pulse 1s ease-in-out infinite}
+.pill.ok .dot{background:var(--ok)}
+.pill.err .dot{background:var(--err)}
+@keyframes pulse{50%{opacity:.25}}
+
+.hist{display:none;flex-direction:column;gap:8px}
+.hist.show{display:flex}
+.hist-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:var(--mut);letter-spacing:.02em}
+.hist-head button{font-size:12px;font-weight:600;color:var(--mut);padding:4px 2px}
+.strip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.strip::-webkit-scrollbar{display:none}
+.card{flex:none;background:var(--surf);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left}
+.card img{height:34px;width:auto;max-width:130px;border-radius:6px;display:block;background:var(--surf2)}
+.card span{font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--acc)}
+.card small{font-size:10px;font-weight:600;color:var(--mut);margin-top:-3px}
+
+.bar{display:flex;gap:10px}
+.btn{height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:15px}
+.btn.main{flex:1;background:var(--acc);color:var(--acc-tx)}
+.btn.main.stop{background:var(--surf2);color:var(--tx)}
+.btn.sq{width:52px;background:var(--surf2);color:var(--tx);flex:none}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+svg{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Plat Cam</h1>
+    <p>Deteksi plat nomor lewat kamera. Plat diperbesar di dekat mobilnya, lengkap dengan nomornya. Bisa banyak kendaraan sekaligus. Diproses di browser, video tidak dikirim ke mana pun.</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="view"></canvas>
+    <div class="pill busy" id="pill"><span class="dot"></span><span id="pillTx">Menyiapkan…</span></div>
+    <div class="empty" id="empty">
+      <div class="ico">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16V12l1.6-4.2A2 2 0 0 1 8.5 6.5h7a2 2 0 0 1 1.9 1.3L19 12v4"/><path d="M3.5 12h17"/><circle cx="7.5" cy="16" r="1.5"/><circle cx="16.5" cy="16" r="1.5"/><path d="M9 19.5h6"/></svg>
+      </div>
+      <h2>Arahkan ke mobil</h2>
+      <p>Nyalakan kamera, lalu arahkan ke bagian belakang atau depan kendaraan. Makin dekat dan makin terang, makin akurat.</p>
+    </div>
+  </div>
+
+  <section class="hist" id="hist">
+    <div class="hist-head"><span>TERBACA</span><button id="clearBtn">Hapus</button></div>
+    <div class="strip" id="strip"></div>
+  </section>
+
+  <div class="bar">
+    <button class="btn main" id="camBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2a1 1 0 0 0 .8-.4l.9-1.2a1 1 0 0 1 .8-.4h3.6a1 1 0 0 1 .8.4l.9 1.2a1 1 0 0 0 .8.4h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.2"/></svg>
+      <span id="camTx">Nyalakan kamera</span>
+    </button>
+    <button class="btn sq" id="flipBtn" title="Ganti kamera" disabled>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20v-4.5h4.5"/></svg>
+    </button>
+    <button class="btn sq" id="imgBtn" title="Coba dari foto">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m20 16-4.5-4.5L8 19"/></svg>
+    </button>
+    <input type="file" id="file" accept="image/*" hidden>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   PURE FUNCTIONS (tanpa DOM) — dipisah supaya gampang dites
+   ============================================================ */
+/*PURE-START*/
+function iou(a,b){
+  const x1=Math.max(a.x,b.x), y1=Math.max(a.y,b.y);
+  const x2=Math.min(a.x+a.w,b.x+b.w), y2=Math.min(a.y+a.h,b.y+b.h);
+  const iw=x2-x1, ih=y2-y1;
+  if(iw<=0||ih<=0) return 0;
+  const inter=iw*ih;
+  return inter/(a.w*a.h+b.w*b.h-inter);
+}
+
+/* dilasi kotak (separable) pakai prefix sum */
+function boxDilate(src,w,h,rx,ry){
+  const tmp=new Uint8Array(w*h), out=new Uint8Array(w*h);
+  const P=new Int32Array(Math.max(w,h)+1);
+  for(let y=0;y<h;y++){
+    const o=y*w;
+    for(let x=0;x<w;x++) P[x+1]=P[x]+src[o+x];
+    for(let x=0;x<w;x++){
+      const lo=x-rx<0?0:x-rx, hi=x+rx>w-1?w-1:x+rx;
+      tmp[o+x]=(P[hi+1]-P[lo])>0?1:0;
+    }
+  }
+  for(let x=0;x<w;x++){
+    for(let y=0;y<h;y++) P[y+1]=P[y]+tmp[y*w+x];
+    for(let y=0;y<h;y++){
+      const lo=y-ry<0?0:y-ry, hi=y+ry>h-1?h-1:y+ry;
+      out[y*w+x]=(P[hi+1]-P[lo])>0?1:0;
+    }
+  }
+  return out;
+}
+
+/* cari kandidat plat di citra grayscale: tepi vertikal padat + rasio ~3:1 */
+function findPlateCandidates(gray,w,h,opts){
+  opts=opts||{};
+  const n=w*h;
+  const mag=new Uint8Array(n);
+  let sum=0;
+  for(let y=1;y<h-1;y++){
+    const o=y*w;
+    for(let x=1;x<w-1;x++){
+      const i=o+x;
+      const a=gray[i-w+1]+2*gray[i+1]+gray[i+w+1];
+      const b=gray[i-w-1]+2*gray[i-1]+gray[i+w-1];
+      let d=(a>b?a-b:b-a)>>2;
+      if(d>255) d=255;
+      mag[i]=d; sum+=d;
+    }
+  }
+  const thr=Math.max(opts.minEdge||28,(sum/n)*2.2);
+  const e=new Uint8Array(n);
+  for(let i=0;i<n;i++) e[i]=mag[i]>thr?1:0;
+
+  // integral image dari tepi
+  const W1=w+1;
+  const II=new Int32Array(W1*(h+1));
+  for(let y=0;y<h;y++){
+    let row=0;
+    for(let x=0;x<w;x++){
+      row+=e[y*w+x];
+      II[(y+1)*W1+x+1]=II[y*W1+x+1]+row;
+    }
+  }
+  const area=(x,y,bw,bh)=>II[(y+bh)*W1+x+bw]-II[y*W1+x+bw]-II[(y+bh)*W1+x]+II[y*W1+x];
+
+  const rx=Math.max(3,Math.round(w*0.016)), ry=Math.max(2,Math.round(h*0.012));
+  const dil=boxDilate(e,w,h,rx,ry);
+
+  const minW=opts.minW||Math.max(22,Math.round(w*0.07));
+  const minH=opts.minH||8;
+  const lab=new Uint8Array(n);
+  const stack=new Int32Array(n);
+  const found=[];
+  for(let s=0;s<n;s++){
+    if(!dil[s]||lab[s]) continue;
+    let sp=0; stack[sp++]=s; lab[s]=1;
+    let minx=w,maxx=0,miny=h,maxy=0,cnt=0;
+    while(sp){
+      const i=stack[--sp];
+      const x=i%w, y=(i-x)/w;
+      cnt++;
+      if(x<minx)minx=x; if(x>maxx)maxx=x; if(y<miny)miny=y; if(y>maxy)maxy=y;
+      if(x>0&&dil[i-1]&&!lab[i-1]){lab[i-1]=1;stack[sp++]=i-1;}
+      if(x<w-1&&dil[i+1]&&!lab[i+1]){lab[i+1]=1;stack[sp++]=i+1;}
+      if(y>0&&dil[i-w]&&!lab[i-w]){lab[i-w]=1;stack[sp++]=i-w;}
+      if(y<h-1&&dil[i+w]&&!lab[i+w]){lab[i+w]=1;stack[sp++]=i+w;}
+    }
+    const fullW=maxx-minx+1, fullH=maxy-miny+1;
+    if(fullW<minW||fullH<minH) continue;
+    const fill=cnt/(fullW*fullH);
+    // kecilkan balik efek dilasi
+    let bx=minx+(minx>0?rx:0), by=miny+(miny>0?ry:0);
+    let bw=fullW-(minx>0?rx:0)-(maxx<w-1?rx:0), bh=fullH-(miny>0?ry:0)-(maxy<h-1?ry:0);
+    if(bw<minW||bh<minH) continue;
+    const ar=bw/bh;
+    if(ar<1.5||ar>6.8) continue;
+    if(bw>w*(opts.maxWFrac||0.9)) continue;
+    if(fill<0.5) continue;
+    const dens=area(bx,by,bw,bh)/(bw*bh);
+    if(dens<0.07||dens>0.6) continue;
+    // sebaran tepi harus merata di tiga bagian (huruf tersebar, bukan satu gumpalan)
+    const t=Math.floor(bw/3);
+    if(t<2) continue;
+    const d1=area(bx,by,t,bh), d2=area(bx+t,by,t,bh), d3=area(bx+2*t,by,bw-2*t,bh);
+    const avg=(d1+d2+d3)/3;
+    if(avg<=0||Math.min(d1,d2,d3)<0.4*avg) continue;
+
+    const aspectScore=Math.max(0,1-Math.abs(Math.log(ar/3.4))/Math.log(2.2));
+    const densScore=Math.min(1,dens/0.2);
+    const posScore=(by+bh/2)/h;
+    const score=0.4*aspectScore+0.3*densScore+0.2*posScore+0.1*fill;
+    found.push({x:bx,y:by,w:bw,h:bh,score,ar,dens});
+  }
+  found.sort((a,b)=>b.score-a.score);
+  const out=[];
+  for(const c of found){
+    if(c.score<(opts.minScore||0.5)) continue;
+    if(out.some(o=>iou(o,c)>0.35)) continue;
+    out.push(c);
+    if(out.length>=(opts.max||2)) break;
+  }
+  return out;
+}
+
+function otsu(gray){
+  const hist=new Int32Array(256);
+  for(let i=0;i<gray.length;i++) hist[gray[i]]++;
+  const total=gray.length;
+  let sumAll=0; for(let i=0;i<256;i++) sumAll+=i*hist[i];
+  let wB=0,sumB=0,best=0,thr=127;
+  for(let t=0;t<256;t++){
+    wB+=hist[t]; if(!wB) continue;
+    const wF=total-wB; if(!wF) break;
+    sumB+=t*hist[t];
+    const mB=sumB/wB, mF=(sumAll-sumB)/wF;
+    const v=wB*wF*(mB-mF)*(mB-mF);
+    if(v>best){best=v;thr=t;}
+  }
+  return thr;
+}
+
+/* normalisasi kontras, pastikan teks gelap di latar terang, tambah bingkai putih */
+function prepGray(gray,w,h,pad){
+  pad=pad==null?14:pad;
+  const hist=new Int32Array(256);
+  for(let i=0;i<gray.length;i++) hist[gray[i]]++;
+  const total=gray.length;
+  let acc=0,lo=0,hi=255;
+  for(let i=0;i<256;i++){acc+=hist[i]; if(acc>=total*0.02){lo=i;break;}}
+  acc=0;
+  for(let i=255;i>=0;i--){acc+=hist[i]; if(acc>=total*0.02){hi=i;break;}}
+  const span=Math.max(24,hi-lo);
+  const norm=new Uint8Array(gray.length);
+  for(let i=0;i<gray.length;i++){
+    let v=(gray[i]-lo)*255/span;
+    norm[i]=v<0?0:v>255?255:v;
+  }
+  const t=otsu(norm);
+  let bright=0; for(let i=0;i<norm.length;i++) if(norm[i]>t) bright++;
+  const invert=bright<norm.length*0.5;
+  const W=w+pad*2, H=h+pad*2;
+  const out=new Uint8Array(W*H).fill(255);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    const v=norm[y*w+x];
+    out[(y+pad)*W+x+pad]=invert?255-v:v;
+  }
+  return {data:out,w:W,h:H};
+}
+
+/* ---------- parser plat Indonesia: 1-2 huruf + 1-4 angka + 1-3 huruf ---------- */
+const AREA_CODES=new Set(('A B D E F G H K L M N P R S T W Z '+
+  'AA AB AD AE AG BA BB BD BE BG BH BK BL BM BN BP DA DB DC DD DE DG DH DK DL DM DN DP DR DS DT DW '+
+  'EA EB ED KB KH KT KU PA PB CC CD RI').split(' '));
+const D2L={'0':'O','1':'I','2':'Z','4':'A','5':'S','6':'G','7':'T','8':'B'};
+const L2D={O:'0',Q:'0',D:'0',I:'1',L:'1',Z:'2',A:'4',S:'5',G:'6',T:'7',B:'8'};
+
+function parsePlate(raw){
+  raw=(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const n=raw.length;
+  if(n<4||n>9) return null;
+  let best=null;
+  for(let p=1;p<=2;p++) for(let s=1;s<=3;s++){
+    const d=n-p-s;
+    if(d<1||d>4) continue;
+    let fixes=0,ok=true,pre='',dig='',suf='';
+    for(let i=0;i<n&&ok;i++){
+      const c=raw[i], isDigit=c>='0'&&c<='9';
+      if(i<p){ if(isDigit){ if(D2L[c]){pre+=D2L[c];fixes++;} else ok=false; } else pre+=c; }
+      else if(i<p+d){ if(!isDigit){ if(L2D[c]){dig+=L2D[c];fixes++;} else ok=false; } else dig+=c; }
+      else { if(isDigit){ if(D2L[c]){suf+=D2L[c];fixes++;} else ok=false; } else suf+=c; }
+    }
+    if(!ok) continue;
+    if(dig.length>1&&dig[0]==='0') fixes+=1;           // plat tidak diawali 0
+    const known=AREA_CODES.has(pre);
+    const cost=fixes+(known?0:2);
+    if(!best||cost<best.cost) best={cost,fixes,known,pre,dig,suf};
+  }
+  if(!best||best.fixes>2||(best.fixes===2&&!best.known)) return null;
+  return {text:best.pre+' '+best.dig+' '+best.suf,fixes:best.fixes,known:best.known};
+}
+/*PURE-END*/
+
+/* ============================================================
+   APLIKASI
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const stage=$('#stage'), view=$('#view'), vctx=view.getContext('2d');
+const frame=document.createElement('canvas'), fctx=frame.getContext('2d',{willReadFrequently:true});
+const det=document.createElement('canvas'), dctx=det.getContext('2d');
+const roi=document.createElement('canvas'), rctx=roi.getContext('2d',{willReadFrequently:true});
+const work=document.createElement('canvas'), wctx=work.getContext('2d',{willReadFrequently:true});
+const video=document.createElement('video');
+video.playsInline=true; video.muted=true; video.setAttribute('playsinline','');
+video.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+document.body.appendChild(video);
+
+const VEH=new Set(['car','truck','bus','motorcycle']);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const st={source:null,img:null,stream:null,facing:'environment',running:false,runId:0,
+  model:null,ocr:null,libsState:'idle',tracks:[],nextId:1,history:new Map(),fallback:false};
+
+/* ---------- status ---------- */
+function setStatus(tx,kind){
+  $('#pillTx').textContent=tx;
+  $('#pill').className='pill '+(kind||'busy');
+}
+
+/* ---------- muat library ---------- */
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Gagal memuat '+src));
+    document.head.appendChild(s);
+  });
+}
+let libsPromise=null;
+function loadLibs(){
+  if(libsPromise) return libsPromise;
+  libsPromise=(async()=>{
+    try{ await document.fonts.load('800 16px "Plus Jakarta Sans"'); }catch(e){}
+    setStatus('Memuat model kendaraan…','busy');
+    try{
+      await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');
+      await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js');
+      st.model=await cocoSsd.load({base:'lite_mobilenet_v2'});
+    }catch(e){ console.warn(e); st.model=null; st.fallback=true; }
+    setStatus('Memuat pembaca plat…','busy');
+    try{
+      await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+      const w=await Tesseract.createWorker('eng');
+      await w.setParameters({
+        tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+        tessedit_pageseg_mode:'7',
+        user_defined_dpi:'300'
+      });
+      st.ocr=w;
+    }catch(e){ console.warn(e); st.ocr=null; }
+    if(!st.ocr) setStatus('Pembaca plat gagal dimuat, cek internet','err');
+  })();
+  return libsPromise;
+}
+
+/* ---------- sumber: kamera / foto ---------- */
+function setSourceSize(w,h){
+  frame.width=w; frame.height=h;
+  const vw=Math.min(w,1280);
+  view.width=vw; view.height=Math.round(h*vw/w);
+  det.width=640; det.height=Math.max(1,Math.round(640*h/w));
+}
+function stopSource(){
+  st.running=false; st.runId++;
+  if(st.stream){ st.stream.getTracks().forEach(t=>t.stop()); st.stream=null; }
+  video.srcObject=null; st.img=null; st.source=null;
+  st.tracks=[];
+  stage.classList.remove('live');
+  $('#camTx').textContent='Nyalakan kamera';
+  $('#camBtn').classList.remove('stop');
+  $('#flipBtn').disabled=true;
+}
+async function startCam(){
+  stopSource();
+  $('#camBtn').disabled=true;
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      audio:false,
+      video:{facingMode:{ideal:st.facing},width:{ideal:1920},height:{ideal:1080}}
+    });
+    st.stream=stream; video.srcObject=stream;
+    await video.play();
+    await new Promise(r=>{ if(video.videoWidth) r(); else video.onloadedmetadata=()=>r(); });
+    st.source='cam';
+    setSourceSize(video.videoWidth,video.videoHeight);
+    beginRun();
+    $('#flipBtn').disabled=false;
+    $('#camTx').textContent='Matikan kamera';
+    $('#camBtn').classList.add('stop');
+  }catch(e){
+    console.warn(e);
+    stopSource();
+    alert(e&&e.name==='NotAllowedError'
+      ? 'Izin kamera ditolak. Aktifkan izin kamera untuk situs ini di pengaturan browser.'
+      : 'Kamera tidak bisa dibuka: '+(e&&e.message||e));
+  }finally{ $('#camBtn').disabled=false; }
+}
+function startImage(file){
+  stopSource();
+  const url=URL.createObjectURL(file);
+  const im=new Image();
+  im.onload=()=>{
+    st.img=im; st.source='img';
+    const w=Math.min(im.naturalWidth,1920), h=Math.round(im.naturalHeight*w/im.naturalWidth);
+    setSourceSize(w,h);
+    beginRun();
+    $('#camTx').textContent='Berhenti';
+    $('#camBtn').classList.add('stop');
+    URL.revokeObjectURL(url);
+  };
+  im.onerror=()=>alert('Foto tidak bisa dibuka.');
+  im.src=url;
+}
+function beginRun(){
+  st.running=true; st.tracks=[];
+  const id=++st.runId;
+  stage.classList.add('live');
+  setStatus(st.model||st.ocr?'Siap':'Menyiapkan…','busy');
+  loadLibs().then(()=>{
+    if(id!==st.runId) return;
+    if(st.ocr) setStatus(st.fallback?'Mode plat langsung (tanpa deteksi mobil)':'Mencari kendaraan…','ok');
+  });
+  requestAnimationFrame(render);
+  detectLoop(id);
+  ocrLoop(id);
+}
+
+/* ---------- render ---------- */
+function srcEl(){ return st.source==='cam'?video:st.img; }
+function render(){
+  if(!st.running) return;
+  requestAnimationFrame(render);
+  const el=srcEl();
+  if(!el||(st.source==='cam'&&video.readyState<2)) return;
+  vctx.setTransform(1,0,0,1,0,0);
+  vctx.drawImage(el,0,0,view.width,view.height);
+  drawOverlay();
+}
+function rrect(c,x,y,w,h,r){
+  c.beginPath(); c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+function brackets(c,b,len){
+  c.beginPath();
+  const x1=b.x,y1=b.y,x2=b.x+b.w,y2=b.y+b.h;
+  c.moveTo(x1,y1+len);c.lineTo(x1,y1);c.lineTo(x1+len,y1);
+  c.moveTo(x2-len,y1);c.lineTo(x2,y1);c.lineTo(x2,y1+len);
+  c.moveTo(x2,y2-len);c.lineTo(x2,y2);c.lineTo(x2-len,y2);
+  c.moveTo(x1+len,y2);c.lineTo(x1,y2);c.lineTo(x1,y2-len);
+  c.stroke();
+}
+const hit=(a,b,m)=>!(a.x+a.w+m<b.x||b.x+b.w+m<a.x||a.y+a.h+m<b.y||b.y+b.h+m<a.y);
+
+function drawOverlay(){
+  const now=performance.now();
+  const s=view.width/frame.width;
+  const dispW=Math.min(view.clientWidth,view.clientHeight*view.width/view.height)||view.width;
+  const u=(view.width/dispW)/s;            // satuan frame per css px
+  const c=vctx;
+  c.setTransform(s,0,0,s,0,0);
+  c.lineJoin='round'; c.lineCap='round';
+  const vis=st.tracks.filter(t=>t.hits>=2&&now-t.lastSeen<600).sort((a,b)=>a.box.x-b.box.x);
+  const placed=[];
+  // pass 1: kotak kendaraan + plat
+  for(const t of vis){
+    if(t.kind==='veh'){
+      c.strokeStyle='rgba(255,255,255,.6)'; c.lineWidth=2*u;
+      brackets(c,t.box,Math.min(16*u,t.box.w*0.2,t.box.h*0.2));
+    }
+    placed.push(t.box);
+  }
+  // pass 2: plat + callout
+  for(const t of vis){
+    const p=t.plate;
+    if(!p||now-p.lastSeen>1200||!t.zoom) continue;
+    c.fillStyle='rgba(255,210,63,.16)'; c.strokeStyle='#ffd23f'; c.lineWidth=2.5*u;
+    rrect(c,p.x,p.y,p.w,p.h,4*u); c.fill(); c.stroke();
+
+    const cw=Math.max(116,Math.min(170,t.zoom.width))*u;
+    const zh=Math.min(cw*t.zoom.height/t.zoom.width,74*u);
+    const zw=zh*t.zoom.width/t.zoom.height;
+    const pad=8*u, txH=t.text?22*u:16*u;
+    const bw=Math.max(cw,zw)+pad*2, bh=pad+zh+6*u+txH+pad;
+    const cx=t.box.x+t.box.w/2, m=10*u;
+    const cands=[
+      {x:cx-bw/2,y:t.box.y-bh-m},
+      {x:cx-bw/2,y:t.box.y+t.box.h+m},
+      {x:t.box.x+t.box.w+m,y:t.box.y},
+      {x:t.box.x-bw-m,y:t.box.y},
+      {x:cx-bw/2,y:t.box.y+t.box.h-bh-m}
+    ];
+    let pos=null;
+    for(const q of cands){
+      const r={x:Math.max(6*u,Math.min(frame.width-bw-6*u,q.x)),y:q.y,w:bw,h:bh};
+      if(r.y<6*u||r.y+bh>frame.height-6*u) continue;
+      if(placed.slice(vis.length).some(o=>hit(r,o,4*u))) continue;   // hindari callout lain
+      pos=r; break;
+    }
+    if(!pos){
+      const q=cands[0];
+      pos={x:Math.max(6*u,Math.min(frame.width-bw-6*u,q.x)),y:Math.max(6*u,Math.min(frame.height-bh-6*u,q.y)),w:bw,h:bh};
+    }
+    placed.push(pos);
+
+    // garis penghubung plat -> callout
+    const pcx=p.x+p.w/2, pcy=p.y+p.h/2;
+    const tx=Math.max(pos.x+12*u,Math.min(pos.x+pos.w-12*u,pcx));
+    const ty=pos.y+pos.h/2<pcy?pos.y+pos.h:pos.y;
+    c.strokeStyle='rgba(255,210,63,.85)'; c.lineWidth=1.6*u;
+    c.beginPath(); c.moveTo(pcx,pcy<ty?p.y+p.h:p.y); c.lineTo(tx,ty); c.stroke();
+
+    // kartu
+    c.fillStyle='rgba(11,13,18,.86)';
+    rrect(c,pos.x,pos.y,pos.w,pos.h,12*u); c.fill();
+    c.save();
+    const zx=pos.x+(pos.w-zw)/2, zy=pos.y+pad;
+    rrect(c,zx,zy,zw,zh,6*u); c.clip();
+    c.drawImage(t.zoom,zx,zy,zw,zh);
+    c.restore();
+    c.textAlign='center'; c.textBaseline='middle';
+    const ty2=zy+zh+6*u+txH/2;
+    if(t.text){
+      c.fillStyle='#ffd23f'; c.font=`800 ${17*u}px "Plus Jakarta Sans",system-ui,sans-serif`;
+      c.fillText(t.text,pos.x+pos.w/2,ty2);
+    }else{
+      c.fillStyle=t.tentative?'rgba(255,210,63,.6)':'rgba(238,241,246,.55)';
+      c.font=`600 ${12*u}px "Plus Jakarta Sans",system-ui,sans-serif`;
+      c.fillText(t.tentative?t.tentative+' …':'Membaca…',pos.x+pos.w/2,ty2);
+    }
+  }
+}
+
+/* ---------- deteksi + pelacakan ---------- */
+async function detectLoop(id){
+  while(st.running&&id===st.runId){
+    const t0=performance.now();
+    if(document.hidden||!(st.model||st.fallback)||(st.source==='cam'&&video.readyState<2)){ await sleep(200); continue; }
+    try{ await detectStep(id); }catch(e){ console.warn(e); }
+    await sleep(Math.max(40,170-(performance.now()-t0)));
+  }
+}
+async function detectStep(id){
+  const el=srcEl(); if(!el) return;
+  fctx.drawImage(el,0,0,frame.width,frame.height);
+  const now=performance.now();
+  let dets=[];
+  if(st.model){
+    dctx.drawImage(frame,0,0,det.width,det.height);
+    const k=frame.width/det.width;
+    const preds=await st.model.detect(det,12,0.4);
+    if(id!==st.runId) return;
+    dets=preds.filter(p=>VEH.has(p.class))
+      .map(p=>({kind:'veh',cls:p.class,x:p.bbox[0]*k,y:p.bbox[1]*k,w:p.bbox[2]*k,h:p.bbox[3]*k}))
+      .filter(d=>d.w>=frame.width*0.07);
+  }else{
+    const sc=Math.min(1,520/frame.width);
+    const cw=Math.round(frame.width*sc), ch=Math.round(frame.height*sc);
+    const g=grayOf(frame,0,0,frame.width,frame.height,cw,ch);
+    dets=findPlateCandidates(g,cw,ch,{minScore:0.6,max:4,minW:Math.round(cw*0.05)})
+      .map(c=>({kind:'plate',cls:'plate',x:c.x/sc,y:c.y/sc,w:c.w/sc,h:c.h/sc}));
+  }
+  matchTracks(dets,now);
+  for(const t of st.tracks){
+    if(t.lastSeen!==now) continue;
+    if(t.kind==='veh') locatePlate(t,now);
+    else setPlate(t,{x:t.box.x,y:t.box.y,w:t.box.w,h:t.box.h},now);
+  }
+  st.tracks=st.tracks.filter(t=>now-t.lastSeen<1500);
+  const nv=st.tracks.filter(t=>t.hits>=2&&now-t.lastSeen<600);
+  const np=nv.filter(t=>t.text).length;
+  if(st.ocr) setStatus(st.fallback
+    ? `${nv.length} plat terdeteksi · ${np} terbaca`
+    : `${nv.length} kendaraan · ${np} plat terbaca`,'ok');
+}
+function grayOf(src,sx,sy,sw,sh,dw,dh){
+  roi.width=dw; roi.height=dh;
+  rctx.drawImage(src,sx,sy,sw,sh,0,0,dw,dh);
+  const d=rctx.getImageData(0,0,dw,dh).data;
+  const g=new Uint8Array(dw*dh);
+  for(let i=0,j=0;i<g.length;i++,j+=4) g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
+  return g;
+}
+function matchTracks(dets,now){
+  const used=new Set();
+  const pairs=[];
+  st.tracks.forEach((t,ti)=>dets.forEach((d,di)=>{
+    if(t.kind!==d.kind) return;
+    const v=iou(t.box,d); if(v>0.25) pairs.push({ti,di,v});
+  }));
+  pairs.sort((a,b)=>b.v-a.v);
+  const tu=new Set();
+  for(const p of pairs){
+    if(tu.has(p.ti)||used.has(p.di)) continue;
+    tu.add(p.ti); used.add(p.di);
+    const t=st.tracks[p.ti], d=dets[p.di], a=0.6;
+    t.box={x:t.box.x+(d.x-t.box.x)*a,y:t.box.y+(d.y-t.box.y)*a,w:t.box.w+(d.w-t.box.w)*a,h:t.box.h+(d.h-t.box.h)*a};
+    t.hits++; t.lastSeen=now; t.cls=d.cls;
+  }
+  dets.forEach((d,di)=>{
+    if(used.has(di)) return;
+    st.tracks.push({id:st.nextId++,kind:d.kind,cls:d.cls,box:{x:d.x,y:d.y,w:d.w,h:d.h},hits:1,lastSeen:now,
+      plate:null,zoom:null,list:[],text:null,tentative:null,locked:false,lastOcr:0,nReads:0});
+  });
+}
+function locatePlate(t,now){
+  const b=t.box;
+  const top=t.cls==='motorcycle'?0.4:0.35;
+  const rx=Math.max(0,b.x-b.w*0.04), rw=Math.min(frame.width-rx,b.w*1.08);
+  const ry=Math.max(0,b.y+b.h*top), rh=Math.min(frame.height-ry,b.h*(1-top)+b.h*0.02);
+  if(rw<20||rh<12) return;
+  const sc=Math.max(0.3,Math.min(2,360/rw));
+  const dw=Math.max(40,Math.round(rw*sc)), dh=Math.max(24,Math.round(rh*sc));
+  const g=grayOf(frame,rx,ry,rw,rh,dw,dh);
+  const cs=findPlateCandidates(g,dw,dh,{minScore:0.5,max:1});
+  if(!cs.length){
+    if(t.plate&&now-t.plate.lastSeen>1200) t.plate=null;
+    return;
+  }
+  const c=cs[0];
+  setPlate(t,{x:rx+c.x/sc,y:ry+c.y/sc,w:c.w/sc,h:c.h/sc},now);
+}
+function setPlate(t,nb,now){
+  const p=t.plate;
+  if(p&&iou(p,nb)>0.2){
+    const a=0.5;
+    p.x+=(nb.x-p.x)*a; p.y+=(nb.y-p.y)*a; p.w+=(nb.w-p.w)*a; p.h+=(nb.h-p.h)*a;
+    p.hits++; p.lastSeen=now;
+  }else{
+    t.plate={x:nb.x,y:nb.y,w:nb.w,h:nb.h,hits:1,lastSeen:now};
+  }
+  // potongan diperbesar untuk callout
+  const q=t.plate, padx=q.w*0.06, pady=q.h*0.1;
+  const sx=Math.max(0,q.x-padx), sy=Math.max(0,q.y-pady);
+  const sw=Math.min(frame.width-sx,q.w+padx*2), sh=Math.min(frame.height-sy,q.h+pady*2);
+  if(sw<4||sh<4) return;
+  if(!t.zoom) t.zoom=document.createElement('canvas');
+  const zw=Math.min(320,Math.max(160,Math.round(sw*2)));
+  t.zoom.width=zw; t.zoom.height=Math.max(1,Math.round(zw*sh/sw));
+  t.zoom.getContext('2d').drawImage(frame,sx,sy,sw,sh,0,0,t.zoom.width,t.zoom.height);
+}
+
+/* ---------- OCR ---------- */
+function pickOcrTrack(now){
+  const c=st.tracks.filter(t=>t.plate&&t.plate.hits>=2&&!t.locked&&now-t.plate.lastSeen<700&&now-t.lastOcr>250);
+  c.sort((a,b)=>a.nReads-b.nReads||(b.plate.w*b.plate.h)-(a.plate.w*a.plate.h));
+  return c[0]||null;
+}
+async function ocrLoop(id){
+  while(st.running&&id===st.runId){
+    if(!st.ocr||document.hidden){ await sleep(300); continue; }
+    const t=pickOcrTrack(performance.now());
+    if(!t){ await sleep(120); continue; }
+    try{ await ocrTrack(t,id); }catch(e){ console.warn(e); await sleep(300); }
+    await sleep(10);
+  }
+}
+function cropVariants(t){
+  const p=t.plate, padx=p.w*0.05, pady=p.h*0.08;
+  const sx=Math.max(0,p.x-padx), sy=Math.max(0,p.y-pady);
+  const sw=Math.min(frame.width-sx,p.w+padx*2), sh=Math.min(frame.height-sy,p.h+pady*2);
+  const ar=p.w/p.h;
+  const variants=ar<3.7?[1,0.72]:[1];   // utuh dulu, potong baris masa-berlaku kalau gagal
+  return variants.map(frac=>{
+    const hh=sh*frac;
+    const sc=Math.max(0.2,Math.min(6,96/hh));
+    const dw=Math.max(8,Math.round(sw*sc)), dh=Math.max(8,Math.round(hh*sc));
+    const g=grayOf(frame,sx,sy,sw,hh,dw,dh);
+    const r=prepGray(g,dw,dh,14);
+    work.width=r.w; work.height=r.h;
+    const im=wctx.createImageData(r.w,r.h);
+    for(let i=0,j=0;i<r.data.length;i++,j+=4){ im.data[j]=im.data[j+1]=im.data[j+2]=r.data[i]; im.data[j+3]=255; }
+    wctx.putImageData(im,0,0);
+    const out=document.createElement('canvas'); out.width=r.w; out.height=r.h;
+    out.getContext('2d').drawImage(work,0,0);
+    return out;
+  });
+}
+async function ocrTrack(t,id){
+  t.lastOcr=performance.now();
+  const vs=cropVariants(t);
+  for(const cv of vs){
+    const {data}=await st.ocr.recognize(cv);
+    if(id!==st.runId) return;
+    const pr=parsePlate(data.text);
+    if(!pr) continue;
+    const conf=data.confidence>0?data.confidence:60;   // tesseract kadang melapor 0
+    const w=conf-pr.fixes*8-(pr.known?0:25);
+    if(w<20) continue;
+    vote(t,pr.text,w);
+    break;
+  }
+  t.nReads++;
+}
+function vote(t,text,w){
+  t.list.push({c:text.replace(/ /g,''),w});
+  if(t.list.length>14) t.list.shift();
+  // kelompokkan per panjang, ambil kelompok dengan bobot terbesar
+  const g={};
+  for(const r of t.list){ (g[r.c.length]||(g[r.c.length]=[])).push(r); }
+  let bestG=null,bestW=-1;
+  for(const k in g){ const sw=g[k].reduce((a,r)=>a+r.w,0); if(sw>bestW){bestW=sw;bestG=g[k];} }
+  const L=bestG[0].c.length;
+  let cons='',agree=0;
+  for(let i=0;i<L;i++){
+    const v={}; let tot=0;
+    for(const r of bestG){ v[r.c[i]]=(v[r.c[i]]||0)+r.w; tot+=r.w; }
+    let bc=null; for(const ch in v){ if(!bc||v[ch]>v[bc]) bc=ch; }
+    cons+=bc; agree+=v[bc]/tot;
+  }
+  agree/=L;
+  const pr=parsePlate(cons);
+  const n=bestG.length, avg=bestW/n;
+  t.tentative=pr?pr.text:text;
+  if(pr&&(n>=2||(n===1&&avg>=85))) t.text=pr.text;
+  if(pr&&((n>=3&&agree>=0.85)||n>=6)){
+    t.text=pr.text; t.locked=true; addHistory(pr.text,t);
+  }
+}
+
+/* ---------- riwayat ---------- */
+function addHistory(text,t){
+  if(st.history.has(text)||!t.zoom) return;
+  let img=''; try{ img=t.zoom.toDataURL('image/jpeg',.85); }catch(e){}
+  st.history.set(text,{text,img,time:new Date()});
+  renderHistory();
+}
+function renderHistory(){
+  const strip=$('#strip'); strip.innerHTML='';
+  const items=[...st.history.values()].reverse();
+  $('#hist').classList.toggle('show',items.length>0);
+  for(const it of items){
+    const b=document.createElement('button'); b.className='card';
+    const hh=it.time.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    b.innerHTML=`${it.img?`<img alt="">`:''}<span></span><small>${hh} · ketuk untuk salin</small>`;
+    if(it.img) b.querySelector('img').src=it.img;
+    b.querySelector('span').textContent=it.text;
+    b.onclick=async()=>{
+      try{ await navigator.clipboard.writeText(it.text); b.querySelector('small').textContent='Disalin'; }
+      catch(e){ b.querySelector('small').textContent='Gagal menyalin'; }
+      setTimeout(()=>{ b.querySelector('small').textContent=`${hh} · ketuk untuk salin`; },1400);
+    };
+    strip.appendChild(b);
+  }
+}
+
+/* ---------- UI ---------- */
+$('#camBtn').onclick=()=>{ if(st.running) stopSource(); else { loadLibs(); startCam(); } };
+$('#flipBtn').onclick=()=>{ st.facing=st.facing==='environment'?'user':'environment'; startCam(); };
+$('#imgBtn').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{ const f=e.target.files[0]; if(f){ loadLibs(); startImage(f); } e.target.value=''; };
+$('#clearBtn').onclick=()=>{ st.history.clear(); renderHistory(); };
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&st.running) requestAnimationFrame(render); });
+</script>
+</body>
+</html>
