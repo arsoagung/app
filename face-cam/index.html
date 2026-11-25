@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Face Analysis Cam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #0b0d0c;
+    color: #f2f5f3;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .stage { position: relative; width: 100vw; height: 100dvh; display: flex; align-items: center; justify-content: center; }
+  canvas { max-width: 100%; max-height: 100%; background: #000; }
+  video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #0b0d0c; padding: 24px;
+    transition: opacity .3s ease;
+  }
+  .overlay.hide { opacity: 0; pointer-events: none; }
+  .card { max-width: 380px; text-align: center; }
+  .icon { width: 56px; height: 56px; margin: 0 auto 20px; color: #41d68c; }
+  h1 { font-size: 24px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 10px; }
+  p { font-size: 14px; line-height: 1.6; color: #9aa6a0; font-weight: 500; }
+  button {
+    margin-top: 24px; background: #41d68c; color: #06130d;
+    border: 0; border-radius: 999px; padding: 14px 28px;
+    font: 700 15px 'Plus Jakarta Sans', system-ui, sans-serif;
+    display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: default; }
+  button svg { width: 18px; height: 18px; }
+  #status { margin-top: 16px; min-height: 20px; font-size: 13px; color: #9aa6a0; }
+  .note { margin-top: 28px; font-size: 12px; color: #66716b; }
+  #flip {
+    position: absolute; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom));
+    width: 52px; height: 52px; padding: 0; margin: 0; border-radius: 50%;
+    background: rgba(12,14,13,.72); color: #fff; justify-content: center;
+    display: none; -webkit-tap-highlight-color: transparent;
+  }
+  #flip.show { display: inline-flex; }
+  #flip svg { width: 22px; height: 22px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <video id="v" playsinline muted></video>
+  <canvas id="c" width="1280" height="720"></canvas>
+  <button id="flip" aria-label="Balik kamera">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>
+  </button>
+
+  <div class="overlay" id="overlay">
+    <div class="card">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 14.5c.7.9 1.8 1.5 3 1.5s2.3-.6 3-1.5"/><path d="M9 10h.01M15 10h.01"/></svg>
+      <h1>Face Analysis Cam</h1>
+      <p>Deteksi wajah real-time lewat kamera: skor senyum, cheek lift, bukaan mulut, sudut kepala, dan tren per detik.</p>
+      <button id="start">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Nyalakan kamera
+      </button>
+      <div id="status"></div>
+      <p class="note">Diproses langsung di browser, video tidak dikirim ke mana-mana. Skor hanyalah estimasi dari ekspresi senyum, bukan pengukur emosi.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm";
+
+const WASM  = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+const MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+
+const video = document.getElementById('v');
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('start');
+const overlay = document.getElementById('overlay');
+const statusEl = document.getElementById('status');
+
+const GREEN = '#41d68c', RED = '#f0482f', INK = '#0c0e0d';
+const HAPPY_THRESHOLD = 40;
+const LIPS = [61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185];
+
+const clamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const FONT = (w, s) => `${w} ${s}px "Plus Jakarta Sans", system-ui, sans-serif`;
+
+let landmarker, lastTime = -1, faces = [], tracks = [];
+
+async function initModel() {
+  statusEl.textContent = 'Memuat model…';
+  const fileset = await FilesetResolver.forVisionTasks(WASM);
+  const opts = (delegate) => ({
+    baseOptions: { modelAssetPath: MODEL, delegate },
+    runningMode: 'VIDEO', numFaces: 5, outputFaceBlendshapes: true
+  });
+  try { landmarker = await FaceLandmarker.createFromOptions(fileset, opts('GPU')); }
+  catch (e) { landmarker = await FaceLandmarker.createFromOptions(fileset, opts('CPU')); }
+}
+
+const flipBtn = document.getElementById('flip');
+let facing = 'user', mirror = true;
+
+async function startCamera() {
+  if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+  });
+  video.srcObject = stream;
+  await video.play();
+  mirror = facing === 'user';
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  tracks = []; faces = []; lastTime = -1;
+}
+
+flipBtn.onclick = async () => {
+  flipBtn.disabled = true;
+  facing = facing === 'user' ? 'environment' : 'user';
+  try { await startCamera(); }
+  catch (e) { facing = facing === 'user' ? 'environment' : 'user'; try { await startCamera(); } catch (_) {} }
+  flipBtn.disabled = false;
+};
+
+startBtn.onclick = async () => {
+  startBtn.disabled = true;
+  try {
+    await document.fonts.load(FONT(700, 16));
+    await initModel();
+    statusEl.textContent = 'Minta akses kamera…';
+    await startCamera();
+    overlay.classList.add('hide');
+    flipBtn.classList.add('show');
+    requestAnimationFrame(loop);
+  } catch (e) {
+    statusEl.textContent = 'Gagal: ' + (e.message || e);
+    startBtn.disabled = false;
+  }
+};
+
+/* ---------- analysis ---------- */
+const KEYS = ['smile','cheek','width','open','teeth','angle'];
+
+function analyze(res, W, H) {
+  const now = performance.now();
+  const out = [];
+  (res.faceLandmarks || []).forEach((lm, i) => {
+    const bs = {};
+    (res.faceBlendshapes?.[i]?.categories || []).forEach(c => bs[c.categoryName] = c.score);
+
+    let minX = 1, minY = 1, maxX = 0, maxY = 0;
+    for (const p of lm) {
+      if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+    }
+    const box = { x: minX * W, y: minY * H, w: (maxX - minX) * W, h: (maxY - minY) * H };
+
+    const faceW = dist({x: lm[234].x * W, y: lm[234].y * H}, {x: lm[454].x * W, y: lm[454].y * H});
+    const mouthW = dist({x: lm[61].x * W, y: lm[61].y * H}, {x: lm[291].x * W, y: lm[291].y * H});
+
+    const smile = ((bs.mouthSmileLeft || 0) + (bs.mouthSmileRight || 0)) / 2;
+    const cheek = ((bs.cheekSquintLeft || 0) + (bs.cheekSquintRight || 0)) / 2;
+    const upper = ((bs.mouthUpperUpLeft || 0) + (bs.mouthUpperUpRight || 0)) / 2;
+    const jaw = bs.jawOpen || 0;
+
+    const raw = {
+      smile: clamp(smile * 140),
+      cheek: clamp(cheek * 160),
+      width: clamp((mouthW / faceW - 0.36) / 0.16 * 100),
+      open:  clamp(jaw * 200),
+      teeth: clamp((upper * 1.2 + jaw * 0.8 + smile * 0.4) * 100),
+      angle: Math.abs(Math.atan2((lm[263].y - lm[33].y) * H, (lm[263].x - lm[33].x) * W) * 180 / Math.PI)
+    };
+    const rawScore = clamp(raw.smile * 0.5 + raw.cheek * 0.15 + raw.width * 0.15 + raw.teeth * 0.2);
+
+    // match to existing track by centroid
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    let tr = null, best = Infinity;
+    for (const t of tracks) {
+      if (t.used) continue;
+      const d = Math.hypot(t.cx - cx, t.cy - cy);
+      if (d < best && d < W * 0.18) { best = d; tr = t; }
+    }
+    if (!tr) {
+      tr = { m: { ...raw }, score: rawScore, hist: [] };
+      tracks.push(tr);
+    }
+    tr.used = true; tr.cx = cx; tr.cy = cy; tr.seen = now;
+    for (const k of KEYS) tr.m[k] = tr.m[k] * 0.6 + raw[k] * 0.4;
+    tr.score = tr.score * 0.6 + rawScore * 0.4;
+    tr.hist.push({ t: now, s: tr.score });
+    while (tr.hist.length > 90) tr.hist.shift();
+
+    let ref = tr.hist[0];
+    for (const h of tr.hist) { if (h.t >= now - 1000) { ref = h; break; } }
+    const trend = tr.score - ref.s;
+
+    out.push({
+      box, m: tr.m, score: tr.score, trend, hist: tr.hist,
+      lips: LIPS.map(idx => ({ x: lm[idx].x * W, y: lm[idx].y * H }))
+    });
+  });
+  tracks = tracks.filter(t => now - t.seen < 800);
+  tracks.forEach(t => t.used = false);
+  return out;
+}
+
+/* ---------- drawing ---------- */
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawFace(f, W, k) {
+  const happy = f.score >= HAPPY_THRESHOLD;
+  const col = happy ? GREEN : RED;
+  const pad = 8 * k;
+  const bx = (mirror ? W - (f.box.x + f.box.w) : f.box.x) - pad, by = f.box.y - pad;
+  const bw = f.box.w + pad * 2, bh = f.box.h + pad * 2;
+
+  ctx.lineWidth = 3 * k; ctx.strokeStyle = col;
+  ctx.strokeRect(bx, by, bw, bh);
+
+  // tag
+  const th = 36 * k;
+  const numTxt = f.score.toFixed(1);
+  const word = happy ? 'HAPPY' : 'NOT HAPPY';
+  ctx.font = FONT(800, 20 * k);
+  const nw = ctx.measureText(numTxt).width + 20 * k;
+  ctx.font = FONT(700, 16 * k);
+  const ww = ctx.measureText(word).width + 20 * k;
+  const ty = by - th;
+  ctx.fillStyle = col; ctx.fillRect(bx, ty, nw, th);
+  ctx.fillStyle = happy ? INK : '#fff';
+  ctx.font = FONT(800, 20 * k); ctx.textBaseline = 'middle';
+  ctx.fillText(numTxt, bx + 10 * k, ty + th / 2 + 1);
+  ctx.fillStyle = happy ? 'rgba(12,14,13,.85)' : col;
+  ctx.fillRect(bx + nw, ty, ww, th);
+  ctx.fillStyle = happy ? GREEN : '#fff';
+  ctx.font = FONT(700, 16 * k);
+  ctx.fillText(word, bx + nw + 10 * k, ty + th / 2 + 1);
+
+  // lips outline
+  ctx.strokeStyle = col; ctx.lineWidth = 2 * k; ctx.beginPath();
+  f.lips.forEach((p, i) => { const x = mirror ? W - p.x : p.x; i ? ctx.lineTo(x, p.y) : ctx.moveTo(x, p.y); });
+  ctx.closePath(); ctx.stroke();
+
+  // score sparkline under the box
+  const sy = by + bh + 14 * k, sh = 22 * k;
+  ctx.beginPath();
+  f.hist.forEach((h, i) => {
+    const x = bx + (i / Math.max(1, f.hist.length - 1)) * bw;
+    const y = sy + sh - (h.s / 100) * sh;
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  });
+  ctx.lineWidth = 2 * k; ctx.stroke();
+  ctx.beginPath(); ctx.arc(bx + bw, sy + sh - (f.score / 100) * sh, 4 * k, 0, 7); ctx.fillStyle = col; ctx.fill();
+}
+
+function drawPanel(f, H, k) {
+  const happy = f.score >= HAPPY_THRESHOLD;
+  const col = happy ? GREEN : RED;
+  const x = 24 * k, y = Math.max(16, H * 0.12), w = 310 * k;
+  const headH = 54 * k, rowH = 42 * k, footH = 72 * k;
+  const h = headH + rowH * 7 + footH + 8 * k;
+
+  ctx.save();
+  rrect(x, y, w, h, 12 * k); ctx.clip();
+  ctx.fillStyle = 'rgba(12,14,13,.9)'; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = col; ctx.fillRect(x, y, w, 4 * k);
+
+  ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
+  ctx.font = FONT(800, 17 * k);
+  ctx.fillText('FACE ANALYSIS', x + 20 * k, y + headH / 2 + 2 * k);
+
+  const m = f.m;
+  const rows = [
+    ['SMILE', m.smile, Math.round(m.smile)],
+    ['CHEEK LIFT', m.cheek, Math.round(m.cheek)],
+    ['MOUTH WIDTH', m.width, Math.round(m.width)],
+    ['MOUTH OPEN', m.open, Math.round(m.open)],
+    ['TEETH', m.teeth, Math.round(m.teeth) + '%'],
+    ['HEAD ANGLE', null, Math.round(m.angle) + '°'],
+    ['TREND 1S', null, (f.trend >= 0 ? '+' : '') + Math.round(f.trend)]
+  ];
+  rows.forEach((r, i) => {
+    const ry = y + headH + i * rowH + rowH / 2;
+    ctx.fillStyle = '#e8eeea'; ctx.font = FONT(700, 14 * k); ctx.textAlign = 'left';
+    ctx.fillText(r[0], x + 20 * k, ry);
+    if (r[1] !== null) {
+      const bx = x + 150 * k, bw = 84 * k, bh = 7 * k;
+      ctx.fillStyle = 'rgba(255,255,255,.16)'; ctx.fillRect(bx, ry - bh / 2, bw, bh);
+      ctx.fillStyle = col; ctx.fillRect(bx, ry - bh / 2, bw * r[1] / 100, bh);
+    }
+    ctx.fillStyle = '#fff'; ctx.font = FONT(700, 15 * k); ctx.textAlign = 'right';
+    ctx.fillText(String(r[2]), x + w - 20 * k, ry);
+  });
+
+  const fy = y + h - footH;
+  ctx.fillStyle = col; ctx.fillRect(x, fy, w, footH);
+  ctx.fillStyle = happy ? INK : '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.font = FONT(700, 14 * k); ctx.fillText('SCORE', x + 20 * k, fy + footH / 2);
+  ctx.font = FONT(800, 36 * k); ctx.textAlign = 'center';
+  ctx.fillText(f.score.toFixed(1), x + w / 2 + 14 * k, fy + footH / 2 + 2 * k);
+  ctx.font = FONT(700, 14 * k); ctx.textAlign = 'right';
+  ctx.fillText(happy ? 'HAPPY' : 'NOT HAPPY', x + w - 20 * k, fy + footH / 2);
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+function loop() {
+  const W = canvas.width, H = canvas.height;
+  const k = Math.max(0.7, Math.min(W, H) / 720);
+
+  ctx.save();
+  if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(video, 0, 0, W, H);
+  ctx.restore();
+
+  if (video.currentTime !== lastTime) {
+    lastTime = video.currentTime;
+    faces = analyze(landmarker.detectForVideo(video, performance.now()), W, H);
+  }
+
+  faces.forEach(f => drawFace(f, W, k));
+  if (faces.length) {
+    const main = faces.reduce((a, b) => (b.box.w * b.box.h > a.box.w * a.box.h ? b : a));
+    drawPanel(main, H, k);
+  }
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
