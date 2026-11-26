@@ -795,7 +795,7 @@ function renderProfil(){
   <div class="prof"><div class="avatar">${av?`<img src="${esc(av)}" alt="" referrerpolicy="no-referrer">`:esc(nm.charAt(0).toUpperCase())}</div><div class="nm">${esc(nm)}</div>${em&&em!==nm?`<div class="sb">${esc(em)}</div>`:''}</div>
   <div class="card"><div class="kv"><span>Data as of</span><span>${fullDate(TODAY)}</span></div><div class="kv"><span>Last synced</span><span>${sync}</span></div><div class="kv"><span>Active accounts</span><span>${M.akun.filter(a=>a.aktif).length}</span></div></div>
   <h2>Assets <small>${M.akun.length}</small></h2>
-  <div class="card">${M.akun.map(a=>`<button class="tx" data-act="assetedit" data-ak="${esc(a.akun)}">${plogo(accPlat(a),34)}<div class="m"><b>${esc(accPlat(a))}</b><span>${esc((goalOf(a.akun)||{}).name||a.tujuan)} \u00b7 ${esc(accKat(a))}${a.aktif?'':' \u00b7 inactive'}</span></div></button>`).join('')}</div>
+  <div class="card">${M.akun.map(a=>`<button class="tx" data-act="assetedit" data-ak="${esc(a.akun)}">${plogo(accPlat(a),34)}<div class="m"><b>${esc(accPlat(a))}</b><span>${esc([(goalOf(a.akun)||{}).name||a.tujuan,accKat(a)].filter((x,i,r)=>r.indexOf(x)===i).join(' \u00b7 '))}${a.aktif?'':' \u00b7 inactive'}</span></div></button>`).join('')}</div>
   <button class="btn ghost" data-act="assetnew">${icon('plus')}Add asset</button>
   <button class="btn ghost" data-act="nav" data-v="riwayat">${icon('hist')}Balance updates</button>
   <button class="btn ghost" data-act="logout">${icon('out')}Log out</button>`;
