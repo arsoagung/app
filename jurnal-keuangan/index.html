@@ -103,6 +103,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .badge{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface);color:var(--muted)}
 .badge.act{color:var(--accent);cursor:pointer;padding:7px 14px;font-size:12.5px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stats.two{grid-template-columns:repeat(2,1fr);margin-top:8px}
 .stat{padding:12px 10px}.stat .l{font-size:11.5px;color:var(--muted)}.stat .v{font-weight:800;margin-top:3px;font-size:12.5px;white-space:nowrap}
 
 .acc{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
@@ -609,11 +610,14 @@ function renderDetail(){
     M.flows(g.retAccs).filter(f=>f.t>base).sort((a,b)=>a.t-b.t).forEach(f=>{mp.push({t:f.t,v:modal});modal+=f.amt;mp.push({t:f.t,v:modal})});
     mp.push({t:TODAY_T,v:modal});
     const now=vals[vals.length-1].v,profit=now-modal,r=M.chain(M.periodsFor(g.retAccs,base));
+    const fl=M.flows(g.retAccs).filter(f=>f.t>base),tIn=fl.reduce((a,f)=>a+(f.amt>0?f.amt:0),0),tOut=fl.reduce((a,f)=>a+(f.amt<0?-f.amt:0),0);
     heroBig=rp(now);heroDelta=deltaHTML(profit,r,'profit since '+dlabel(base));
     chartSeries=[{pts:vals,color:meta.color},{pts:mp,color:'#9a9a9f',dashed:true}];
     stats=`<div class="stats"><div class="card stat"><div class="l">Principal</div><div class="v">${rp(modal)}</div></div>
       <div class="card stat"><div class="l">Profit</div><div class="v ${sgn(profit)==='pos'?'pos-t':'neg-t'}">${rpS(profit)}</div></div>
-      <div class="card stat"><div class="l">${key==='ALL'?'Total return':'Return '+key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>`;
+      <div class="card stat"><div class="l">${key==='ALL'?'Total return':'Return '+key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>
+      <div class="stats two"><div class="card stat"><div class="l">Top-ups</div><div class="v">${rp(tIn)}</div></div>
+      <div class="card stat"><div class="l">Withdrawn</div><div class="v ${tOut?'neg-t':''}">${tOut?'\u2212':''}${rp(tOut)}</div></div></div>`;
     onHover=pt=>{if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
       $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`};
   }else{
@@ -823,6 +827,7 @@ async function saveSheet(){
     if(!tgl||T(tgl)>TODAY_T){err.textContent=wd?'Invalid withdrawal date.':'Invalid top-up date.';return}
     if(dari===ak){err.textContent='From and to accounts are the same.';return}
     if(!wd&&nom>bal){$('#fSal').classList.add('err');err.textContent='The balance should include the top-up.';return}
+    if(wd&&nom>fBase){$('#fNom').classList.add('err');err.textContent='Withdrawal is more than the current balance. Update the balance first.';return}
     if(wd)payload.withdraw={tanggal:tgl,nominal:nom,catatan:$('#fCat').value.trim()};
     else payload.topup={tanggal:tgl,nominal:nom,dari,catatan:$('#fCat').value.trim()};
     okMsg+=(wd?' · withdrawal ':' · top-up ')+rp(nom);
