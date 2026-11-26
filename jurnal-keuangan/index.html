@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080c0a">
+<meta name="theme-color" content="#0e0e0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Finance">
@@ -17,9 +17,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080c0a; --surface:#0f1511; --surface-2:#151d18; --surface-3:#1b251f; --line:#1e2a24;
-  --text:#e9f1ed; --muted:#8b9b93; --faint:#5d6c65;
-  --accent:#2dd48f; --accent-ink:#04140d; --accent-soft:rgba(45,212,143,.14);
+  --bg:#0e0e0f; --surface:#19191b; --surface-2:#222225; --surface-3:#2c2c30; --line:#303034;
+  --text:#ececee; --muted:#9a9a9f; --faint:#6b6b70;
+  --accent:#2dd48f; --accent-ink:#0e0e0f; --accent-soft:rgba(45,212,143,.14);
   --neg:#f0786d; --neg-soft:rgba(240,120,109,.14);
   --maxw:480px; --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
 }
@@ -122,6 +122,8 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .col{flex:1 0 44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
 .col .bar{width:100%;max-width:56px;border-radius:10px 10px 4px 4px;background:var(--accent);min-height:4px;opacity:.4;transition:opacity .2s}
 .col.on .bar{opacity:1}
+.cols.wd .bar{background:var(--neg)}
+.mblock .mt.out{color:var(--neg)}
 .mblock{margin-top:10px;overflow:hidden}
 .mbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.2,1)}
 .mblock.open .mbody{grid-template-rows:1fr}
@@ -149,7 +151,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .btn:active{transform:scale(.985)}
 
 /* nav */
-.tabbar{position:fixed;bottom:calc(10px + var(--safe-b));left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),380px);display:grid;grid-template-columns:1fr 1fr 58px 1fr 1fr;align-items:center;gap:2px;padding:6px;background:rgba(21,29,24,.82);box-shadow:0 14px 40px rgba(0,0,0,.55);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border-radius:28px;box-shadow:0 12px 36px rgba(0,0,0,.5);z-index:20}
+.tabbar{position:fixed;bottom:calc(10px + var(--safe-b));left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),380px);display:grid;grid-template-columns:1fr 1fr 58px 1fr 1fr;align-items:center;gap:2px;padding:6px;background:rgba(34,34,37,.82);box-shadow:0 14px 40px rgba(0,0,0,.55);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border-radius:28px;box-shadow:0 12px 36px rgba(0,0,0,.5);z-index:20}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:46px;border-radius:23px;font-size:10.5px;font-weight:600;color:var(--faint);transition:color .2s,background .2s}
 .tab .i{width:24px;height:24px}
 .tab.on{color:var(--accent);background:var(--surface-3)}
@@ -185,7 +187,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .swrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;border-radius:14px;background:var(--surface-2);margin-bottom:14px}
 .swrow span{font-weight:600}
 .sw{width:46px;height:28px;border-radius:14px;background:var(--surface-3);position:relative;flex:none;transition:background .2s}
-.sw i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#e9f1ed;transition:transform .2s}
+.sw i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#ececee;transition:transform .2s}
 .sw[aria-checked=true]{background:var(--accent)}.sw[aria-checked=true] i{transform:translateX(18px)}
 .acc small{display:block;font-size:11.5px;color:var(--faint);margin-top:1px}
 .cinfo{padding:12px 18px 0;display:flex;flex-direction:column;gap:2px}
@@ -279,7 +281,7 @@ const TMETA = {
   "Kael's Education":{icon:'cap',    color:'#2dd48f', sub:'Education fund',              badge:'Long term'},
   'Emergency Fund': {icon:'shield', color:'#38b6a8', sub:'Emergency reserve',           badge:'Emergency'},
   'Endowment Fund': {icon:'sprout', color:'#a3e635', sub:'US stocks \u00b7 10+ year hold', badge:'10+ years'},
-  'Cash':           {icon:'wallet', color:'#7d8f86', sub:'Liquid, for daily use',       badge:'No return'}
+  'Cash':           {icon:'wallet', color:'#8a8a8f', sub:'Liquid, for daily use',       badge:'No return'}
 };
 
 /* =====================================================================
@@ -354,7 +356,7 @@ function build(){
     const starts=akun.filter(a=>a.tujuan===name&&a.ikutReturn&&a.returnMulai).map(a=>T(a.returnMulai));
     const retStart=starts.length?Math.min(...starts):null;
     const series=dates.map(t=>({t,v:sum(accs,t)}));
-    return {name,accs,retAccs,retStart,series,meta:TMETA[name]||{icon:'wallet',color:'#7d8f86',sub:'',badge:''},hasReturn:retAccs.length>0&&retStart!=null,now:series[series.length-1].v};
+    return {name,accs,retAccs,retStart,series,meta:TMETA[name]||{icon:'wallet',color:'#8a8a8f',sub:'',badge:''},hasReturn:retAccs.length>0&&retStart!=null,now:series[series.length-1].v};
   });
   const total=dates.map(t=>({t,v:akun.reduce((s,a)=>s+val(a.akun,t),0)}));
 
@@ -380,7 +382,7 @@ function drawChart(el,series,o){
   const X=t=>pl+(t-x0)/(x1-x0)*(W-pl-pr),Y=v=>pt+(1-(v-y0)/(y1-y0))*(H-pt-pb);
   const id='g'+(++gid);let s='';
   for(let i=0;i<3;i++){const v=y0+(y1-y0)*(i+.5)/3,y=Y(v);
-    s+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#17211b"/><text x="${pl+2}" y="${y-5}" fill="#5d6c65" font-size="10">${cmp(v)}</text>`}
+    s+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1f1f22"/><text x="${pl+2}" y="${y-5}" fill="#6b6b70" font-size="10">${cmp(v)}</text>`}
   const prim=series[0];
   s+=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${prim.color}" stop-opacity=".28"/><stop offset="1" stop-color="${prim.color}" stop-opacity="0"/></linearGradient></defs>`;
   series.forEach((sr,k)=>{
@@ -389,13 +391,13 @@ function drawChart(el,series,o){
     s+=`<path d="${d}" fill="none" stroke="${sr.color}" stroke-width="${k===0?2.2:1.6}" stroke-linecap="round" stroke-linejoin="round"${sr.dashed?' stroke-dasharray="4 4"':''}/>`;
   });
   const lp=prim.pts[prim.pts.length-1];
-  s+=`<circle class="live" cx="${X(lp.t)}" cy="${Y(lp.v)}" r="4" fill="${prim.color}"/><circle cx="${X(lp.t)}" cy="${Y(lp.v)}" r="4" fill="${prim.color}" stroke="#080c0a" stroke-width="2"/>`;
+  s+=`<circle class="live" cx="${X(lp.t)}" cy="${Y(lp.v)}" r="4" fill="${prim.color}"/><circle cx="${X(lp.t)}" cy="${Y(lp.v)}" r="4" fill="${prim.color}" stroke="#0e0e0f" stroke-width="2"/>`;
   const n=prim.pts.length,ti=[...new Set(n<=4?prim.pts.map((_,i)=>i):[0,Math.round((n-1)/3),Math.round(2*(n-1)/3),n-1])];
   ti.forEach((i,k)=>{const p=prim.pts[i],d=new Date(p.t);
     const lab=p.t===TODAY_T?dlabel(p.t):MON[d.getUTCMonth()]+(d.getUTCFullYear()!==YEAR?' ’'+String(d.getUTCFullYear()).slice(2):'');
     const an=k===0?'start':(k===ti.length-1?'end':'middle'),x=k===0?pl+2:(k===ti.length-1?W-pr-2:X(p.t));
-    s+=`<text x="${x}" y="${H-6}" fill="#5d6c65" font-size="10.5" text-anchor="${an}">${lab}</text>`});
-  s+=`<line id="${id}l" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="#8b9b93" stroke-width="1" opacity="0"/><circle id="${id}c" r="5" fill="${prim.color}" stroke="#080c0a" stroke-width="2" opacity="0"/>`;
+    s+=`<text x="${x}" y="${H-6}" fill="#6b6b70" font-size="10.5" text-anchor="${an}">${lab}</text>`});
+  s+=`<line id="${id}l" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="#9a9a9f" stroke-width="1" opacity="0"/><circle id="${id}c" r="5" fill="${prim.color}" stroke="#0e0e0f" stroke-width="2" opacity="0"/>`;
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="overflow:visible" role="img" aria-label="${o.label||'Grafik'}">${s}</svg>`;
   const svg=el.firstChild,ln=svg.querySelector('#'+id+'l'),ci=svg.querySelector('#'+id+'c');
   const move=e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)*(W/r.width);let b=0,bd=1e9;
@@ -419,12 +421,12 @@ function drawCandles(wrap,info,P,lab){
   const Y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pt-pb),X=i=>pl+step*i+step/2,y0=Y(0);
   const f=v=>(v<0?'\u2212':'')+Math.abs(v*100).toFixed(2)+'%';
   let g='';
-  for(let v=lo;v<=hi+st/2;v+=st){const y=Y(v);if(Math.abs(v)<st/1000)continue;g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#141d18"/><text x="${pl-10}" y="${y+3.5}" fill="#5d6c65" font-size="10" text-anchor="end">${f(v)}</text>`}
-  g+=`<text x="${pl-10}" y="${y0+3.5}" fill="#8b9b93" font-size="10" text-anchor="end">0%</text><line x1="${pl-6}" x2="${W-pr}" y1="${y0}" y2="${y0}" stroke="#2c3b34"/>`;
+  for(let v=lo;v<=hi+st/2;v+=st){const y=Y(v);if(Math.abs(v)<st/1000)continue;g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1c1c1f"/><text x="${pl-10}" y="${y+3.5}" fill="#6b6b70" font-size="10" text-anchor="end">${f(v)}</text>`}
+  g+=`<text x="${pl-10}" y="${y0+3.5}" fill="#9a9a9f" font-size="10" text-anchor="end">0%</text><line x1="${pl-6}" x2="${W-pr}" y1="${y0}" y2="${y0}" stroke="#3a3a3f"/>`;
   C.forEach((k,i)=>{const up=k.r>=0,col=up?'#2dd48f':'#f0786d',yv=Y(k.r),top=Math.min(y0,yv),h=Math.max(3,Math.abs(yv-y0));
     g+=`<g class="cand" data-i="${i}"><rect x="${X(i)-step/2}" y="0" width="${step}" height="${H}" fill="transparent"/><rect class="cb" x="${X(i)-bw/2}" y="${top}" width="${bw}" height="${h}" rx="5" fill="${col}"/>
-      <text x="${X(i)}" y="${up?top-8:top+h+15}" fill="#e9f1ed" font-size="10.5" font-weight="700" text-anchor="middle">${f(k.r)}</text>
-      <text x="${X(i)}" y="${H-8}" fill="#8b9b93" font-size="11" text-anchor="middle">${monY(k.x.e)}</text></g>`});
+      <text x="${X(i)}" y="${up?top-8:top+h+15}" fill="#ececee" font-size="10.5" font-weight="700" text-anchor="middle">${f(k.r)}</text>
+      <text x="${X(i)}" y="${H-8}" fill="#9a9a9f" font-size="11" text-anchor="middle">${monY(k.x.e)}</text></g>`});
   wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Monthly growth">${g}</svg>`;
   const sel=i=>{const k=C[i],x=k.x;
     info.innerHTML=`<b>${monF(x.e)}${x.partial?' (to '+dlabel(x.e)+')':''} <span style="color:${k.r>=0?'var(--accent)':'var(--neg)'};font-weight:700">${pct(k.r)}</span></b><span>${lab} ${rpS(x.profit)} \u00b7 cumulative ${pct(k.c)}</span>`;
@@ -436,7 +438,7 @@ function drawCandles(wrap,info,P,lab){
 /* =====================================================================
    State & router
    ===================================================================== */
-const S={sel:null,mSel:{},from:'home',auth:false,view:'home',goal:null,range:'YTD',iRange:'YTD',gRange:'ALL',sheet:false,filter:'All'};
+const S={sel:null,mSel:{},from:'home',auth:false,view:'home',goal:null,range:'YTD',iRange:'YTD',gRange:'ALL',sheet:false,filter:'All',tuTab:'topup'};
 let USER=null;
 const $=s=>document.querySelector(s);
 const view=$('#view');
@@ -589,7 +591,7 @@ function renderInvest(){
   </section>
   <section><h2>Monthly growth</h2><div class="card"><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>
   <section><h2>Portfolio</h2>${goalRows(M.tujuan.filter(rg))}</section>`;
-  drawChart($('#hChart'),[{pts:vals,color:'#2dd48f'},{pts:mp,color:'#8b9b93',dashed:true}],{label:'Investment chart',onHover:pt=>{
+  drawChart($('#hChart'),[{pts:vals,color:'#2dd48f'},{pts:mp,color:'#9a9a9f',dashed:true}],{label:'Investment chart',onHover:pt=>{
     if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
     $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`}});
   drawCandles($('#cWrap'),$('#cInfo'),GP,'profit');
@@ -608,7 +610,7 @@ function renderDetail(){
     mp.push({t:TODAY_T,v:modal});
     const now=vals[vals.length-1].v,profit=now-modal,r=M.chain(M.periodsFor(g.retAccs,base));
     heroBig=rp(now);heroDelta=deltaHTML(profit,r,'profit since '+dlabel(base));
-    chartSeries=[{pts:vals,color:meta.color},{pts:mp,color:'#8b9b93',dashed:true}];
+    chartSeries=[{pts:vals,color:meta.color},{pts:mp,color:'#9a9a9f',dashed:true}];
     stats=`<div class="stats"><div class="card stat"><div class="l">Principal</div><div class="v">${rp(modal)}</div></div>
       <div class="card stat"><div class="l">Profit</div><div class="v ${sgn(profit)==='pos'?'pos-t':'neg-t'}">${rpS(profit)}</div></div>
       <div class="card stat"><div class="l">${key==='ALL'?'Total return':'Return '+key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>`;
@@ -631,8 +633,10 @@ function renderDetail(){
   /* rekening */
   const accRows=g.accs.map(a=>{const ak=M.byAkun[a],lu=ak.aktif?lastUpd(a):null;return `<div class="acc"><span>${ak.nama}${ak.aktif?'':'<span class="tag">history</span>'}${lu?`<small>Updated ${updLabel(lu)}</small>`:''}</span><b>${rp(M.val(a,TODAY_T))}</b></div>`}).join('');
   /* topup tujuan */
-  const tx=DATA.transaksi.filter(x=>g.accs.includes(txAcc(x))).sort((a,b)=>T(b.tanggal)-T(a.tanggal));
+  const all=DATA.transaksi.filter(x=>g.accs.includes(txAcc(x))).sort((a,b)=>T(b.tanggal)-T(a.tanggal));
+  const tx=all.filter(x=>!isW(x)),wds=all.filter(isW);
   const txHTML=tx.length?`<div class="card">${tx.map(x=>txRow(x,g)).join('')}</div>`:`<div class="card empty">No top-ups yet.</div>`;
+  const wdHTML=wds.length?`<section><h2>Withdrawals <small>${wds.length}</small></h2><div class="card">${wds.map(x=>txRow(x,g)).join('')}</div></section>`:'';
   view.innerHTML=`
   <div class="dhead"><button class="back" data-act="back" aria-label="Back">${icon('back')}</button><div class="t">${g.name}</div>${(a0=>a0?`<button class="badge act" data-act="upd" data-ak="${esc(a0)}">Update</button>`:'')(g.accs.find(a=>M.byAkun[a].aktif))}</div>
   <section class="hero">
@@ -645,7 +649,8 @@ function renderDetail(){
   </section>
   ${growth}
   <section><h2>Accounts</h2><div class="card">${accRows}</div></section>
-  <section><h2>${tx.some(isW)?'Transactions':'Top-ups'} <small>${tx.length}</small></h2>${txHTML}</section>`;
+  <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>
+  ${wdHTML}`;
   drawChart($('#hChart'),chartSeries,{label:'Chart '+g.name,onHover});
   if(GP)drawCandles($('#dWrap'),$('#dInfo'),GP,'profit');
 }
@@ -677,7 +682,7 @@ function renderUpdates(){
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||'<div class="card empty" style="margin-top:16px">No updates yet.</div>'}</section>`;
 }
-const tuFiltered=()=>DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal)).filter(x=>S.filter==='All'||(goalOf(txAcc(x))||{}).name===S.filter);
+const tuFiltered=()=>DATA.transaksi.slice().sort((a,b)=>T(b.tanggal)-T(a.tanggal)).filter(x=>isW(x)===(S.tuTab==='wd')&&(S.filter==='All'||(goalOf(txAcc(x))||{}).name===S.filter));
 /* open/close one month in place so it can slide; rows are only built while a month is open */
 function setMonth(k,open){
   S.mSel[k]=open;
@@ -698,23 +703,27 @@ function setMonth(k,open){
 function topupsHTML(){
   const names=['All',...M.tujuan.filter(t=>t.hasReturn).map(t=>t.name)];
   if(!names.includes(S.filter))S.filter='All';
+  /* top-ups and withdrawals live in separate tabs (the toggle only shows once there is a withdrawal) */
+  const hasW=DATA.transaksi.some(isW);
+  if(!hasW)S.tuTab='topup';
+  const wd=S.tuTab==='wd',word=wd?'withdrawal':'top-up';
   const tx=tuFiltered();
-  /* deposits per month (filtered) */
-  const net=x=>isW(x)?-x.nominal:x.nominal,hasW=tx.some(isW);
-  const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+net(x)});
+  /* amount per month (filtered) */
+  const byM={};tx.forEach(x=>{const k=x.tanggal.slice(0,7);byM[k]=(byM[k]||0)+x.nominal});
   const keys=Object.keys(byM).sort(),mx=Math.max(...keys.map(k=>byM[k]),1);
-  const total=tx.reduce((s,x)=>s+net(x),0);
+  const total=tx.reduce((s,x)=>s+x.nominal,0);
   /* which months are expanded: newest by default, otherwise whatever the user toggled / picked from the chart */
   const newest=keys[keys.length-1],isOpen=k=>k in S.mSel?S.mSel[k]:k===newest;
   const bars=keys.length?keys.map(k=>`<button class="col${isOpen(k)?' on':''}" data-act="mbar" data-k="${k}" aria-label="${monF(T(k+'-01'))}"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></button>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
   /* one collapsible block per month, newest first */
   const byK={};tx.forEach(x=>{(byK[x.tanggal.slice(0,7)]=byK[x.tanggal.slice(0,7)]||[]).push(x)});
   const list=keys.slice().reverse().map(k=>{const o=isOpen(k),n=byK[k].length;
-    return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} ${byK[k].some(isW)?'transaction':'top-up'}${n>1?'s':''}</small></span><span class="mt">${rpN(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?byK[k].map(x=>txRow(x)).join(''):''}</div></div></div>`}).join('');
+    return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} ${word}${n>1?'s':''}</small></span><span class="mt${wd?' out':''}">${wd?'−':''}${rp(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?byK[k].map(x=>txRow(x)).join(''):''}</div></div></div>`}).join('');
   return `
-  <section><h2>${hasW?'Top-ups &amp; withdrawals':'Top-ups'} <small>${rpN(total)}</small></h2><div class="card cols" id="tuCols">${bars}</div></section>
+  ${hasW?`<div class="seg" id="tuTab"><button class="${wd?'':'on'}" data-act="tutab" data-k="topup">Top-ups</button><button class="${wd?'on':''}" data-act="tutab" data-k="wd">Withdrawals</button></div>`:''}
+  <section><h2>${wd?'Withdrawals':'Top-ups'} <small>${wd?'−':''}${rp(total)}</small></h2><div class="card cols${wd?' wd':''}" id="tuCols">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
-  <section>${list||'<div class="card empty" style="margin-top:16px">No top-ups yet.</div>'}</section>`;
+  <section>${list||`<div class="card empty" style="margin-top:16px">No ${word}s yet.</div>`}</section>`;
 }
 
 /* ---------- Profil ---------- */
@@ -890,6 +899,7 @@ document.addEventListener('click',e=>{
   else if(a==='grange'){chipFrom(a);S.gRange=el.dataset.k;render()}
   else if(a==='irange'){chipFrom(a);S.iRange=el.dataset.k;render()}
   else if(a==='filter'){S.filter=el.dataset.k;S.mSel={};render()}
+  else if(a==='tutab'){S.tuTab=el.dataset.k;S.mSel={};render()}
   else if(a==='mtoggle'){const k=el.dataset.k;setMonth(k,el.getAttribute('aria-expanded')!=='true')}
   else if(a==='mbar'){const k=el.dataset.k;document.querySelectorAll('#tuCols .col').forEach(c=>setMonth(c.dataset.k,c.dataset.k===k));setTimeout(()=>{const m=$('#m-'+k);if(m)m.scrollIntoView({behavior:'smooth',block:'center'})},320)}
   else if(a==='hide'){HIDE=!HIDE;try{localStorage.setItem('jk_hide',HIDE?'1':'0')}catch(_){}render()}
