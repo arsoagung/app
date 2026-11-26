@@ -77,7 +77,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .gsub .tick{width:12px;height:12px;stroke:var(--accent);stroke-width:3;margin-left:4px;vertical-align:-1px}
 .gname{font-weight:700}.gsub{font-size:12px;color:var(--muted);margin-top:1px}
 .gright{text-align:right}.gval{font-weight:700}
-.pv{cursor:pointer;transition:opacity .26s ease,text-shadow .26s ease}.pv.out{opacity:0;text-shadow:0 0 12px currentColor}
+.pv{cursor:pointer;transition:opacity .3s ease,color .22s ease,text-shadow .22s ease}.pv.lit{color:#fff;text-shadow:0 0 10px #fff,0 0 20px rgba(255,255,255,.7)}.pv.out{opacity:0;color:#fff;text-shadow:0 0 10px #fff}
 .pill{display:block;margin-top:2px;font-size:12px;font-weight:600}
 .pill.pos{color:var(--accent)}.pill.neg{color:var(--neg)}.pill.mut{color:var(--faint)}
 
@@ -123,7 +123,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .cols{display:flex;align-items:flex-end;gap:10px;height:132px;padding:14px 18px 12px;overflow-x:auto;scrollbar-width:none}
 .cols::-webkit-scrollbar{display:none}
 .col{flex:1 0 44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
-.col .bar{width:100%;max-width:56px;border-radius:10px 10px 4px 4px;background:var(--accent);min-height:4px;opacity:.4;transition:opacity .2s}
+.col .bar{width:100%;max-width:56px;border-radius:0;background:var(--accent);min-height:4px;opacity:.4;transition:opacity .2s}
 .col.on .bar,.cols.none .bar{opacity:1}
 .cols.wd .bar{background:var(--neg)}
 .mblock .mt.out{color:var(--neg)}
@@ -322,7 +322,9 @@ const rpS=n=>(n<0?'−':'+')+rp(n);
 const rpN=n=>(n<0?'−':'')+rp(n);
 const PV={m:Math.random()<.5?'rp':'pct',t:null};
 const pvHTML=(d,r)=>r==null?rpS(d):`<span class="pv" data-rp="${rpS(d)}" data-pc="${pct(r)}">${PV.m==='rp'?rpS(d):pct(r)}</span>`;
-function pvFlip(){PV.m=PV.m==='rp'?'pct':'rp';const els=document.querySelectorAll('.pv');els.forEach(e=>e.classList.add('out'));setTimeout(()=>{document.querySelectorAll('.pv').forEach(e=>{e.textContent=PV.m==='rp'?e.dataset.rp:e.dataset.pc;e.classList.remove('out')})},260)}
+function pvFlip(){PV.m=PV.m==='rp'?'pct':'rp';const els=[...document.querySelectorAll('.pv')];els.forEach(e=>e.classList.add('lit'));
+  setTimeout(()=>els.forEach(e=>e.classList.add('out')),230);
+  setTimeout(()=>els.forEach(e=>{e.textContent=PV.m==='rp'?e.dataset.rp:e.dataset.pc;e.classList.remove('lit');e.classList.remove('out')}),560)}
 function pvTimer(){clearInterval(PV.t);PV.t=setInterval(pvFlip,10000)}
 const pct=(x,d=2)=>(x<0?'−':'+')+Math.abs(x*100).toFixed(d)+'%';
 const cmp=n=>{if(HIDE)return '•••';const a=Math.abs(n);let s;if(a>=1e9)s=(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';else if(a>=1e6)s=(n/1e6).toFixed(a>=1e8?0:1).replace(/\.0$/,'')+'M';else if(a>=1e3)s=Math.round(n/1e3)+'K';else s=''+Math.round(n);return s};
@@ -783,7 +785,11 @@ function topupsHTML(){
   const total=tx.reduce((s,x)=>s+x.nominal,0);
   /* which months are expanded: newest by default, otherwise whatever the user toggled / picked from the chart */
   const isOpen=k=>k in S.mSel?S.mSel[k]:false;
-  const bars=keys.length?keys.map(k=>`<button class="col${isOpen(k)?' on':''}" data-act="mbar" data-k="${k}" aria-label="${monF(T(k+'-01'))}"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></button>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
+  /* withdrawals chart starts at the first month with any transaction, so empty months show as 0 */
+  let bkeys=keys;
+  if(wd&&keys.length){const all=DATA.transaksi.map(x=>x.tanggal.slice(0,7)).sort();let c=all[0];const end=keys[keys.length-1];bkeys=[];
+    while(c<=end){bkeys.push(c);let y=+c.slice(0,4),m=+c.slice(5,7)+1;if(m>12){m=1;y++}c=y+'-'+String(m).padStart(2,'0')}}
+  const bars=keys.length?bkeys.map(k=>!byM[k]?`<div class="col"><span class="cv">0</span><div class="bar" style="height:4px"></div><span class="cm">${monY(T(k+'-01'))}</span></div>`:`<button class="col${isOpen(k)?' on':''}" data-act="mbar" data-k="${k}" aria-label="${monF(T(k+'-01'))}"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></button>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
   /* one collapsible block per month, newest first */
   const byK={};tx.forEach(x=>{(byK[x.tanggal.slice(0,7)]=byK[x.tanggal.slice(0,7)]||[]).push(x)});
   const list=keys.slice().reverse().map(k=>{const o=isOpen(k),n=byK[k].length;
