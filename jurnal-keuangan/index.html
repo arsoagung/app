@@ -77,6 +77,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .gsub .tick{width:12px;height:12px;stroke:var(--accent);stroke-width:3;margin-left:4px;vertical-align:-1px}
 .gname{font-weight:700}.gsub{font-size:12px;color:var(--muted);margin-top:1px}
 .gright{text-align:right}.gval{font-weight:700}
+.pv{cursor:pointer;transition:opacity .26s ease,text-shadow .26s ease}.pv.out{opacity:0;text-shadow:0 0 12px currentColor}
 .pill{display:block;margin-top:2px;font-size:12px;font-weight:600}
 .pill.pos{color:var(--accent)}.pill.neg{color:var(--neg)}.pill.mut{color:var(--faint)}
 
@@ -319,6 +320,10 @@ let HIDE=false;try{HIDE=localStorage.getItem('jk_hide')==='1'}catch(_){}
 const rp=n=>HIDE?'Rp ••••••':'Rp '+Math.round(Math.abs(n)).toLocaleString('en-US');
 const rpS=n=>(n<0?'−':'+')+rp(n);
 const rpN=n=>(n<0?'−':'')+rp(n);
+const PV={m:Math.random()<.5?'rp':'pct',t:null};
+const pvHTML=(d,r)=>r==null?rpS(d):`<span class="pv" data-rp="${rpS(d)}" data-pc="${pct(r)}">${PV.m==='rp'?rpS(d):pct(r)}</span>`;
+function pvFlip(){PV.m=PV.m==='rp'?'pct':'rp';const els=document.querySelectorAll('.pv');els.forEach(e=>e.classList.add('out'));setTimeout(()=>{document.querySelectorAll('.pv').forEach(e=>{e.textContent=PV.m==='rp'?e.dataset.rp:e.dataset.pc;e.classList.remove('out')})},260)}
+function pvTimer(){clearInterval(PV.t);PV.t=setInterval(pvFlip,10000)}
 const pct=(x,d=2)=>(x<0?'−':'+')+Math.abs(x*100).toFixed(d)+'%';
 const cmp=n=>{if(HIDE)return '•••';const a=Math.abs(n);let s;if(a>=1e9)s=(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';else if(a>=1e6)s=(n/1e6).toFixed(a>=1e8?0:1).replace(/\.0$/,'')+'M';else if(a>=1e3)s=Math.round(n/1e3)+'K';else s=''+Math.round(n);return s};
 const dlabel=t=>{const d=new Date(t);return d.getUTCDate()+' '+MON[d.getUTCMonth()]+(d.getUTCFullYear()!==YEAR?' '+d.getUTCFullYear():'')};
@@ -489,14 +494,14 @@ function placeChips(){
   });
 }
 const chipsHTML=(cur,act)=>`<div class="chips" data-chips="${act}"><i class="cind"></i>${RANGES.map(k=>{const off=(k==='1M'||k==='3M'||k==='1Y')&&M.dates[0]>M.rangeTarget(k);return `<button class="chip${cur===k?' on':''}"${off?' disabled':''} data-act="${act}" data-k="${k}">${k}</button>`}).join('')}</div>`;
-const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'down')}${rpS(d)}${p==null?'':' ('+pct(p)+')'}</span><span class="since">${since}</span>`;
+const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'down')}${pvHTML(d,p)}</span><span class="since">${since}</span>`;
 
 /* ---------- Beranda ---------- */
 function goalRows(list){
   return (list||M.tujuan.filter(g=>!isCashG(g))).map(g=>{
     let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
-      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${rpS(lp.profit)} (${pct(lp.r)})</span>`}
+      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${pvHTML(lp.profit,lp.r)}</span>`}
     const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
@@ -666,7 +671,7 @@ function renderDetail(){
   const txHTML=tx.length?Object.keys(byK).sort().reverse().map(k=>mblockHTML(k,byK[k],k in S.mSel?S.mSel[k]:false,'top-up')).join(''):`<div class="card empty">No top-ups yet.</div>`;
   const wdHTML=wds.length?`<section><h2>Withdrawals <small>${wds.length}</small></h2><div class="card">${wds.map(x=>txRow(x,g)).join('')}</div></section>`:'';
   view.innerHTML=`
-  <div class="dhead"><button class="back" data-act="back" aria-label="Back">${icon('back')}</button><div class="t">${g.name}</div>${(a0=>a0?`<button class="badge act" data-act="upd" data-ak="${esc(a0)}">Update</button>`:'')(g.accs.find(a=>M.byAkun[a].aktif))}</div>
+  <div class="dhead"><button class="back" data-act="back" aria-label="Back">${icon('back')}</button><div class="t">${g.name}</div>${(a0=>a0?`<button class="badge act" data-act="upd" data-ak="${esc(a0)}" data-sc="${esc(g.accs.filter(x=>M.byAkun[x].aktif).join('|'))}">Update</button>`:'')(g.accs.find(a=>M.byAkun[a].aktif))}</div>
   <section class="hero">
     <div class="eyebrow">Current value</div>
     <div class="big" id="hBig">${heroBig}</div>
@@ -699,7 +704,7 @@ const accLabel=a=>{const g=goalOf(a.akun),p=accPlat(a);return g?p+' ('+g.name+')
 const platLogo=n=>{const p=(DATA.platform||[]).find(x=>x.nama===n);return p&&p.logo||''};
 const plogo=(name,sz)=>{const l=platLogo(name),z=sz||38;return l?`<img class="plogo" src="${esc(l)}" alt="" style="width:${z}px;height:${z}px">`:`<span class="plogo ph" style="width:${z}px;height:${z}px;font-size:${Math.round(z*.42)}px">${esc((name||'?').charAt(0).toUpperCase())}</span>`};
 /* monthly profit pill for a set of accounts (latest period, same as the goal rows) */
-const accPill=(ids,start)=>{const P=M.periodsFor(ids,start),lp=P[P.length-1];return lp&&lp.r!=null?`<span class="pill ${sgn(lp.profit)}">${rpS(lp.profit)} (${pct(lp.r)})</span>`:'<span class="pill mut">No data</span>'};
+const accPill=(ids,start)=>{const P=M.periodsFor(ids,start),lp=P[P.length-1];return lp&&lp.r!=null?`<span class="pill ${sgn(lp.profit)}">${pvHTML(lp.profit,lp.r)}</span>`:'<span class="pill mut">No data</span>'};
 const hasRet=a=>a.ikutReturn&&a.returnMulai;
 function arowHTML(a,withGoal){
   const g=goalOf(a.akun),v=M.val(a.akun,TODAY_T);
@@ -810,12 +815,13 @@ function renderProfil(){
    ===================================================================== */
 const fmtIn=s=>{const d=String(s).replace(/\D/g,'');return d?Number(d).toLocaleString('en-US'):''};
 const numIn=s=>Number(String(s).replace(/\D/g,''))||0;
+let fScope=null;
 function sheetHTML(pre){
-  const act=M.akun.filter(a=>a.aktif);
+  const act=M.akun.filter(a=>a.aktif),sel=fScope?act.filter(a=>fScope.includes(a.akun)):act;
   const opt=(list,sel)=>list.map(a=>`<option value="${a.akun}"${a.akun===sel?' selected':''}>${esc(accLabel(a))}</option>`).join('');
-  const ak=pre&&act.some(a=>a.akun===pre)?pre:act[0].akun,tg=cpTarget();
+  const ak=pre&&sel.some(a=>a.akun===pre)?pre:sel[0].akun,tg=cpTarget();
   return `<div class="grab"></div><div class="stitle" id="fTitle">Add top-up</div>
-    <div class="field"><label for="fAk">Asset</label><select class="inp" id="fAk">${opt(act,ak)}</select></div>
+    <div class="field"><label for="fAk">Asset</label><select class="inp" id="fAk">${opt(sel,ak)}</select></div>
     <div class="seg" id="fMode"><button data-act="fmode" data-m="topup">Top-up</button><button data-act="fmode" data-m="wd">Withdraw</button><button data-act="fmode" data-m="upd">Update balance</button></div>
     <div id="fTopWrap"><div class="field"><label for="fNom" id="fNomLbl">Top-up amount</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div></div>
     <div class="field"><label for="fSal" id="fSalLbl">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(ak,TODAY_T))}" autocomplete="off"></div>
@@ -858,7 +864,8 @@ function fillSheet(ak,mode){
   fBase=Number(M.val($('#fAk').value,TODAY_T))||0;fManual=false;
   syncForm(true);
 }
-function openSheet(ak,mode){
+function openSheet(ak,mode,scope){
+  fScope=scope&&scope.length?scope:null;
   const sh=$('#sheet'),bd=$('#backdrop');fillSheet(ak,mode);sh.hidden=false;bd.hidden=false;
   requestAnimationFrame(()=>{sh.classList.add('open');bd.classList.add('open')});S.sheet=true;
 }
@@ -1026,6 +1033,7 @@ let tt;function toast(msg){const t=$('#toast');t.querySelector('span').textConte
    Events
    ===================================================================== */
 document.addEventListener('click',e=>{
+  const pv=e.target.closest('.pv');if(pv){e.preventDefault();e.stopPropagation();pvFlip();pvTimer();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act;
   if(a==='logout'){Auth.signOut()}
@@ -1046,7 +1054,7 @@ document.addEventListener('click',e=>{
   else if(a==='txsave')saveTx();
   else if(a==='txdel')delTx(el);
   else if(a==='fab')openSheet(undefined,'topup');
-  else if(a==='upd')openSheet(el.dataset.ak,'upd');
+  else if(a==='upd')openSheet(el.dataset.ak,'upd',el.dataset.sc?el.dataset.sc.split('|'):null);
   else if(a==='fmode'){fPref=el.dataset.m;fManual=false;syncForm();calcSal();$('#fErr').textContent=''}
   else if(a==='cp'){el.setAttribute('aria-checked',el.getAttribute('aria-checked')==='true'?'false':'true');syncForm()}
   else if(a==='close')closeSheet();
@@ -1111,6 +1119,7 @@ async function loadData(){
 }
 function showLoggedOut(){S.auth=false;$('#shell').hidden=true}
 let entering=false;
+pvTimer();
 async function enter(){
   if(entering)return;entering=true;
   try{
