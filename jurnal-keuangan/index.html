@@ -269,9 +269,8 @@ button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surfac
 
 <script>
 /* =====================================================================
-   No data lives in this file: it is fetched from Google Sheets via GAS after login.
+   No data lives in this file: it is fetched from Supabase (jurnal_keuangan_* tables) after login.
    ===================================================================== */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWJVS3zitZBVDVIKooqOEJ56pW4D34gWFNVw6unK164FmsYeHAtVS9YADXemOMphbeyg/exec';
 const sb = Auth.client;   // login + whitelist: shared/auth.js (sama kayak app lain)
 const DATA = {akun:[], saldo:[], transaksi:[], updates:[]};
 let TODAY, TODAY_T, YEAR;
@@ -846,7 +845,7 @@ async function saveSheet(){
 /* ---------- Edit / delete a top-up (row in app_transaksi) ----------
    There is no id column, so the server finds the row by matching the original values. */
 let txIdx=-1,txBusy=false;
-const txOrig=x=>({tanggal:x.tanggal,nominal:x.nominal,ke:x.ke,dari:x.dari||'',catatan:x.catatan||''});
+const txOrig=x=>({id:x.id,tanggal:x.tanggal,nominal:x.nominal,ke:x.ke,dari:x.dari||'',catatan:x.catatan||''});
 function openTxSheet(i){
   const x=DATA.transaksi[i];if(!x)return;txIdx=i;
   const act=M.akun.filter(a=>a.aktif),known=!x.dari||x.dari==='Rekening Utama'||act.some(a=>a.akun===x.dari);
@@ -941,18 +940,27 @@ let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>
 async function api(action,payload){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){const e=new Error('Not signed in');e.status=401;throw e}
-  let res;
-  try{res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,token:session.access_token},payload||{}))})}
-  catch(_){throw new Error('Cannot reach the server.')}
-  let j;try{j=await res.json()}catch(_){throw new Error('Invalid server response.')}
-  if(!j.ok){const e=new Error((j.error||'Failed.')+(j.detail?' ['+j.detail+']':''));e.status=j.status;throw e}
-  return j.data;
+  const p=payload||{};
+  let r;
+  try{
+    if(action==='read')r=await sb.rpc('jk_read');
+    else if(action==='saveUpdate')r=await sb.rpc('jk_save_update',{p});
+    else if(action==='editTopup'||action==='editWithdraw')r=await sb.rpc('jk_edit_tx',{p:{id:p.orig.id,next:p.next}});
+    else if(action==='deleteTopup')r=await sb.rpc('jk_delete_tx',{p_id:p.orig.id});
+    else throw new Error('Unknown action');
+  }catch(e){if(e&&e.message==='Unknown action')throw e;throw new Error('Cannot reach the server.')}
+  if(r.error){
+    const er=r.error,e=new Error(er.message||'Failed.');
+    e.status=(r.status===401||er.code==='PGRST301'||er.code==='PGRST303')?401:(er.code==='42501'||r.status===403)?403:undefined;
+    throw e;
+  }
+  return r.data;
 }
 let lastLoad=0;
 async function loadData(){
   const d=await api('read');
   setToday(d.today);DATA.akun=d.akun;DATA.saldo=d.saldo;DATA.transaksi=d.transaksi;DATA.updates=d.updates||[];
-  if(!DATA.akun.length||!DATA.saldo.length)throw new Error('The Google Sheet has no data yet.');
+  if(!DATA.akun.length||!DATA.saldo.length)throw new Error('No data yet. Run sql_setup/05_jurnal_keuangan_import.sql.');
   build();lastLoad=Date.now();
 }
 function showLoggedOut(){S.auth=false;$('#shell').hidden=true}
