@@ -709,7 +709,7 @@ function assetRowHTML(a){
   const chip=hasRet(a)?accPill([a.akun],T(a.returnMulai)):'<span class="pill mut">No return</span>';
   return `<button class="card goal" data-act="go" data-g="${esc(g?g.name:'')}">
     ${plogo(accPlat(a),30)}
-    <div><div class="gname">${esc(accPlat(a))} <span class="gg">(${esc(g?g.name:'')})</span></div><div class="gsub">${lu?fullDate(lu):'Not updated yet'}</div></div>
+    <div><div class="gname">${esc(accPlat(a))}</div><div class="gsub">${esc(g?g.name:'')} \u00b7 ${lu?fullDate(lu):'Not updated yet'}</div></div>
     <div class="gright"><div class="gval">${rp(M.val(a.akun,TODAY_T))}</div>${chip}</div></button>`;
 }
 function assetsHTML(){
@@ -795,7 +795,7 @@ function renderProfil(){
   <div class="prof"><div class="avatar">${av?`<img src="${esc(av)}" alt="" referrerpolicy="no-referrer">`:esc(nm.charAt(0).toUpperCase())}</div><div class="nm">${esc(nm)}</div>${em&&em!==nm?`<div class="sb">${esc(em)}</div>`:''}</div>
   <div class="card"><div class="kv"><span>Data as of</span><span>${fullDate(TODAY)}</span></div><div class="kv"><span>Last synced</span><span>${sync}</span></div><div class="kv"><span>Active accounts</span><span>${M.akun.filter(a=>a.aktif).length}</span></div></div>
   <h2>Assets <small>${M.akun.length}</small></h2>
-  <div class="card">${M.akun.map(a=>`<button class="tx" data-act="assetedit" data-ak="${esc(a.akun)}">${plogo(accPlat(a),34)}<div class="m"><b>${esc(accLabel(a))}</b><span>${esc(accKat(a))}${a.aktif?'':' \u00b7 inactive'}</span></div></button>`).join('')}</div>
+  <div class="card">${M.akun.map(a=>`<button class="tx" data-act="assetedit" data-ak="${esc(a.akun)}">${plogo(accPlat(a),34)}<div class="m"><b>${esc(accPlat(a))}</b><span>${esc((goalOf(a.akun)||{}).name||a.tujuan)} \u00b7 ${esc(accKat(a))}${a.aktif?'':' \u00b7 inactive'}</span></div></button>`).join('')}</div>
   <button class="btn ghost" data-act="assetnew">${icon('plus')}Add asset</button>
   <button class="btn ghost" data-act="nav" data-v="riwayat">${icon('hist')}Balance updates</button>
   <button class="btn ghost" data-act="logout">${icon('out')}Log out</button>`;
