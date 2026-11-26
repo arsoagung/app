@@ -220,6 +220,22 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .eyebtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--muted)}
 button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surface-2)}
 .btn.danger{background:var(--neg-soft);color:var(--neg)}
+/* platform logo (round, like a profile photo) + assets */
+.plogo{border-radius:50%;object-fit:cover;display:block;flex:none;background:var(--surface-2)}
+.plogo.ph{display:grid;place-items:center;font-weight:800;color:var(--accent)}
+.arow{display:flex;align-items:center;gap:12px;width:100%;padding:11px 16px;text-align:left}
+.arow .m{flex:1;min-width:0}.arow .m b{font-weight:600}.arow .m .g{color:var(--muted);font-weight:500}
+.arow .m>span{display:block;font-size:12px;color:var(--muted)}
+.kv2{text-align:right;color:var(--text)}.kv2 b{display:block;font-weight:700}
+.kv2 .pill{display:block}
+.pdd{display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer}
+.pdd .t{flex:1;min-width:0}.pdd .t.ph{color:var(--faint)}
+.plist{margin-top:6px;background:var(--surface-2);border-radius:14px;overflow:hidden}
+.plist button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;text-align:left;font-weight:600}
+.plist button:active,.plist button.on{background:var(--surface-3)}
+.lgrow{display:flex;align-items:center;gap:14px}
+.lgbtn{display:inline-flex;align-items:center;height:38px;padding:0 16px;border-radius:12px;background:var(--surface-2);font-weight:700;cursor:pointer}
+.sfoot.mt{margin-top:8px}
 .inp.ro{display:flex;align-items:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -256,10 +272,10 @@ button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surfac
   <main id="view"></main>
   <nav class="tabbar">
     <button class="tab" data-act="nav" data-v="home" aria-label="Net worth"><svg class="i"><use href="#i-home"/></svg></button>
-    <button class="tab" data-act="nav" data-v="invest" aria-label="Investment"><svg class="i"><use href="#i-trend"/></svg></button>
-    <button class="addbtn" data-act="fab" aria-label="Add"><svg class="i"><use href="#i-plus"/></svg></button>
     <button class="tab" data-act="nav" data-v="tujuan" aria-label="Goals"><svg class="i"><use href="#i-goal"/></svg></button>
-    <button class="tab" data-act="nav" data-v="profil" aria-label="Profile"><svg class="i"><use href="#i-user"/></svg></button>
+    <button class="addbtn" data-act="fab" aria-label="Add"><svg class="i"><use href="#i-plus"/></svg></button>
+    <button class="tab" data-act="nav" data-v="invest" aria-label="Assets"><svg class="i"><use href="#i-trend"/></svg></button>
+    <button class="tab" data-act="nav" data-v="profil" aria-label="Settings"><svg class="i"><use href="#i-user"/></svg></button>
   </nav>
 </div>
 
@@ -272,7 +288,7 @@ button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surfac
    No data lives in this file: it is fetched from Supabase (jurnal_keuangan_* tables) after login.
    ===================================================================== */
 const sb = Auth.client;   // login + whitelist: shared/auth.js (sama kayak app lain)
-const DATA = {akun:[], saldo:[], transaksi:[], updates:[]};
+const DATA = {akun:[], saldo:[], transaksi:[], updates:[], platform:[]};
 let TODAY, TODAY_T, YEAR;
 function setToday(iso){TODAY=iso;TODAY_T=T(iso);YEAR=+iso.slice(0,4)}
 
@@ -438,7 +454,7 @@ function drawCandles(wrap,info,P,lab){
 /* =====================================================================
    State & router
    ===================================================================== */
-const S={sel:null,mSel:{},from:'home',auth:false,view:'home',goal:null,range:'YTD',iRange:'YTD',gRange:'ALL',sheet:false,filter:'All',tuTab:'topup'};
+const S={sel:null,mSel:{},from:'home',auth:false,view:'home',goal:null,range:'YTD',iRange:'YTD',gRange:'ALL',sheet:false,filter:'All',tuTab:'topup',kOpen:{}};
 let USER=null;
 const $=s=>document.querySelector(s);
 const view=$('#view');
@@ -568,7 +584,7 @@ function renderHome(){
 /* ---------- Investment (all return-bearing accounts combined) ---------- */
 function renderInvest(){
   const accs=M.allRet,key=S.iRange,rg=goal=>goal.hasReturn;
-  if(!accs.length||!isFinite(M.allStart)){view.innerHTML=`<div class="topbar"><div class="brand">Investment</div></div><div class="card empty">No investment accounts yet.</div>`;return}
+  if(!accs.length||!isFinite(M.allStart)){view.innerHTML=`<div class="topbar"><div class="brand">Assets</div></div><div class="card empty">No investment accounts yet.</div>`;return}
   const base=Math.max(M.allStart,M.dates[M.idxFor(key)]);
   const vals=M.dates.filter(t=>t>=base).map(t=>({t,v:M.sum(accs,t)}));
   let modal=vals[0].v;const mp=[{t:base,v:modal}];
@@ -578,7 +594,7 @@ function renderInvest(){
   const heroBig=rp(now),heroDelta=deltaHTML(profit,r,'profit since '+dlabel(base));
   const GP=M.periodsFor(accs,M.allStart);
   view.innerHTML=`
-  <div class="topbar"><div class="brand">Investment</div></div>
+  <div class="topbar"><div class="brand">Assets</div></div>
   <section class="hero">
     <div class="eyebrow">Investment value · ${dlabel(TODAY_T)}</div>
     <div class="big" id="hBig">${heroBig}</div>
@@ -590,7 +606,7 @@ function renderInvest(){
       <div class="card stat"><div class="l">${key==='ALL'?'Total return':'Return '+key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>
   </section>
   <section><h2>Monthly growth</h2><div class="card"><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>
-  <section><h2>Portfolio</h2>${goalRows(M.tujuan.filter(rg))}</section>`;
+  ${assetsHTML()}`;
   drawChart($('#hChart'),[{pts:vals,color:'#2dd48f'},{pts:mp,color:'#9a9a9f',dashed:true}],{label:'Investment chart',onHover:pt=>{
     if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
     $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`}});
@@ -652,6 +668,7 @@ function renderDetail(){
     ${stats}
   </section>
   ${growth}
+  <section><h2>Assets</h2><div class="card">${g.accs.filter(a=>M.byAkun[a].aktif).map(a=>arowHTML(M.byAkun[a],false)).join('')}</div></section>
   <section><div class="card"><div class="kv"><span>Last updated</span><span>${lu?updLabel(lu):'-'}</span></div></div></section>
   <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>
   ${wdHTML}`;
@@ -669,7 +686,29 @@ function txRow(x,g){
 /* ---------- Riwayat ---------- */
 function goalOf(ak){return M.tujuan.find(t=>t.accs.includes(ak))}
 /* UI is goal-only: show the goal name, never the platform. Account name is only added when a goal has 2+ active accounts. */
-const accLabel=a=>{const g=goalOf(a.akun);if(!g)return a.nama;return g.name+(M.akun.filter(b=>b.aktif&&goalOf(b.akun)===g).length>1?' \u00b7 '+a.nama:'')};
+const accPlat=a=>a.platform||a.nama,accKat=a=>a.kategori||(a.jenis==='cair'?'Cash':'Investment');
+const accLabel=a=>{const g=goalOf(a.akun),p=accPlat(a);return g?p+' ('+g.name+')':p};
+const platLogo=n=>{const p=(DATA.platform||[]).find(x=>x.nama===n);return p&&p.logo||''};
+const plogo=(name,sz)=>{const l=platLogo(name),z=sz||38;return l?`<img class="plogo" src="${esc(l)}" alt="" style="width:${z}px;height:${z}px">`:`<span class="plogo ph" style="width:${z}px;height:${z}px;font-size:${Math.round(z*.42)}px">${esc((name||'?').charAt(0).toUpperCase())}</span>`};
+/* monthly profit pill for a set of accounts (latest period, same as the goal rows) */
+const accPill=(ids,start)=>{const P=M.periodsFor(ids,start),lp=P[P.length-1];return lp&&lp.r!=null?`<span class="pill ${sgn(lp.profit)}">${rpS(lp.profit)} (${pct(lp.r)})</span>`:'<span class="pill mut">No data</span>'};
+const hasRet=a=>a.ikutReturn&&a.returnMulai;
+function arowHTML(a,withGoal){
+  const g=goalOf(a.akun),v=M.val(a.akun,TODAY_T);
+  const pill=hasRet(a)?accPill([a.akun],T(a.returnMulai)):'';
+  const name=withGoal?`<b>${esc(accPlat(a))} <span class="g">(${esc(g?g.name:'')})</span></b>`:`<b>${esc(accPlat(a))}</b><span>${esc(accKat(a))}</span>`;
+  return `<button class="arow" data-act="go" data-g="${esc(g?g.name:'')}">${plogo(accPlat(a),36)}<div class="m">${name}</div><div class="kv2"><b>${rp(v)}</b>${pill}</div></button>`;
+}
+/* Assets tab: one block per category (total + monthly profit); tap to see each platform / goal row */
+function assetsHTML(){
+  const rows=M.akun.filter(a=>a.aktif&&hasRet(a));
+  if(!rows.length)return '';
+  const kats=[];rows.forEach(a=>{const k=accKat(a);if(!kats.includes(k))kats.push(k)});
+  return `<section><h2>Assets</h2>${kats.map(k=>{
+    const list=rows.filter(a=>accKat(a)===k),ids=list.map(a=>a.akun),st=Math.min(...list.map(a=>T(a.returnMulai))),
+      val=list.reduce((t,a)=>t+M.val(a.akun,TODAY_T),0),o=!!S.kOpen[k];
+    return `<div class="card mblock${o?' open':''}"><button class="mrow" data-act="ktoggle" data-k="${esc(k)}" aria-expanded="${o}"><span class="mn">${esc(k)}<small>${list.length} ${list.length>1?'assets':'asset'}</small></span><span class="kv2"><b>${rp(val)}</b>${accPill(ids,st)}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${list.map(a=>arowHTML(a,true)).join('')}</div></div></div>`}).join('')}</section>`;
+}
 /* one collapsible month block (shared by the goal detail page) */
 const mblockHTML=(k,items,o,word)=>{const n=items.length,sum=items.reduce((t,x)=>t+x.nominal,0);
   return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} ${word}${n>1?'s':''}</small></span><span class="mt">${rp(sum)}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?items.map(x=>txRow(x)).join(''):''}</div></div></div>`};
@@ -742,9 +781,12 @@ function renderProfil(){
   const m=(USER&&USER.user_metadata)||{},em=(USER&&USER.email)||'',nm=m.full_name||m.name||em||'Account',av=m.avatar_url||m.picture;
   const sync=lastLoad?new Date(lastLoad).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'-';
   view.innerHTML=`
-  <div class="topbar"><div class="brand">Profile</div></div>
+  <div class="topbar"><div class="brand">Settings</div></div>
   <div class="prof"><div class="avatar">${av?`<img src="${esc(av)}" alt="" referrerpolicy="no-referrer">`:esc(nm.charAt(0).toUpperCase())}</div><div class="nm">${esc(nm)}</div>${em&&em!==nm?`<div class="sb">${esc(em)}</div>`:''}</div>
   <div class="card"><div class="kv"><span>Data as of</span><span>${fullDate(TODAY)}</span></div><div class="kv"><span>Last synced</span><span>${sync}</span></div><div class="kv"><span>Active accounts</span><span>${M.akun.filter(a=>a.aktif).length}</span></div></div>
+  <h2>Assets <small>${M.akun.length}</small></h2>
+  <div class="card">${M.akun.map(a=>`<button class="tx" data-act="assetedit" data-ak="${esc(a.akun)}">${plogo(accPlat(a),34)}<div class="m"><b>${esc(accLabel(a))}</b><span>${esc(accKat(a))}${a.aktif?'':' \u00b7 inactive'}</span></div></button>`).join('')}</div>
+  <button class="btn ghost" data-act="assetnew">${icon('plus')}Add asset</button>
   <button class="btn ghost" data-act="nav" data-v="riwayat">${icon('hist')}Balance updates</button>
   <button class="btn ghost" data-act="logout">${icon('out')}Log out</button>`;
 }
@@ -759,7 +801,7 @@ function sheetHTML(pre){
   const opt=(list,sel)=>list.map(a=>`<option value="${a.akun}"${a.akun===sel?' selected':''}>${esc(accLabel(a))}</option>`).join('');
   const ak=pre&&act.some(a=>a.akun===pre)?pre:act[0].akun,tg=cpTarget();
   return `<div class="grab"></div><div class="stitle" id="fTitle">Add top-up</div>
-    <div class="field"><label for="fAk">Goal</label><select class="inp" id="fAk">${opt(act,ak)}</select></div>
+    <div class="field"><label for="fAk">Asset</label><select class="inp" id="fAk">${opt(act,ak)}</select></div>
     <div class="seg" id="fMode"><button data-act="fmode" data-m="topup">Top-up</button><button data-act="fmode" data-m="wd">Withdraw</button><button data-act="fmode" data-m="upd">Update balance</button></div>
     <div id="fTopWrap"><div class="field"><label for="fNom" id="fNomLbl">Top-up amount</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div></div>
     <div class="field"><label for="fSal" id="fSalLbl">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(ak,TODAY_T))}" autocomplete="off"></div>
@@ -842,6 +884,77 @@ async function saveSheet(){
     else{err.textContent=e.message||'Could not save.';btn.disabled=false;btn.textContent=label}
   }finally{saving=false}
 }
+/* ---------- Add / edit an asset (platform + category + goal), platform logo ---------- */
+let AS={ak:null,plat:'',newPlat:false,logo:undefined,busy:false};
+function resizeLogo(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onerror=()=>rej(new Error('Could not read the image.'));
+    fr.onload=()=>{const im=new Image();
+      im.onerror=()=>rej(new Error('That file is not a valid image.'));
+      im.onload=()=>{const sz=Math.min(im.width,im.height);if(!sz){rej(new Error('That file is not a valid image.'));return}
+        const c=document.createElement('canvas');c.width=c.height=128;
+        c.getContext('2d').drawImage(im,(im.width-sz)/2,(im.height-sz)/2,sz,sz,0,0,128,128);
+        res(c.toDataURL('image/webp',.9))};
+      im.src=fr.result};
+    fr.readAsDataURL(file);
+  });
+}
+const platNames=()=>[...new Set([...(DATA.platform||[]).map(p=>p.nama),...M.akun.map(accPlat)])].sort();
+function assetPlatBtn(){
+  const n=AS.newPlat?($('#aName')?$('#aName').value.trim():''):AS.plat,lg=AS.logo!==undefined&&AS.logo?AS.logo:platLogo(n);
+  const pic=lg?`<img class="plogo" src="${esc(lg)}" alt="" style="width:30px;height:30px">`:plogo(n||'?',30);
+  return AS.newPlat?`${pic}<span class="t">New platform</span>`:(AS.plat?`${pic}<span class="t">${esc(AS.plat)}</span>`:`<span class="t ph">Choose platform</span>`);
+}
+function assetSheet(ak){
+  const a=ak?M.byAkun[ak]:null;
+  AS={ak:ak||null,plat:a?accPlat(a):'',newPlat:false,logo:undefined,busy:false};
+  const g=a?goalOf(a.akun):null,cats=[...new Set(M.akun.map(accKat))];
+  const sh=$('#sheet'),bd=$('#backdrop');
+  sh.innerHTML=`<div class="grab"></div><div class="stitle">${a?'Edit asset':'Add asset'}</div>
+    <div class="field"><label>Platform</label>
+      <button class="inp pdd" id="aPlatBtn" data-act="platpick">${assetPlatBtn()}${icon('down')}</button>
+      <div class="plist" id="aPlatList" hidden>${platNames().map(n=>`<button data-act="platsel" data-p="${esc(n)}">${plogo(n,30)}<span>${esc(n)}</span></button>`).join('')}<button data-act="platsel" data-p="">${icon('plus')}<span>New platform</span></button></div></div>
+    <div class="field" id="aNewWrap" hidden><label for="aName">Platform name</label><input class="inp" id="aName" maxlength="40" placeholder="e.g. Superbank" autocomplete="off"></div>
+    <div class="field" id="aLogoWrap" hidden><label>Logo</label><div class="lgrow"><span id="aLogoPrev"></span><label class="lgbtn" for="aLogoIn">Choose image</label><input id="aLogoIn" type="file" accept="image/*" hidden></div></div>
+    <div class="field"><label for="aKat">Category</label><input class="inp" id="aKat" list="aKats" maxlength="40" placeholder="e.g. Deposito" value="${esc(a?accKat(a):'')}" autocomplete="off"><datalist id="aKats">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+    ${a?`<div class="field"><label>Goal</label><div class="inp ro">${esc(g?g.name:a.tujuan)}</div></div>
+    <div class="swrow"><span>Active</span><button class="sw" id="aAct" role="switch" aria-checked="${a.aktif}" data-act="aact"><i></i></button></div>`
+    :`<div class="field"><label for="aGoal">Goal</label><select class="inp" id="aGoal">${M.tujuan.map(t=>`<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')}</select></div>`}
+    <div class="ferr" id="fErr"></div>
+    <button class="btn primary" id="aSave" data-act="assetsave" style="margin-top:6px">${a?'Save changes':'Add asset'}</button>
+    ${a?'':'<div class="sfoot">A new asset starts at Rp 0. Move funds in with a top-up and set From to another asset.</div>'}`;
+  sh.hidden=false;bd.hidden=false;
+  requestAnimationFrame(()=>{sh.classList.add('open');bd.classList.add('open')});S.sheet=true;
+  assetSync();
+}
+function assetSync(){
+  $('#aPlatBtn').innerHTML=assetPlatBtn()+icon('down');
+  $('#aNewWrap').hidden=!AS.newPlat;
+  $('#aLogoWrap').hidden=!(AS.newPlat||AS.plat);
+  const n=AS.newPlat?$('#aName').value.trim():AS.plat,lg=AS.logo?AS.logo:platLogo(n);
+  $('#aLogoPrev').innerHTML=lg?`<img class="plogo" src="${esc(lg)}" alt="" style="width:56px;height:56px">`:plogo(n||'?',56);
+}
+async function saveAsset(){
+  if(AS.busy)return;
+  const err=$('#fErr'),btn=$('#aSave'),label=btn.textContent;
+  const plat=AS.newPlat?$('#aName').value.trim():AS.plat,kat=$('#aKat').value.trim();
+  if(!plat){err.textContent=AS.newPlat?'Enter the platform name.':'Choose a platform.';return}
+  if(!kat){$('#aKat').classList.add('err');err.textContent='Enter a category.';return}
+  const p={platform:plat,kategori:kat};
+  if(AS.logo)p.logo=AS.logo;
+  if(AS.ak){p.akun=AS.ak;p.aktif=$('#aAct').getAttribute('aria-checked')==='true'}
+  else p.tujuan=$('#aGoal').value;
+  AS.busy=true;btn.disabled=true;btn.textContent='Saving\u2026';err.textContent='';
+  try{
+    await api('saveAkun',p);
+    closeSheet();toast(AS.ak?'Asset updated':'Asset added');
+    try{await loadData();render()}catch(_){toast('Saved, but refreshing failed.')}
+  }catch(e){
+    if(e.status===401||e.status===403){closeSheet();Auth.signOut({denied:true})}
+    else{err.textContent=e.message||'Could not save.';btn.disabled=false;btn.textContent=label}
+  }finally{AS.busy=false}
+}
 /* ---------- Edit / delete a top-up (row in app_transaksi) ----------
    There is no id column, so the server finds the row by matching the original values. */
 let txIdx=-1,txBusy=false;
@@ -853,7 +966,7 @@ function openTxSheet(i){
   const sh=$('#sheet'),bd=$('#backdrop');
   const w=isW(x),ac=txAcc(x);
   sh.innerHTML=`<div class="grab"></div><div class="stitle">Edit ${w?'withdrawal':'top-up'}</div>
-    <div class="field"><label>Goal</label><div class="inp ro">${esc(M.byAkun[ac]?accLabel(M.byAkun[ac]):ac)}</div></div>
+    <div class="field"><label>Asset</label><div class="inp ro">${esc(M.byAkun[ac]?accLabel(M.byAkun[ac]):ac)}</div></div>
     <div class="field"><label for="eNom">Amount</label><input class="inp" id="eNom" inputmode="numeric" data-money value="${fmtIn(x.nominal)}" autocomplete="off"></div>
     <div class="field"><label for="eTgl">Date</label><input class="inp" id="eTgl" type="date" value="${esc(x.tanggal)}" max="${TODAY}"></div>
     ${w?'':`<div class="field"><label for="eDari">From</label><select class="inp" id="eDari"><option value="">Income</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>`}
@@ -924,11 +1037,29 @@ document.addEventListener('click',e=>{
   else if(a==='cp'){el.setAttribute('aria-checked',el.getAttribute('aria-checked')==='true'?'false':'true');syncForm()}
   else if(a==='close')closeSheet();
   else if(a==='save')saveSheet();
+  else if(a==='ktoggle'){const k=el.dataset.k;S.kOpen[k]=!S.kOpen[k];el.setAttribute('aria-expanded',!!S.kOpen[k]);el.closest('.mblock').classList.toggle('open',!!S.kOpen[k])}
+  else if(a==='assetnew')assetSheet();
+  else if(a==='assetedit')assetSheet(el.dataset.ak);
+  else if(a==='assetsave')saveAsset();
+  else if(a==='aact')el.setAttribute('aria-checked',el.getAttribute('aria-checked')==='true'?'false':'true');
+  else if(a==='platpick'){const l=$('#aPlatList');l.hidden=!l.hidden}
+  else if(a==='platsel'){
+    const n=el.dataset.p;AS.logo=undefined;
+    if(n){AS.newPlat=false;AS.plat=n}else{AS.newPlat=true;AS.plat='';if($('#aName'))$('#aName').value=''}
+    $('#aPlatList').hidden=true;assetSync();if(!n)setTimeout(()=>$('#aName').focus(),50);
+  }
 });
 document.addEventListener('input',e=>{
+  if(e.target.id==='aName'){assetSync();return}
   if(e.target.matches('[data-money]')){e.target.value=fmtIn(e.target.value);e.target.classList.remove('err');const er=$('#fErr');if(er)er.textContent='';if(e.target.id==='fNom'&&!fManual)calcSal();if(e.target.id==='fSal')fManual=true}
 });
-document.addEventListener('change',e=>{
+document.addEventListener('change',async e=>{
+  if(e.target.id==='aLogoIn'){
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    try{AS.logo=await resizeLogo(f);assetSync();$('#fErr').textContent=''}
+    catch(er){$('#fErr').textContent=er.message||'Could not use that image.'}
+    e.target.value='';return;
+  }
   if(e.target.id==='fAk'){fBase=Number(M.val(e.target.value,TODAY_T))||0;fManual=false;syncForm(true);calcSal()}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
@@ -946,6 +1077,7 @@ async function api(action,payload){
     if(action==='read')r=await sb.rpc('jk_read');
     else if(action==='saveUpdate')r=await sb.rpc('jk_save_update',{p});
     else if(action==='editTopup'||action==='editWithdraw')r=await sb.rpc('jk_edit_tx',{p:{id:p.orig.id,next:p.next}});
+    else if(action==='saveAkun')r=await sb.rpc('jk_save_akun',{p});
     else if(action==='deleteTopup')r=await sb.rpc('jk_delete_tx',{p_id:p.orig.id});
     else throw new Error('Unknown action');
   }catch(e){if(e&&e.message==='Unknown action')throw e;throw new Error('Cannot reach the server.')}
@@ -959,7 +1091,7 @@ async function api(action,payload){
 let lastLoad=0;
 async function loadData(){
   const d=await api('read');
-  setToday(d.today);DATA.akun=d.akun;DATA.saldo=d.saldo;DATA.transaksi=d.transaksi;DATA.updates=d.updates||[];
+  setToday(d.today);DATA.akun=d.akun;DATA.saldo=d.saldo;DATA.transaksi=d.transaksi;DATA.updates=d.updates||[];DATA.platform=d.platform||[];
   if(!DATA.akun.length||!DATA.saldo.length)throw new Error('No data yet. Run sql_setup/05_jurnal_keuangan_import.sql.');
   build();lastLoad=Date.now();
 }
