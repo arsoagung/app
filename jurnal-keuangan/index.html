@@ -75,6 +75,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .gicon{width:30px;height:30px;display:grid;place-items:center;color:var(--c)}
 .gicon .i{width:24px;height:24px;stroke-width:1.7}
 .gsub .tick{width:12px;height:12px;stroke:var(--accent);stroke-width:3;margin-left:4px;vertical-align:-1px}
+.gprog{height:4px;border-radius:2px;background:var(--surface-3);margin-top:8px;overflow:hidden}.gprog i{display:block;height:100%;background:var(--accent);border-radius:2px}.gcap{font-size:11.5px;color:var(--faint);margin-top:4px}
 .gname{font-weight:700}.gsub{font-size:12px;color:var(--muted);margin-top:1px}
 .gright{text-align:right}.gval{font-weight:700}
 .pv{cursor:pointer;transition:opacity .3s ease,color .22s ease,text-shadow .22s ease}.pv.lit{color:#fff;text-shadow:0 0 10px #fff,0 0 20px rgba(255,255,255,.7)}.pv.out{opacity:0;color:#fff;text-shadow:0 0 10px #fff}
@@ -294,7 +295,7 @@ button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surfac
    No data lives in this file: it is fetched from Supabase (jurnal_keuangan_* tables) after login.
    ===================================================================== */
 const sb = Auth.client;   // login + whitelist: shared/auth.js (sama kayak app lain)
-const DATA = {akun:[], saldo:[], transaksi:[], updates:[], platform:[]};
+const DATA = {akun:[], saldo:[], transaksi:[], updates:[], platform:[], goal:[]};
 let TODAY, TODAY_T, YEAR;
 function setToday(iso){TODAY=iso;TODAY_T=T(iso);YEAR=+iso.slice(0,4)}
 
@@ -384,7 +385,7 @@ function build(){
     const starts=akun.filter(a=>a.tujuan===name&&a.ikutReturn&&a.returnMulai).map(a=>T(a.returnMulai));
     const retStart=starts.length?Math.min(...starts):null;
     const series=dates.map(t=>({t,v:sum(accs,t)}));
-    return {name,accs,retAccs,retStart,series,meta:TMETA[name]||{icon:'wallet',color:'#8a8a8f',sub:'',badge:''},hasReturn:retAccs.length>0&&retStart!=null,now:series[series.length-1].v};
+    return {name,accs,retAccs,retStart,series,meta:TMETA[name]||{icon:'wallet',color:'#8a8a8f',sub:'',badge:''},target:Number((DATA.goal.find(x=>x.tujuan===name)||{}).target)||0,hasReturn:retAccs.length>0&&retStart!=null,now:series[series.length-1].v};
   });
   const total=dates.map(t=>({t,v:akun.reduce((s,a)=>s+val(a.akun,t),0)}));
 
@@ -507,7 +508,7 @@ function goalRows(list){
     const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-      <div><div class="gname">${g.name}</div><div class="gsub">${lu?updLbl(lu):''}</div></div>
+      <div><div class="gname">${g.name}</div><div class="gsub">${lu?updLbl(lu):''}</div>${progHTML(g)}</div>
       <div class="gright"><div class="gval">${rp(g.now)}</div>${chip}</div></button>`}).join('');
 }
 /* update tracking: last update + month-end checkpoint (window = 3 days either side of a month change) */
@@ -683,6 +684,7 @@ function renderDetail(){
     ${stats}
   </section>
   ${growth}
+  ${g.target?`<section><div class="card"><div class="kv"><span>Target</span><span>${rp(g.target)}</span></div><div class="kv"><span>${g.now>=g.target?'Status':'Remaining'}</span><span>${g.now>=g.target?'Target reached':rp(g.target-g.now)}</span></div><div style="padding:4px 16px 16px">${progHTML(g)}</div></div></section>`:''}
   <section><h2>Assets</h2><div class="card">${g.accs.filter(a=>M.byAkun[a].aktif).map(a=>arowHTML(M.byAkun[a],false)).join('')}</div></section>
   <section><div class="card"><div class="kv"><span>Last updated</span><span>${lu?updLabel(lu):'-'}</span></div></div></section>
   <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>
@@ -699,6 +701,8 @@ function txRow(x,g){
 }
 
 /* ---------- Riwayat ---------- */
+const goalPct=g=>g.target?Math.min(1,g.now/g.target):0;
+const progHTML=g=>g.target?`<div class="gprog"><i style="width:${(goalPct(g)*100).toFixed(1)}%"></i></div><div class="gcap">${g.now>=g.target?'Target reached':Math.floor(g.now/g.target*100)+'% of Rp '+cmp(g.target)}</div>`:'';
 function goalOf(ak){return M.tujuan.find(t=>t.accs.includes(ak))}
 /* UI is goal-only: show the goal name, never the platform. Account name is only added when a goal has 2+ active accounts. */
 const accPlat=a=>a.platform||a.nama,KAT_EN={reksadana:'Mutual Funds',deposito:'Time Deposit'},accKat=a=>{const k=a.kategori||(a.jenis==='cair'?'Cash':'Investment');return KAT_EN[String(k).toLowerCase()]||k};
@@ -809,6 +813,8 @@ function renderProfil(){
   <div class="topbar"><div class="brand">Settings</div></div>
   <div class="prof"><div class="avatar">${av?`<img src="${esc(av)}" alt="" referrerpolicy="no-referrer">`:esc(nm.charAt(0).toUpperCase())}</div><div class="nm">${esc(nm)}</div>${em&&em!==nm?`<div class="sb">${esc(em)}</div>`:''}</div>
   <div class="card"><div class="kv"><span>Data as of</span><span>${fullDate(TODAY)}</span></div><div class="kv"><span>Last synced</span><span>${sync}</span></div><div class="kv"><span>Active accounts</span><span>${M.akun.filter(a=>a.aktif).length}</span></div></div>
+  <h2>Goal targets</h2>
+  <div class="card">${M.tujuan.filter(g=>!isCashG(g)).map(g=>`<button class="tx" data-act="goaledit" data-g="${esc(g.name)}"><span class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</span><div class="m"><b>${esc(g.name)}</b><span>${g.target?'Target '+rp(g.target):'No target'}</span></div></button>`).join('')}</div>
   <h2>Assets <small>${M.akun.length}</small></h2>
   <div class="card">${M.akun.map(a=>`<button class="tx" data-act="assetedit" data-ak="${esc(a.akun)}">${plogo(accPlat(a),34)}<div class="m"><b>${esc(accPlat(a))}</b><span>${esc([(goalOf(a.akun)||{}).name||a.tujuan,accKat(a)].filter((x,i,r)=>r.indexOf(x)===i).join(' \u00b7 '))}${a.aktif?'':' \u00b7 inactive'}</span></div></button>`).join('')}</div>
   <button class="btn ghost" data-act="assetnew">${icon('plus')}Add asset</button>
@@ -955,6 +961,30 @@ function assetSheet(ak){
   requestAnimationFrame(()=>{sh.classList.add('open');bd.classList.add('open')});S.sheet=true;
   assetSync();
 }
+let GS={g:null,busy:false};
+function goalSheet(name){
+  const g=M.tujuan.find(t=>t.name===name);if(!g)return;GS={g:name,busy:false};
+  const sh=$('#sheet'),bd=$('#backdrop');
+  sh.innerHTML=`<div class="grab"></div><div class="stitle">${esc(name)} target</div>
+    <div class="field"><label for="gTarget">Target amount</label><input class="inp" id="gTarget" inputmode="numeric" placeholder="0" data-money value="${g.target?fmtIn(g.target):''}" autocomplete="off"></div>
+    <div class="ferr" id="fErr"></div>
+    <button class="btn primary" id="gSave" data-act="goalsave" style="margin-top:6px">Save target</button>
+    <div class="sfoot">Leave empty to remove the target.</div>`;
+  sh.hidden=false;bd.hidden=false;
+  requestAnimationFrame(()=>{sh.classList.add('open');bd.classList.add('open')});S.sheet=true;
+}
+async function saveGoal(){
+  if(GS.busy)return;const err=$('#fErr'),btn=$('#gSave'),label=btn.textContent;
+  GS.busy=true;btn.disabled=true;btn.textContent='Saving\u2026';err.textContent='';
+  try{
+    await api('saveGoal',{tujuan:GS.g,target:String(numIn($('#gTarget').value))});
+    closeSheet();toast('Target saved');
+    try{await loadData();render()}catch(_){toast('Saved, but refreshing failed.')}
+  }catch(e){
+    if(e.status===401||e.status===403){closeSheet();Auth.signOut({denied:true})}
+    else{err.textContent=e.message||'Could not save.';btn.disabled=false;btn.textContent=label}
+  }finally{GS.busy=false}
+}
 function assetSync(){
   $('#aPlatBtn').innerHTML=assetPlatBtn()+icon('down');
   $('#aNewWrap').hidden=!AS.newPlat;
@@ -1068,6 +1098,8 @@ document.addEventListener('click',e=>{
   else if(a==='ktoggle'){const k=el.dataset.k;S.kOpen[k]=!S.kOpen[k];el.setAttribute('aria-expanded',!!S.kOpen[k]);el.closest('.mblock').classList.toggle('open',!!S.kOpen[k])}
   else if(a==='assetnew')assetSheet();
   else if(a==='assetedit')assetSheet(el.dataset.ak);
+  else if(a==='goaledit')goalSheet(el.dataset.g);
+  else if(a==='goalsave')saveGoal();
   else if(a==='assetsave')saveAsset();
   else if(a==='aact')el.setAttribute('aria-checked',el.getAttribute('aria-checked')==='true'?'false':'true');
   else if(a==='platpick'){const l=$('#aPlatList');l.hidden=!l.hidden}
@@ -1105,6 +1137,7 @@ async function api(action,payload){
     if(action==='read')r=await sb.rpc('jk_read');
     else if(action==='saveUpdate')r=await sb.rpc('jk_save_update',{p});
     else if(action==='editTopup'||action==='editWithdraw')r=await sb.rpc('jk_edit_tx',{p:{id:p.orig.id,next:p.next}});
+    else if(action==='saveGoal')r=await sb.rpc('jk_save_goal',{p});
     else if(action==='saveAkun')r=await sb.rpc('jk_save_akun',{p});
     else if(action==='deleteTopup')r=await sb.rpc('jk_delete_tx',{p_id:p.orig.id});
     else throw new Error('Unknown action');
@@ -1119,7 +1152,7 @@ async function api(action,payload){
 let lastLoad=0;
 async function loadData(){
   const d=await api('read');
-  setToday(d.today);DATA.akun=d.akun;DATA.saldo=d.saldo;DATA.transaksi=d.transaksi;DATA.updates=d.updates||[];DATA.platform=d.platform||[];
+  setToday(d.today);DATA.akun=d.akun;DATA.saldo=d.saldo;DATA.transaksi=d.transaksi;DATA.updates=d.updates||[];DATA.platform=d.platform||[];DATA.goal=d.goal||[];
   if(!DATA.akun.length||!DATA.saldo.length)throw new Error('No data yet. Run sql_setup/05_jurnal_keuangan_import.sql.');
   build();lastLoad=Date.now();
 }
