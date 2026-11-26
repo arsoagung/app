@@ -74,6 +74,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .goal:active{background:var(--surface)}
 .gicon{width:30px;height:30px;display:grid;place-items:center;color:var(--c)}
 .gicon .i{width:24px;height:24px;stroke-width:1.7}
+.gsub .tick{width:12px;height:12px;stroke:var(--accent);stroke-width:3;margin-left:4px;vertical-align:-1px}
 .gname{font-weight:700}.gsub{font-size:12px;color:var(--muted);margin-top:1px}
 .gright{text-align:right}.gval{font-weight:700}
 .pill{display:block;margin-top:2px;font-size:12px;font-weight:600}
@@ -492,18 +493,21 @@ const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'do
 
 /* ---------- Beranda ---------- */
 function goalRows(list){
-  return (list||M.tujuan).map(g=>{
+  return (list||M.tujuan.filter(g=>!isCashG(g))).map(g=>{
     let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
       if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${rpS(lp.profit)} (${pct(lp.r)})</span>`}
     const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-      <div><div class="gname">${g.name}</div><div class="gsub">${lu?fullDate(lu):''}</div></div>
+      <div><div class="gname">${g.name}</div><div class="gsub">${lu?updLbl(lu):''}</div></div>
       <div class="gright"><div class="gval">${rp(g.now)}</div>${chip}</div></button>`}).join('');
 }
 /* update tracking: last update + month-end checkpoint (window = 3 days either side of a month change) */
 function lastUpd(ak){let b=null;DATA.updates.forEach(u=>{if((!ak||u.akun===ak)&&(!b||u.tanggal>b))b=u.tanggal});return b}
+const isCashG=g=>g.accs.every(a=>String(accKat(M.byAkun[a])).toLowerCase()==='cash');
+const CHK='<svg class="i tick" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const updLbl=iso=>iso===TODAY?'Today'+CHK:fullDate(iso);
 const fullDate=iso=>{const d=new Date(T(iso));return d.getUTCDate()+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear()};
 const updLabel=iso=>iso===TODAY?'today':iso===isoOf(TODAY_T-DAY)?'yesterday':dlabel(T(iso));
 function cpTarget(){
@@ -550,7 +554,7 @@ function updateDonut(preview){
   $('#dnInfo').innerHTML=sg?`<button class="btn primary" style="margin-top:8px" data-act="go" data-g="${esc(sg.name)}">View ${esc(sg.name)}</button>`:'';
 }
 function renderTujuan(){
-  const tot=M.tujuan.reduce((s,g)=>s+g.now,0);
+  const tot=M.tujuan.filter(g=>!isCashG(g)).reduce((s,g)=>s+g.now,0);
   view.innerHTML=`
   <div class="topbar"><div class="brand">Goals</div></div>
   <section class="hero"><div class="eyebrow">All goals</div><div class="big">${rp(tot)}</div></section>
@@ -709,7 +713,7 @@ function assetRowHTML(a){
   const chip=hasRet(a)?accPill([a.akun],T(a.returnMulai)):'<span class="pill mut">No return</span>';
   return `<button class="card goal" data-act="go" data-g="${esc(g?g.name:'')}">
     ${plogo(accPlat(a),30)}
-    <div><div class="gname">${esc(accPlat(a))}</div><div class="gsub">${esc(g?g.name:'')} \u00b7 ${lu?fullDate(lu):'Not updated yet'}</div></div>
+    <div><div class="gname">${esc(accPlat(a))}</div><div class="gsub">${esc(g?g.name:'')} \u00b7 ${lu?updLbl(lu):'Not updated yet'}</div></div>
     <div class="gright"><div class="gval">${rp(M.val(a.akun,TODAY_T))}</div>${chip}</div></button>`;
 }
 function assetsHTML(){
