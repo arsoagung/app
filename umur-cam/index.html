@@ -16,85 +16,79 @@
   --acc:#5eead4; --acc-tx:#04201c; --ok:#4ade80; --err:#ff6b6b;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
-.app{height:100dvh;max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:12px;
-  padding:max(16px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}
-header h1{font-size:21px;font-weight:800;letter-spacing:-.02em}
-header p{font-size:12.5px;line-height:1.55;color:var(--mut);margin-top:4px}
+svg{display:block}
 
-.stage{position:relative;flex:1;min-height:0;border-radius:22px;background:var(--surf);overflow:hidden}
-#view{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none}
-.stage.live #view{display:block}
+/* layar awal */
+.start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+body.live .start{display:none}
+.card{max-width:380px;text-align:center}
+.icon{width:56px;height:56px;margin:0 auto 20px;color:var(--acc)}
+.card h1{font-size:24px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px}
+.card p{font-size:14px;line-height:1.6;color:var(--mut);font-weight:500}
+.go{margin-top:24px;background:var(--acc);color:var(--acc-tx);border-radius:999px;padding:14px 28px;
+  font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:10px}
+.go:disabled{opacity:.6;cursor:default}
+.go svg{width:18px;height:18px}
+.alt{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px auto 0;padding:8px 12px;
+  font-size:13px;font-weight:600;color:var(--mut)}
+.alt svg{width:16px;height:16px}
+.note{margin-top:22px;font-size:12px;line-height:1.6;color:#66716b}
+
+/* tampilan kamera: memenuhi seluruh area browser (bukan fullscreen layar) */
 #vid{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.stage{position:fixed;inset:0;width:100vw;height:100dvh;background:#000;display:none}
+body.live .stage{display:block}
+#view{display:block;width:100%;height:100%;object-fit:contain}
 
-.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center}
-.stage.live .empty{display:none}
-.empty .ico{width:72px;height:72px;border-radius:24px;background:var(--surf2);display:flex;align-items:center;justify-content:center;color:var(--acc)}
-.empty h2{font-size:17px;font-weight:700}
-.empty p{font-size:13px;line-height:1.6;color:var(--mut);max-width:300px}
-
-.pill{position:absolute;left:12px;top:max(12px,env(safe-area-inset-top));display:none;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+.pill{position:absolute;left:12px;top:max(12px,env(safe-area-inset-top));display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
   background:rgba(11,13,18,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:12px;font-weight:600}
-.stage.live .pill{display:flex}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--mut);flex:none}
 .pill.busy .dot{background:var(--acc);animation:pulse 1s ease-in-out infinite}
 .pill.ok .dot{background:var(--ok)}
 .pill.err .dot{background:var(--err)}
 @keyframes pulse{50%{opacity:.25}}
 
-.bar{display:flex;gap:10px}
-.btn{height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:15px}
-.btn.main{flex:1;background:var(--acc);color:var(--acc-tx)}
-.btn.main.stop{background:var(--surf2);color:var(--tx)}
-.btn.sq{width:52px;background:var(--surf2);color:var(--tx);flex:none}
-.btn:active{transform:scale(.97)}
-.btn[disabled]{opacity:.4;pointer-events:none}
-svg{display:block}
-
-/* mode kamera / analisis: layar penuh */
-body.live{overflow:hidden}
-body.live header{display:none}
-body.live .stage{position:fixed;inset:0;z-index:10;border-radius:0;background:#000}
-body.live .bar{position:fixed;left:0;right:0;bottom:0;z-index:30;max-width:960px;margin:0 auto;
-  padding:36px 14px max(14px,env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(0,0,0,.7),transparent)}
-body.live .btn.sq,body.live .btn.main.stop{background:rgba(30,36,48,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.ctrl{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:14px}
+.rb{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
+  background:rgba(12,14,13,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.rb:active{transform:scale(.94)}
+.rb svg{width:22px;height:22px}
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
+<div class="start" id="start">
+  <div class="card">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 14.5c.6.6 1.4 1 2.5 1s1.9-.4 2.5-1"/></svg>
     <h1>Umur Cam</h1>
-    <p>Perkiraan kisaran umur dari wajah lewat kamera. Bisa banyak wajah sekaligus. Ini cuma estimasi, bisa meleset beberapa tahun. Diproses di browser, video tidak dikirim ke mana pun.</p>
-  </header>
-
-  <div class="stage" id="stage">
-    <video id="vid" playsinline muted></video>
-    <canvas id="view"></canvas>
-    <div class="pill busy" id="pill"><span class="dot"></span><span id="pillTx">Menyiapkan…</span></div>
-    <div class="empty" id="empty">
-      <div class="ico">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 14.5c.6.6 1.4 1 2.5 1s1.9-.4 2.5-1"/></svg>
-      </div>
-      <h2>Arahkan ke wajah</h2>
-      <p>Nyalakan kamera lalu hadapkan wajah ke depan. Makin terang dan makin menghadap lurus, makin stabil hasilnya.</p>
-    </div>
-  </div>
-
-  <div class="bar">
-    <button class="btn main" id="camBtn">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2a1 1 0 0 0 .8-.4l.9-1.2a1 1 0 0 1 .8-.4h3.6a1 1 0 0 1 .8.4l.9 1.2a1 1 0 0 0 .8.4h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.2"/></svg>
-      <span id="camTx">Nyalakan kamera</span>
+    <p>Perkiraan kisaran umur dari wajah lewat kamera. Bisa banyak wajah sekaligus.</p>
+    <button class="go" id="camBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Nyalakan kamera
     </button>
-    <button class="btn sq" id="flipBtn" title="Ganti kamera" disabled>
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20v-4.5h4.5"/></svg>
+    <button class="alt" id="imgBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m20 16-4.5-4.5L8 19"/></svg>
+      Coba dari foto
     </button>
-    <button class="btn sq" id="imgBtn" title="Coba dari foto">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m20 16-4.5-4.5L8 19"/></svg>
-    </button>
-    <input type="file" id="file" accept="image/*" hidden>
+    <p class="note">Ini cuma estimasi, bisa meleset beberapa tahun. Diproses langsung di browser, video tidak dikirim ke mana pun.</p>
   </div>
 </div>
+
+<video id="vid" playsinline muted></video>
+<div class="stage" id="stage">
+  <canvas id="view"></canvas>
+  <div class="pill busy" id="pill"><span class="dot"></span><span id="pillTx">Menyiapkan…</span></div>
+  <div class="ctrl">
+    <button class="rb" id="flipBtn" aria-label="Ganti kamera">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20v-4.5h4.5"/></svg>
+    </button>
+    <button class="rb" id="stopBtn" aria-label="Matikan kamera">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+</div>
+<input type="file" id="file" accept="image/*" hidden>
 
 <script>
 /* ============================================================
@@ -196,31 +190,13 @@ function setSourceSize(w,h){
   const vw=Math.min(w,960);
   view.width=vw; view.height=Math.round(h*vw/w);
 }
-function enterFs(){
-  try{
-    const el=document.documentElement, fn=el.requestFullscreen||el.webkitRequestFullscreen;
-    if(fn){ const r=fn.call(el); if(r&&r.catch) r.catch(()=>{}); }
-  }catch(e){}
-}
-function exitFs(){
-  try{
-    if(document.fullscreenElement||document.webkitFullscreenElement){
-      const fn=document.exitFullscreen||document.webkitExitFullscreen;
-      const r=fn.call(document); if(r&&r.catch) r.catch(()=>{});
-    }
-  }catch(e){}
-}
-function stopSource(keepFs){
-  if(!keepFs) exitFs();
-  document.body.classList.remove('live');
+function stopSource(keepLive){
+  if(!keepLive) document.body.classList.remove('live');   // keepLive: ganti kamera tanpa balik ke layar awal
   st.running=false; st.runId++;
   if(st.stream){ st.stream.getTracks().forEach(t=>t.stop()); st.stream=null; }
   video.srcObject=null; st.img=null; st.source=null;
   st.tracks=[]; st.count=-1;
-  stage.classList.remove('live');
-  $('#camTx').textContent='Nyalakan kamera';
-  $('#camBtn').classList.remove('stop');
-  $('#flipBtn').disabled=true;
+  if(!keepLive) stage.classList.remove('live');
 }
 async function startCam(){
   stopSource(true);
@@ -236,9 +212,6 @@ async function startCam(){
     st.source='cam'; st.mirror=(st.facing==='user');
     setSourceSize(video.videoWidth,video.videoHeight);
     beginRun();
-    $('#flipBtn').disabled=false;
-    $('#camTx').textContent='Matikan kamera';
-    $('#camBtn').classList.add('stop');
   }catch(e){
     console.warn(e);
     stopSource();
@@ -260,8 +233,6 @@ function startImage(file){
     st.img=fr;
     setSourceSize(w,h);
     beginRun();
-    $('#camTx').textContent='Berhenti';
-    $('#camBtn').classList.add('stop');
     URL.revokeObjectURL(url);
   };
   im.onerror=()=>alert('Foto tidak bisa dibuka.');
@@ -445,10 +416,8 @@ function drawOverlay(W,H){
 }
 
 /* ---------- kontrol ---------- */
-$('#camBtn').onclick=()=>{
-  if(st.running){ stopSource(); }
-  else{ enterFs(); startCam(); }
-};
+$('#camBtn').onclick=()=>startCam();
+$('#stopBtn').onclick=()=>stopSource();
 $('#flipBtn').onclick=()=>{
   st.facing=st.facing==='user'?'environment':'user';
   startCam();
@@ -459,14 +428,6 @@ $('#file').onchange=e=>{
   if(f) startImage(f);
   e.target.value='';
 };
-
-function onFsChange(){
-  const inFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
-  if(inFs){ st.fs=true; return; }
-  if(st.fs){ st.fs=false; if(st.running) stopSource(true); }   // keluar fullscreen = tutup kamera
-}
-document.addEventListener('fullscreenchange',onFsChange);
-document.addEventListener('webkitfullscreenchange',onFsChange);
 </script>
 </body>
 </html>
