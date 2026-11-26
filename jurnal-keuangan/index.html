@@ -944,7 +944,7 @@ function assetSheet(ak){
       <div class="plist" id="aPlatList" hidden>${platNames().map(n=>`<button data-act="platsel" data-p="${esc(n)}">${plogo(n,30)}<span>${esc(n)}</span></button>`).join('')}<button data-act="platsel" data-p="">${icon('plus')}<span>New platform</span></button></div></div>
     <div class="field" id="aNewWrap" hidden><label for="aName">Platform name</label><input class="inp" id="aName" maxlength="40" placeholder="e.g. Superbank" autocomplete="off"></div>
     <div class="field" id="aLogoWrap" hidden><label>Logo</label><div class="lgrow"><span id="aLogoPrev"></span><label class="lgbtn" for="aLogoIn">Choose image</label><input id="aLogoIn" type="file" accept="image/*" hidden></div></div>
-    <div class="field"><label for="aKat">Category</label><input class="inp" id="aKat" list="aKats" maxlength="40" placeholder="e.g. Deposito" value="${esc(a?accKat(a):'')}" autocomplete="off"><datalist id="aKats">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+    <div class="field"><label for="aKat">Category</label><input class="inp" id="aKat" list="aKats" maxlength="40" placeholder="e.g. Time Deposit" value="${esc(a?accKat(a):'')}" autocomplete="off"><datalist id="aKats">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
     ${a?`<div class="field"><label>Goal</label><div class="inp ro">${esc(g?g.name:a.tujuan)}</div></div>
     <div class="swrow"><span>Active</span><button class="sw" id="aAct" role="switch" aria-checked="${a.aktif}" data-act="aact"><i></i></button></div>`
     :`<div class="field"><label for="aGoal">Goal</label><select class="inp" id="aGoal">${M.tujuan.map(t=>`<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')}</select></div>`}
