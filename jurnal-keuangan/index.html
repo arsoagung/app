@@ -444,7 +444,7 @@ const $=s=>document.querySelector(s);
 const view=$('#view');
 const RANGES=['1M','3M','YTD','1Y','ALL'];
 
-function go(v,goal){if(v==='detail'&&(S.view==='home'||S.view==='tujuan'||S.view==='invest'))S.from=S.view;S.view=v;S.goal=goal||null;render();window.scrollTo(0,0)}
+function go(v,goal){S.mSel={};if(v==='detail'&&(S.view==='home'||S.view==='tujuan'||S.view==='invest'))S.from=S.view;S.view=v;S.goal=goal||null;render();window.scrollTo(0,0)}
 function render(){
   if(!S.auth)return;
   const fn={home:renderHome,invest:renderInvest,tujuan:renderTujuan,detail:renderDetail,riwayat:renderUpdates,profil:renderProfil}[S.view];
@@ -475,7 +475,7 @@ function goalRows(list){
   return (list||M.tujuan).map(g=>{
     let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
-      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${rpS(lp.profit)} this month</span>`}
+      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${rpS(lp.profit)} (${pct(lp.r)})</span>`}
     const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
@@ -631,11 +631,12 @@ function renderDetail(){
     growth=`<section><h2>Monthly growth</h2><div class="card"><div class="cinfo" id="dInfo"></div><div class="cwrap" id="dWrap"></div></div></section>`;
   }
   /* rekening */
-  const accRows=g.accs.map(a=>{const ak=M.byAkun[a],lu=ak.aktif?lastUpd(a):null;return `<div class="acc"><span>${ak.nama}${ak.aktif?'':'<span class="tag">history</span>'}${lu?`<small>Updated ${updLabel(lu)}</small>`:''}</span><b>${rp(M.val(a,TODAY_T))}</b></div>`}).join('');
+  const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
   /* topup tujuan */
   const all=DATA.transaksi.filter(x=>g.accs.includes(txAcc(x))).sort((a,b)=>T(b.tanggal)-T(a.tanggal));
   const tx=all.filter(x=>!isW(x)),wds=all.filter(isW);
-  const txHTML=tx.length?`<div class="card">${tx.map(x=>txRow(x,g)).join('')}</div>`:`<div class="card empty">No top-ups yet.</div>`;
+  const byK={};tx.forEach(x=>{(byK[x.tanggal.slice(0,7)]=byK[x.tanggal.slice(0,7)]||[]).push(x)});
+  const txHTML=tx.length?Object.keys(byK).sort().reverse().map(k=>mblockHTML(k,byK[k],k in S.mSel?S.mSel[k]:false,'top-up')).join(''):`<div class="card empty">No top-ups yet.</div>`;
   const wdHTML=wds.length?`<section><h2>Withdrawals <small>${wds.length}</small></h2><div class="card">${wds.map(x=>txRow(x,g)).join('')}</div></section>`:'';
   view.innerHTML=`
   <div class="dhead"><button class="back" data-act="back" aria-label="Back">${icon('back')}</button><div class="t">${g.name}</div>${(a0=>a0?`<button class="badge act" data-act="upd" data-ak="${esc(a0)}">Update</button>`:'')(g.accs.find(a=>M.byAkun[a].aktif))}</div>
@@ -648,7 +649,7 @@ function renderDetail(){
     ${stats}
   </section>
   ${growth}
-  <section><h2>Accounts</h2><div class="card">${accRows}</div></section>
+  <section><div class="card"><div class="kv"><span>Last updated</span><span>${lu?updLabel(lu):'-'}</span></div></div></section>
   <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>
   ${wdHTML}`;
   drawChart($('#hChart'),chartSeries,{label:'Chart '+g.name,onHover});
@@ -657,13 +658,19 @@ function renderDetail(){
 function txRow(x,g){
   const w=isW(x),ac=txAcc(x);
   g=g||M.tujuan.find(t=>t.accs.includes(ac));const t=T(x.tanggal);
-  const extra=[!w&&x.dari?'from '+(M.byAkun[x.dari]?M.byAkun[x.dari].nama:x.dari):'',x.catatan].filter(Boolean).map(esc).join(' · ');
+  const extra=[!w&&x.dari?'from '+(M.byAkun[x.dari]?accLabel(M.byAkun[x.dari]):x.dari):'',x.catatan].filter(Boolean).map(esc).join(' · ');
   return `<button class="tx" data-act="txedit" data-i="${DATA.transaksi.indexOf(x)}" aria-label="Edit ${w?'withdrawal':'top-up'}"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-    <div class="m"><b>${M.byAkun[ac]?M.byAkun[ac].nama:ac}</b><span>${dlabel(t)}${extra?' · '+extra:''}</span></div><div class="a${w?' out':''}">${w?'−':'+'}${rp(x.nominal)}</div></button>`;
+    <div class="m"><b>${M.byAkun[ac]?accLabel(M.byAkun[ac]):ac}</b><span>${dlabel(t)}${extra?' · '+extra:''}</span></div><div class="a${w?' out':''}">${w?'−':'+'}${rp(x.nominal)}</div></button>`;
 }
 
 /* ---------- Riwayat ---------- */
 function goalOf(ak){return M.tujuan.find(t=>t.accs.includes(ak))}
+/* UI is goal-only: show the goal name, never the platform. Account name is only added when a goal has 2+ active accounts. */
+const accLabel=a=>{const g=goalOf(a.akun);if(!g)return a.nama;return g.name+(M.akun.filter(b=>b.aktif&&goalOf(b.akun)===g).length>1?' \u00b7 '+a.nama:'')};
+/* one collapsible month block (shared by the goal detail page) */
+const mblockHTML=(k,items,o,word)=>{const n=items.length,sum=items.reduce((t,x)=>t+x.nominal,0);
+  return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} ${word}${n>1?'s':''}</small></span><span class="mt">${rp(sum)}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?items.map(x=>txRow(x)).join(''):''}</div></div></div>`};
+const detailTu=()=>{const g=M.tujuan.find(t=>t.name===S.goal);return g?DATA.transaksi.filter(x=>!isW(x)&&g.accs.includes(txAcc(x))).sort((a,b)=>T(b.tanggal)-T(a.tanggal)):[]};
 
 /* balance update log (app_update): who was updated when, and which were month-end checkpoints */
 function renderUpdates(){
@@ -674,7 +681,7 @@ function renderUpdates(){
   let list='',cur='';
   rows.forEach(({u})=>{const k=u.tanggal.slice(0,7),g=goalOf(u.akun),cpv=u.checkpoint===true||u.checkpoint==='TRUE';
     if(k!==cur){if(cur)list+='</div>';cur=k;list+=`<div class="mhead"><span>${monF(T(k+'-01'))}</span></div><div class="card">`}
-    list+=`<div class="tx"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div><div class="m"><b>${esc(M.byAkun[u.akun].nama)}</b><span>${dlabel(T(u.tanggal))}</span></div>${cpv?'<span class="badge" style="background:var(--surface-3)">Month-end</span>':''}</div>`});
+    list+=`<div class="tx"><div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div><div class="m"><b>${esc(accLabel(M.byAkun[u.akun]))}</b><span>${dlabel(T(u.tanggal))}</span></div>${cpv?'<span class="badge" style="background:var(--surface-3)">Month-end</span>':''}</div>`});
   if(cur)list+='</div>';
   view.innerHTML=`
   <div class="dhead"><button class="back" data-act="nav" data-v="profil" aria-label="Back">${icon('back')}</button><div class="t">Balance updates</div></div>
@@ -693,7 +700,7 @@ function setMonth(k,open){
   const body=b.querySelector('.min'),row=b.querySelector('.mrow');
   row.setAttribute('aria-expanded',open);
   if(open){
-    if(!body.firstChild)body.innerHTML=tuFiltered().filter(x=>x.tanggal.slice(0,7)===k).map(x=>txRow(x)).join('');
+    if(!body.firstChild)body.innerHTML=(S.view==='detail'?detailTu():tuFiltered()).filter(x=>x.tanggal.slice(0,7)===k).map(x=>txRow(x)).join('');
     void b.offsetHeight;b.classList.add('open');
   }else{
     b.classList.remove('open');
@@ -746,16 +753,16 @@ const fmtIn=s=>{const d=String(s).replace(/\D/g,'');return d?Number(d).toLocaleS
 const numIn=s=>Number(String(s).replace(/\D/g,''))||0;
 function sheetHTML(pre){
   const act=M.akun.filter(a=>a.aktif);
-  const opt=(list,sel)=>list.map(a=>`<option value="${a.akun}"${a.akun===sel?' selected':''}>${a.nama}</option>`).join('');
+  const opt=(list,sel)=>list.map(a=>`<option value="${a.akun}"${a.akun===sel?' selected':''}>${esc(accLabel(a))}</option>`).join('');
   const ak=pre&&act.some(a=>a.akun===pre)?pre:act[0].akun,tg=cpTarget();
   return `<div class="grab"></div><div class="stitle" id="fTitle">Add top-up</div>
-    <div class="field"><label for="fAk">Account</label><select class="inp" id="fAk">${opt(act,ak)}</select></div>
+    <div class="field"><label for="fAk">Goal</label><select class="inp" id="fAk">${opt(act,ak)}</select></div>
     <div class="seg" id="fMode"><button data-act="fmode" data-m="topup">Top-up</button><button data-act="fmode" data-m="wd">Withdraw</button><button data-act="fmode" data-m="upd">Update balance</button></div>
     <div id="fTopWrap"><div class="field"><label for="fNom" id="fNomLbl">Top-up amount</label><input class="inp" id="fNom" inputmode="numeric" placeholder="0" data-money autocomplete="off"></div></div>
     <div class="field"><label for="fSal" id="fSalLbl">Current balance</label><input class="inp" id="fSal" inputmode="numeric" data-money value="${fmtIn(M.val(ak,TODAY_T))}" autocomplete="off"></div>
     <div id="fTopWrap2">
         <div class="field"><label for="fTgl" id="fTglLbl">Top-up date</label><input class="inp" id="fTgl" type="date" value="${TODAY}" max="${TODAY}"></div>
-        <div class="field" id="fDariWrap"><label for="fDari">From account</label><select class="inp" id="fDari"><option value="">Income</option>${opt(act,'')}</select></div>
+        <div class="field" id="fDariWrap"><label for="fDari">From</label><select class="inp" id="fDari"><option value="">Income</option>${opt(act,'')}</select></div>
         <div class="field"><label for="fCat">Notes</label><input class="inp" id="fCat" placeholder="Optional"></div>
     </div>
     <div class="swrow" id="fCpWrap"><span id="fCpLbl">${tg?`Mark as ${tg.name} month-end`:''}</span><button class="sw" id="fCp" role="switch" aria-checked="true" aria-labelledby="fCpLbl" data-act="cp"><i></i></button></div>
@@ -809,7 +816,7 @@ async function saveSheet(){
   if(!$('#fSal').value){$('#fSal').classList.add('err');err.textContent='Enter the current balance.';return}
   const bal=numIn($('#fSal').value),cp=!$('#fCpWrap').hidden&&$('#fCp').getAttribute('aria-checked')==='true';
   const payload={akun:ak,saldo:bal,checkpoint:cp,bulan:cp?tg.bulan:TODAY.slice(0,7)};
-  let okMsg=M.byAkun[ak].nama+' updated';
+  let okMsg=accLabel(M.byAkun[ak])+' updated';
   const nom=$('#fTopWrap').hidden?0:numIn($('#fNom').value);
   if(nom>0){
     const wd=fMode==='wd',tgl=$('#fTgl').value,dari=wd?'':$('#fDari').value;
@@ -838,14 +845,14 @@ const txOrig=x=>({tanggal:x.tanggal,nominal:x.nominal,ke:x.ke,dari:x.dari||'',ca
 function openTxSheet(i){
   const x=DATA.transaksi[i];if(!x)return;txIdx=i;
   const act=M.akun.filter(a=>a.aktif),known=!x.dari||x.dari==='Rekening Utama'||act.some(a=>a.akun===x.dari);
-  const opts=act.map(a=>`<option value="${esc(a.akun)}"${a.akun===x.dari?' selected':''}>${esc(a.nama)}</option>`).join('');
+  const opts=act.map(a=>`<option value="${esc(a.akun)}"${a.akun===x.dari?' selected':''}>${esc(accLabel(a))}</option>`).join('');
   const sh=$('#sheet'),bd=$('#backdrop');
   const w=isW(x),ac=txAcc(x);
   sh.innerHTML=`<div class="grab"></div><div class="stitle">Edit ${w?'withdrawal':'top-up'}</div>
-    <div class="field"><label>${w?'From account':'To account'}</label><div class="inp ro">${esc(M.byAkun[ac]?M.byAkun[ac].nama:ac)}</div></div>
+    <div class="field"><label>Goal</label><div class="inp ro">${esc(M.byAkun[ac]?accLabel(M.byAkun[ac]):ac)}</div></div>
     <div class="field"><label for="eNom">Amount</label><input class="inp" id="eNom" inputmode="numeric" data-money value="${fmtIn(x.nominal)}" autocomplete="off"></div>
     <div class="field"><label for="eTgl">Date</label><input class="inp" id="eTgl" type="date" value="${esc(x.tanggal)}" max="${TODAY}"></div>
-    ${w?'':`<div class="field"><label for="eDari">From account</label><select class="inp" id="eDari"><option value="">Income</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>`}
+    ${w?'':`<div class="field"><label for="eDari">From</label><select class="inp" id="eDari"><option value="">Income</option>${known?'':`<option value="${esc(x.dari)}" selected>${esc(x.dari)}</option>`}${opts}</select></div>`}
     <div class="field"><label for="eCat">Notes</label><input class="inp" id="eCat" value="${esc(x.catatan||'')}" placeholder="Optional"></div>
     <div class="ferr" id="fErr"></div>
     <button class="btn primary" id="eSave" data-act="txsave" style="margin-top:6px">Save changes</button>
