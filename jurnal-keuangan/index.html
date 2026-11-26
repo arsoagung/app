@@ -121,7 +121,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .cols::-webkit-scrollbar{display:none}
 .col{flex:1 0 44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
 .col .bar{width:100%;max-width:56px;border-radius:10px 10px 4px 4px;background:var(--accent);min-height:4px;opacity:.4;transition:opacity .2s}
-.col.on .bar{opacity:1}
+.col.on .bar,.cols.none .bar{opacity:1}
 .cols.wd .bar{background:var(--neg)}
 .mblock .mt.out{color:var(--neg)}
 .mblock{margin-top:10px;overflow:hidden}
@@ -688,6 +688,7 @@ function setMonth(k,open){
   S.mSel[k]=open;
   const b=$('#m-'+k),col=document.querySelector('#tuCols .col[data-k="'+k+'"]');
   if(col)col.classList.toggle('on',open);
+  const tc=$('#tuCols');if(tc)tc.classList.toggle('none',!tc.querySelector('.col.on'));
   if(!b)return;
   const body=b.querySelector('.min'),row=b.querySelector('.mrow');
   row.setAttribute('aria-expanded',open);
@@ -713,7 +714,7 @@ function topupsHTML(){
   const keys=Object.keys(byM).sort(),mx=Math.max(...keys.map(k=>byM[k]),1);
   const total=tx.reduce((s,x)=>s+x.nominal,0);
   /* which months are expanded: newest by default, otherwise whatever the user toggled / picked from the chart */
-  const newest=keys[keys.length-1],isOpen=k=>k in S.mSel?S.mSel[k]:k===newest;
+  const isOpen=k=>k in S.mSel?S.mSel[k]:false;
   const bars=keys.length?keys.map(k=>`<button class="col${isOpen(k)?' on':''}" data-act="mbar" data-k="${k}" aria-label="${monF(T(k+'-01'))}"><span class="cv">${cmp(byM[k])}</span><div class="bar" style="height:${Math.max(4,byM[k]/mx*70)}%"></div><span class="cm">${monY(T(k+'-01'))}</span></button>`).join(''):'<div class="empty" style="width:100%">No data.</div>';
   /* one collapsible block per month, newest first */
   const byK={};tx.forEach(x=>{(byK[x.tanggal.slice(0,7)]=byK[x.tanggal.slice(0,7)]||[]).push(x)});
@@ -721,7 +722,7 @@ function topupsHTML(){
     return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} ${word}${n>1?'s':''}</small></span><span class="mt${wd?' out':''}">${wd?'−':''}${rp(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?byK[k].map(x=>txRow(x)).join(''):''}</div></div></div>`}).join('');
   return `
   ${hasW?`<div class="seg" id="tuTab"><button class="${wd?'':'on'}" data-act="tutab" data-k="topup">Top-ups</button><button class="${wd?'on':''}" data-act="tutab" data-k="wd">Withdrawals</button></div>`:''}
-  <section><h2>${wd?'Withdrawals':'Top-ups'} <small>${wd?'−':''}${rp(total)}</small></h2><div class="card cols${wd?' wd':''}" id="tuCols">${bars}</div></section>
+  <section><h2>${wd?'Withdrawals':'Top-ups'} <small>${wd?'−':''}${rp(total)}</small></h2><div class="card cols${wd?' wd':''}${keys.some(isOpen)?'':' none'}" id="tuCols">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||`<div class="card empty" style="margin-top:16px">No ${word}s yet.</div>`}</section>`;
 }
