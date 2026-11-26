@@ -236,6 +236,10 @@ button.tx{width:100%;border-radius:18px}button.tx:active{background:var(--surfac
 .lgrow{display:flex;align-items:center;gap:14px}
 .lgbtn{display:inline-flex;align-items:center;height:38px;padding:0 16px;border-radius:12px;background:var(--surface-2);font-weight:700;cursor:pointer}
 .sfoot.mt{margin-top:8px}
+.kcap{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:18px 4px 0}
+.alist{margin-top:6px}
+.goal .plogo{width:30px;height:30px}
+.gname .gg{color:var(--muted);font-weight:500}
 .inp.ro{display:flex;align-items:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -601,12 +605,12 @@ function renderInvest(){
     <div class="drow" id="hDelta">${heroDelta}</div>
     <div class="chart" id="hChart"></div>
     ${chipsHTML(key,'irange')}
+    ${assetsHTML()}
     <div class="stats"><div class="card stat"><div class="l">Principal</div><div class="v">${rp(modal)}</div></div>
       <div class="card stat"><div class="l">Profit</div><div class="v ${sgn(profit)==='pos'?'pos-t':'neg-t'}">${rpS(profit)}</div></div>
       <div class="card stat"><div class="l">${key==='ALL'?'Total return':'Return '+key}</div><div class="v ${sgn(r)==='pos'?'pos-t':'neg-t'}">${pct(r)}</div></div></div>
   </section>
-  <section><h2>Monthly growth</h2><div class="card"><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>
-  ${assetsHTML()}`;
+  <section><h2>Monthly growth</h2><div class="card"><div class="cinfo" id="cInfo"></div><div class="cwrap" id="cWrap"></div></div></section>`;
   drawChart($('#hChart'),[{pts:vals,color:'#2dd48f'},{pts:mp,color:'#9a9a9f',dashed:true}],{label:'Investment chart',onHover:pt=>{
     if(!pt){$('#hBig').textContent=heroBig;$('#hDelta').innerHTML=heroDelta;return}
     $('#hBig').textContent=rp(pt.v);$('#hDelta').innerHTML=`<span class="since">${dlabel(pt.t)}</span>`}});
@@ -699,15 +703,21 @@ function arowHTML(a,withGoal){
   const name=withGoal?`<b>${esc(accPlat(a))} <span class="g">(${esc(g?g.name:'')})</span></b>`:`<b>${esc(accPlat(a))}</b><span>${esc(accKat(a))}</span>`;
   return `<button class="arow" data-act="go" data-g="${esc(g?g.name:'')}">${plogo(accPlat(a),36)}<div class="m">${name}</div><div class="kv2"><b>${rp(v)}</b>${pill}</div></button>`;
 }
-/* Assets tab: one block per category (total + monthly profit); tap to see each platform / goal row */
+/* Assets tab: flat list like the Goals list (logo, platform (goal), last update, balance, monthly profit), grouped by category */
+function assetRowHTML(a){
+  const g=goalOf(a.akun),lu=lastUpd(a.akun);
+  const chip=hasRet(a)?accPill([a.akun],T(a.returnMulai)):'<span class="pill mut">No return</span>';
+  return `<button class="card goal" data-act="go" data-g="${esc(g?g.name:'')}">
+    ${plogo(accPlat(a),30)}
+    <div><div class="gname">${esc(accPlat(a))} <span class="gg">(${esc(g?g.name:'')})</span></div><div class="gsub">${lu?fullDate(lu):'Not updated yet'}</div></div>
+    <div class="gright"><div class="gval">${rp(M.val(a.akun,TODAY_T))}</div>${chip}</div></button>`;
+}
 function assetsHTML(){
-  const rows=M.akun.filter(a=>a.aktif&&hasRet(a));
+  const rows=M.akun.filter(a=>a.aktif);
   if(!rows.length)return '';
   const kats=[];rows.forEach(a=>{const k=accKat(a);if(!kats.includes(k))kats.push(k)});
-  return `<section><h2>Assets</h2>${kats.map(k=>{
-    const list=rows.filter(a=>accKat(a)===k),ids=list.map(a=>a.akun),st=Math.min(...list.map(a=>T(a.returnMulai))),
-      val=list.reduce((t,a)=>t+M.val(a.akun,TODAY_T),0),o=!!S.kOpen[k];
-    return `<div class="card mblock${o?' open':''}"><button class="mrow" data-act="ktoggle" data-k="${esc(k)}" aria-expanded="${o}"><span class="mn">${esc(k)}<small>${list.length} ${list.length>1?'assets':'asset'}</small></span><span class="kv2"><b>${rp(val)}</b>${accPill(ids,st)}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${list.map(a=>arowHTML(a,true)).join('')}</div></div></div>`}).join('')}</section>`;
+  kats.sort((x,y)=>(x.toLowerCase()==='cash')-(y.toLowerCase()==='cash'));
+  return `<div class="alist">${kats.map(k=>`<div class="kcap">${esc(k)}</div>${rows.filter(a=>accKat(a)===k).map(assetRowHTML).join('')}`).join('')}</div>`;
 }
 /* one collapsible month block (shared by the goal detail page) */
 const mblockHTML=(k,items,o,word)=>{const n=items.length,sum=items.reduce((t,x)=>t+x.nominal,0);
