@@ -508,10 +508,9 @@ function goalRows(list){
     let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
       if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${pvHTML(lp.profit,lp.r)}</span>`}
-    const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-      <div><div class="gname">${g.name}</div><div class="gsub">${lu?updLbl(lu):''}</div>${progHTML(g)}</div>
+      <div><div class="gname">${g.name}</div>${progHTML(g)}</div>
       <div class="gright"><div class="gval">${rp(g.now)}</div>${chip}</div></button>`}).join('');
 }
 /* update tracking: last update + month-end checkpoint (window = 3 days either side of a month change) */
