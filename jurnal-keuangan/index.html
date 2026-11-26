@@ -475,7 +475,7 @@ function goalRows(list){
   return (list||M.tujuan).map(g=>{
     let chip='<span class="pill mut">No return</span>';
     if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
-      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.r)}">${pct(lp.r)} this month</span>`}
+      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${rpS(lp.profit)} this month</span>`}
     const lu=g.accs.reduce((b,a)=>{const x=M.byAkun[a].aktif?lastUpd(a):null;return x&&(!b||x>b)?x:b},null);
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
