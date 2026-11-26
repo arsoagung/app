@@ -122,8 +122,9 @@ h2 small{font-size:12px;font-weight:500;color:var(--muted)}
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
 
 /* riwayat */
-.cols{display:flex;align-items:flex-end;gap:10px;height:132px;padding:14px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.cols{position:relative;display:flex;align-items:flex-end;gap:10px;height:132px;padding:14px 18px 12px;overflow-x:auto;scrollbar-width:none}
 .cols::-webkit-scrollbar{display:none}
+.avgline{position:absolute;left:0;height:1px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 9px);opacity:.7}
 .col{flex:1 0 44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
 .col .bar{width:100%;max-width:56px;border-radius:0;background:var(--accent);min-height:4px;opacity:.4;transition:opacity .2s}
 .col.on .bar,.cols.none .bar{opacity:1}
@@ -453,6 +454,7 @@ function drawCandles(wrap,info,P,lab){
   let g='';
   for(let v=lo;v<=hi+st/2;v+=st){const y=Y(v);if(Math.abs(v)<st/1000)continue;g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1c1c1f"/><text x="${pl-10}" y="${y+3.5}" fill="#6b6b70" font-size="10" text-anchor="end">${f(v)}</text>`}
   g+=`<text x="${pl-10}" y="${y0+3.5}" fill="#9a9a9f" font-size="10" text-anchor="end">0%</text><line x1="${pl-6}" x2="${W-pr}" y1="${y0}" y2="${y0}" stroke="#3a3a3f"/>`;
+  if(C.length>1){const av=rs.reduce((a,b)=>a+b,0)/rs.length,ya=Y(av);g+=`<line x1="${pl-6}" x2="${W-pr}" y1="${ya}" y2="${ya}" stroke="#9a9a9f" stroke-width="1" stroke-dasharray="5 4" opacity=".7" pointer-events="none"/>`}
   C.forEach((k,i)=>{const up=k.r>=0,col=up?'#2dd48f':'#f0786d',yv=Y(k.r),top=Math.min(y0,yv),h=Math.max(3,Math.abs(yv-y0));
     g+=`<g class="cand" data-i="${i}"><rect x="${X(i)-step/2}" y="0" width="${step}" height="${H}" fill="transparent"/><rect class="cb" x="${X(i)-bw/2}" y="${top}" width="${bw}" height="${h}" rx="0" fill="${col}"/>
       <text x="${X(i)}" y="${up?top-8:top+h+15}" fill="#ececee" font-size="10.5" font-weight="700" text-anchor="middle">${f(k.r)}</text>
@@ -570,6 +572,9 @@ function renderTujuan(){
   <section style="margin-top:14px">${goalRows()}</section>
   ${topupsHTML()}`;
   /* keep the chart showing the newest months (or the picked one) */
+  const tc0=$('#tuCols');if(tc0&&tc0.dataset.avg){const bar=tc0.querySelector('.col .bar'),col=bar&&bar.parentElement;
+    if(bar){const tr=tc0.getBoundingClientRect(),bb=bar.getBoundingClientRect(),y=bb.bottom-tr.top-(+tc0.dataset.avg/100)*col.clientHeight;
+      const ln=document.createElement('div');ln.className='avgline';ln.style.top=y+'px';ln.style.width=tc0.scrollWidth+'px';tc0.appendChild(ln)}}
   const tc=$('#tuCols');if(tc){const on=tc.querySelector('.col.on');tc.scrollLeft=on&&S.mSel&&Object.keys(S.mSel).length?on.offsetLeft-tc.clientWidth/2:tc.scrollWidth}
 }
 function renderHome(){
@@ -801,7 +806,7 @@ function topupsHTML(){
     return `<div class="card mblock${o?' open':''}" id="m-${k}"><button class="mrow" data-act="mtoggle" data-k="${k}" aria-expanded="${o}"><span class="mn">${MONF[+k.slice(5,7)-1]} ${k.slice(0,4)}<small>${n} ${word}${n>1?'s':''}</small></span><span class="mt${wd?' out':''}">${wd?'−':''}${rp(byM[k])}</span>${icon('back').replace('class="i"','class="i chev"')}</button><div class="mbody"><div class="min">${o?byK[k].map(x=>txRow(x)).join(''):''}</div></div></div>`}).join('');
   return `
   ${hasW?`<div class="seg" id="tuTab"><button class="${wd?'':'on'}" data-act="tutab" data-k="topup">Top-ups</button><button class="${wd?'on':''}" data-act="tutab" data-k="wd">Withdrawals</button></div>`:''}
-  <section><h2>${wd?'Withdrawals':'Top-ups'} <small>${wd?'−':''}${rp(total)}</small></h2><div class="card cols${wd?' wd':''}${keys.some(isOpen)?'':' none'}" id="tuCols">${bars}</div></section>
+  <section><h2>${wd?'Withdrawals':'Top-ups'} <small>${wd?'−':''}${rp(total)}</small></h2><div class="card cols${wd?' wd':''}${keys.some(isOpen)?'':' none'}" id="tuCols" data-avg="${!wd&&keys.length>1?(keys.reduce((s,k)=>s+byM[k],0)/keys.length/mx*70).toFixed(2):''}">${bars}</div></section>
   <div class="fchips">${names.map(n=>`<button class="fc${S.filter===n?' on':''}" data-act="filter" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>
   <section>${list||`<div class="card empty" style="margin-top:16px">No ${word}s yet.</div>`}</section>`;
 }
