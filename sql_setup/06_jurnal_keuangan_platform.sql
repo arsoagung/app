@@ -23,7 +23,7 @@ create policy owner_all on public.jurnal_keuangan_platform for all to authentica
 alter table public.jurnal_keuangan_akun add column if not exists platform text;
 alter table public.jurnal_keuangan_akun add column if not exists kategori text;
 
--- 3. Isi data yang sudah ada: Bibit = Mutual Funds, Pluang = US Stocks, Superbank (cair) = Cash
+-- 3. Isi data yang sudah ada: Bibit = Reksadana, Pluang = US Stocks, Superbank (cair) = Cash
 update public.jurnal_keuangan_akun
    set platform = split_part(akun, ' ', 1)
  where platform is null;
@@ -31,7 +31,7 @@ update public.jurnal_keuangan_akun
    set kategori = case
          when jenis = 'cair' then 'Cash'
          when platform = 'Pluang' then 'US Stocks'
-         else 'Mutual Funds' end
+         else 'Reksadana' end
  where kategori is null;
 insert into public.jurnal_keuangan_platform(user_id, nama)
 select distinct user_id, platform from public.jurnal_keuangan_akun where platform is not null

@@ -701,7 +701,7 @@ function txRow(x,g){
 /* ---------- Riwayat ---------- */
 function goalOf(ak){return M.tujuan.find(t=>t.accs.includes(ak))}
 /* UI is goal-only: show the goal name, never the platform. Account name is only added when a goal has 2+ active accounts. */
-const accPlat=a=>a.platform||a.nama,accKat=a=>a.kategori||(a.jenis==='cair'?'Cash':'Investment');
+const accPlat=a=>a.platform||a.nama,KAT_EN={reksadana:'Mutual Funds',deposito:'Time Deposit'},accKat=a=>{const k=a.kategori||(a.jenis==='cair'?'Cash':'Investment');return KAT_EN[String(k).toLowerCase()]||k};
 const accLabel=a=>{const g=goalOf(a.akun),p=accPlat(a);return g?p+' ('+g.name+')':p};
 const platLogo=n=>{const p=(DATA.platform||[]).find(x=>x.nama===n);return p&&p.logo||''};
 const plogo=(name,sz)=>{const l=platLogo(name),z=sz||38;return l?`<img class="plogo" src="${esc(l)}" alt="" style="width:${z}px;height:${z}px">`:`<span class="plogo ph" style="width:${z}px;height:${z}px;font-size:${Math.round(z*.42)}px">${esc((name||'?').charAt(0).toUpperCase())}</span>`};
