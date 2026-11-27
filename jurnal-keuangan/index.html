@@ -690,7 +690,7 @@ function renderDetail(){
   ${growth}
   ${g.target?`<section><h2>Target</h2><div class="card"><div class="kv"><span>Target</span><span>${rp(g.target)}</span></div><div class="kv"><span>${g.now>=g.target?'Status':'Remaining'}</span><span>${g.now>=g.target?'Target reached':rp(g.target-g.now)}</span></div><div style="padding:4px 16px 16px">${progHTML(g)}</div></div></section>`:''}
   <section><h2>Assets</h2><div class="card">${g.accs.filter(a=>M.byAkun[a].aktif).map(a=>arowHTML(M.byAkun[a],false)).join('')}</div></section>
-  <section><div class="card"><div class="kv"><span>Last updated</span><span>${lu?updLabel(lu):'-'}</span></div></div></section>
+  <section style="margin-top:12px"><div class="card"><div class="kv"><span>Last updated</span><span>${lu?updLabel(lu):'-'}</span></div></div></section>
   <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>
   ${wdHTML}`;
   drawChart($('#hChart'),chartSeries,{label:'Chart '+g.name,onHover});
