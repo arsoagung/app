@@ -689,7 +689,7 @@ function renderDetail(){
     ${stats}
   </section>
   ${growth}
-  ${g.target?`<section><div class="card"><div class="kv"><span>Target</span><span>${rp(g.target)}</span></div><div class="kv"><span>${g.now>=g.target?'Status':'Remaining'}</span><span>${g.now>=g.target?'Target reached':rp(g.target-g.now)}</span></div><div style="padding:4px 16px 16px">${progHTML(g)}</div></div></section>`:''}
+  ${g.target?`<section><h2>Target</h2><div class="card"><div class="kv"><span>Target</span><span>${rp(g.target)}</span></div><div class="kv"><span>${g.now>=g.target?'Status':'Remaining'}</span><span>${g.now>=g.target?'Target reached':rp(g.target-g.now)}</span></div><div style="padding:4px 16px 16px">${progHTML(g)}</div></div></section>`:''}
   <section><h2>Assets</h2><div class="card">${g.accs.filter(a=>M.byAkun[a].aktif).map(a=>arowHTML(M.byAkun[a],false)).join('')}</div></section>
   <section><div class="card"><div class="kv"><span>Last updated</span><span>${lu?updLabel(lu):'-'}</span></div></div></section>
   <section><h2>Top-ups <small>${tx.length}</small></h2>${txHTML}</section>
@@ -715,6 +715,14 @@ const accLabel=a=>{const g=goalOf(a.akun),p=accPlat(a);return g?p+' ('+g.name+')
 const platLogo=n=>{const p=(DATA.platform||[]).find(x=>x.nama===n);return p&&p.logo||''};
 const plogo=(name,sz)=>{const l=platLogo(name),z=sz||38;return l?`<img class="plogo" src="${esc(l)}" alt="" style="width:${z}px;height:${z}px">`:`<span class="plogo ph" style="width:${z}px;height:${z}px;font-size:${Math.round(z*.42)}px">${esc((name||'?').charAt(0).toUpperCase())}</span>`};
 /* monthly profit pill for a set of accounts (latest period, same as the goal rows) */
+function rangePill(a,key){
+  const st=T(a.returnMulai),base=Math.max(st,M.dates[M.idxFor(key)]);
+  if(!(base<TODAY_T))return '<span class="pill mut">No data</span>';
+  const ids=[a.akun];let modal=M.sum(ids,base);
+  M.flows(ids).filter(f=>f.t>base).forEach(f=>{modal+=f.amt});
+  const profit=M.sum(ids,TODAY_T)-modal,r=M.chain(M.periodsFor(ids,base));
+  if(!modal&&!M.sum(ids,TODAY_T))return '<span class="pill mut">No data</span>';
+  return `<span class="pill ${sgn(profit)}">${pvHTML(profit,r)}</span>`}
 const accPill=(ids,start)=>{const P=M.periodsFor(ids,start),lp=P[P.length-1];return lp&&lp.r!=null?`<span class="pill ${sgn(lp.profit)}">${pvHTML(lp.profit,lp.r)}</span>`:'<span class="pill mut">No data</span>'};
 const hasRet=a=>a.ikutReturn&&a.returnMulai;
 function arowHTML(a,withGoal){
@@ -723,10 +731,10 @@ function arowHTML(a,withGoal){
   const name=withGoal?`<b>${esc(accPlat(a))} <span class="g">(${esc(g?g.name:'')})</span></b>`:`<b>${esc(accPlat(a))}</b><span>${esc(accKat(a))}</span>`;
   return `<button class="arow" data-act="go" data-g="${esc(g?g.name:'')}">${plogo(accPlat(a),36)}<div class="m">${name}</div><div class="kv2"><b>${rp(v)}</b>${pill}</div></button>`;
 }
-/* Assets tab: flat list like the Goals list (logo, platform (goal), last update, balance, monthly profit), grouped by category */
+/* Assets tab: flat list like the Goals list (logo, platform (goal), last update, balance, profit for the selected range), grouped by category */
 function assetRowHTML(a){
   const g=goalOf(a.akun),lu=lastUpd(a.akun);
-  const chip=hasRet(a)?accPill([a.akun],T(a.returnMulai)):'<span class="pill mut">No return</span>';
+  const chip=hasRet(a)?rangePill(a,S.iRange):'<span class="pill mut">No return</span>';
   return `<button class="card goal" data-act="go" data-g="${esc(g?g.name:'')}">
     ${plogo(accPlat(a),30)}
     <div><div class="gname">${esc(accPlat(a))}</div><div class="gsub">${esc(g?g.name:'')} \u00b7 ${lu?updLbl(lu):'Not updated yet'}</div></div>
