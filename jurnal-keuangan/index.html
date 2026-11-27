@@ -505,12 +505,11 @@ const deltaHTML=(d,p,since)=>`<span class="delta ${sgn(d)}">${icon(d>=0?'up':'do
 /* ---------- Beranda ---------- */
 function goalRows(list){
   return (list||M.tujuan.filter(g=>!isCashG(g))).map(g=>{
-    let chip='<span class="pill mut">No return</span>';
-    if(g.hasReturn){const P=M.periodsFor(g.retAccs,g.retStart),lp=P[P.length-1];
-      if(lp&&lp.r!=null)chip=`<span class="pill ${sgn(lp.profit)}">${pvHTML(lp.profit,lp.r)}</span>`}
+    const bar=g.target?`<div class="gprog"><i style="width:${(goalPct(g)*100).toFixed(1)}%"></i></div>`:'';
+    const chip=g.target?(g.now>=g.target?'<span class="pill pos">Target reached</span>':`<span class="pill mut">${Math.floor(g.now/g.target*100)}% of Rp ${cmp(g.target)}</span>`):'<span class="pill mut">No target</span>';
     return `<button class="card goal" data-act="go" data-g="${g.name}">
       <div class="gicon" style="--c:${g.meta.color}">${icon(g.meta.icon)}</div>
-      <div><div class="gname">${g.name}</div>${progHTML(g)}</div>
+      <div><div class="gname">${g.name}</div>${bar}</div>
       <div class="gright"><div class="gval">${rp(g.now)}</div>${chip}</div></button>`}).join('');
 }
 /* update tracking: last update + month-end checkpoint (window = 3 days either side of a month change) */
